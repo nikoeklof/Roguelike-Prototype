@@ -322,7 +322,6 @@ This architecture should support:
 
 * hundreds of enemies
 * procedural weapons
-* multiplayer authority separation
 * deterministic simulation
 
 without rewriting core systems.
