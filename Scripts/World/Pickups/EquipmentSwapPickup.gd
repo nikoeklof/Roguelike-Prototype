@@ -4,10 +4,7 @@ class_name EquipmentSwapPickup
 @export var item_scene: PackedScene
 @export var slot_override_enabled: bool = false
 @export var slot_override: Equipment.SlotKind = Equipment.SlotKind.MELEE
-@export_node_path("Sprite2D") var pickup_sprite_path: NodePath
 @export var hide_item_node_in_pickup: bool = true
-
-# Safety: block swaps while attacking (if Combat provides is_attacking or active executor)
 @export var block_while_attacking: bool = true
 
 var _item: Node = null
@@ -15,17 +12,22 @@ var _sprite: Sprite2D = null
 
 
 func _ready() -> void:
-	monitoring = true
-	monitorable = false
+	monitoring = false
+	monitorable = true
 	add_to_group("interactable")
 
-	_sprite = get_node_or_null(pickup_sprite_path) as Sprite2D
+	print("[Pickup] READY:", name)
+
+	_sprite = _find_first_sprite(self)
 
 	if item_scene != null and _item == null:
+		print("[Pickup] spawning item:", item_scene.resource_path)
 		set_item(item_scene.instantiate())
 
 
 func set_item(item: Node) -> void:
+	print("[Pickup] set_item ->", item)
+
 	if _item != null and is_instance_valid(_item):
 		if _item.get_parent() == self:
 			remove_child(_item)
@@ -35,77 +37,108 @@ func set_item(item: Node) -> void:
 	if _item != null:
 		if _item.get_parent() != null:
 			_item.get_parent().remove_child(_item)
+
 		add_child(_item)
 
-		if hide_item_node_in_pickup and _item is CanvasItem:
-			(_item as CanvasItem).visible = false
+		if hide_item_node_in_pickup:
+			_hide_visuals_recursive(_item)
 
 	_update_pickup_visual()
 
 
 func can_interact(interactor: Node) -> bool:
-	if _item == null or not is_instance_valid(_item):
+	print("[Pickup] can_interact by:", interactor)
+
+	if _item == null:
+		print("[Pickup] FAIL: no item")
 		return false
+
 	if not block_while_attacking:
 		return true
 
 	var combat := _resolve_combat(interactor)
-	if combat == null:
-		return true
+	print("[Pickup] combat:", combat)
 
-	if combat.has_method(&"is_attacking"):
-		var res: Variant = combat.call(&"is_attacking")
-		if res is bool:
-			return not (res as bool)
-
-	# Fallback: if combat exposes an active executor node
-	if " _active_executor" in combat:
-		# can't reliably access private; ignore
-		pass
+	if combat and combat.has_method("is_attacking"):
+		var attacking: bool = bool(combat.call("is_attacking"))
+		print("[Pickup] attacking?", attacking)
+		return not attacking
 
 	return true
 
 
 func interact(interactor: Node) -> void:
-	if _item == null or not is_instance_valid(_item):
+	print("\n========== INTERACT START ==========")
+	print("[Pickup] interact from:", interactor)
+	print("[Pickup] item:", _item)
+
+	if not can_interact(interactor):
+		print("[Pickup] blocked by can_interact")
 		return
 
 	var equipment: Equipment = _resolve_equipment(interactor)
+	print("[Pickup] equipment:", equipment)
+
 	if equipment == null:
+		print("[Pickup] FAIL: equipment not found")
 		return
 
 	var slot_kind: int = _infer_slot_kind(_item)
 	if slot_override_enabled:
 		slot_kind = int(slot_override)
 
+	print("[Pickup] inferred slot_kind:", _infer_slot_kind(_item))
+	print("[Pickup] slot_kind:", slot_kind)
+
 	var picked: Node = _item
 	_item = null
 
-	# Swap attempt
+	print("[Pickup] attempting swap...")
 	var old_item: Node = equipment.swap_item_in_slot(slot_kind, picked)
 
-	# If swap failed, restore the pickup item and bail
-	if old_item == null and (equipment.get_node_or_null(equipment._slot_path_from_kind(slot_kind)) != null):
-		# swap_item_in_slot returns null both on failure and when slot was empty.
-		# We detect failure by checking whether picked got parented into the slot.
-		# If picked is still parentless, it failed.
-		if picked.get_parent() == null:
-			set_item(picked)
-			return
+	print("[Pickup] swap returned old_item:", old_item)
+	print("[Pickup] picked parent after swap:", picked.get_parent())
 
-	# If slot was empty, pickup consumed.
+	if picked.get_parent() == null:
+		print("[Pickup] swap rejected -> restoring")
+		set_item(picked)
+		return
+
 	if old_item == null:
+		print("[Pickup] slot empty -> pickup consumed")
 		queue_free()
 		return
 
-	# Pickup becomes the dropped item.
+	print("[Pickup] swap success -> dropping old item")
 	set_item(old_item)
+	print("========== INTERACT END ==========\n")
 
 
 func _resolve_equipment(entity: Node) -> Equipment:
+	# If your interactor passes the Entity root, this succeeds
 	if entity is Entity:
-		return (entity as Entity).find_component(&"Equipment") as Equipment
-	return entity.get_node_or_null("Equipment") as Equipment
+		var eq := (entity as Entity).find_component(&"Equipment") as Equipment
+		if eq != null:
+			return eq
+
+	# Otherwise, just search downward from whatever node we got
+	return _find_equipment_recursive(entity)
+
+
+func _find_equipment_recursive(root: Node) -> Equipment:
+	if root is Equipment:
+		return root as Equipment
+
+	var direct := root.get_node_or_null("Equipment")
+	if direct is Equipment:
+		return direct as Equipment
+
+	for c in root.get_children():
+		var found := _find_equipment_recursive(c)
+		if found != null:
+			return found
+
+	return null
 
 
 func _resolve_combat(entity: Node) -> Node:
@@ -115,10 +148,8 @@ func _resolve_combat(entity: Node) -> Node:
 
 
 func _infer_slot_kind(item: Node) -> int:
-	if item.has_method(&"get_pickup_slot_kind"):
-		var res: Variant = item.call(&"get_pickup_slot_kind")
-		if res is int:
-			return int(res)
+	if item and item.has_method("get_pickup_slot_kind"):
+		return item.call("get_pickup_slot_kind")
 	return Equipment.item_slot_kind(item)
 
 
@@ -128,14 +159,12 @@ func _update_pickup_visual() -> void:
 
 	var tex: Texture2D = null
 
-	if _item != null and is_instance_valid(_item) and _item.has_method(&"get_pickup_icon"):
-		var res: Variant = _item.call(&"get_pickup_icon")
-		if res is Texture2D:
-			tex = res as Texture2D
+	if _item and _item.has_method("get_pickup_icon"):
+		tex = _item.call("get_pickup_icon")
 
-	if tex == null and _item != null and is_instance_valid(_item):
-		var s: Sprite2D = _find_first_sprite(_item)
-		if s != null:
+	if tex == null and _item != null:
+		var s := _find_first_sprite(_item)
+		if s:
 			tex = s.texture
 
 	_sprite.texture = tex
@@ -143,9 +172,16 @@ func _update_pickup_visual() -> void:
 
 func _find_first_sprite(root: Node) -> Sprite2D:
 	if root is Sprite2D:
-		return root as Sprite2D
+		return root
 	for c in root.get_children():
-		var s: Sprite2D = _find_first_sprite(c)
-		if s != null:
+		var s := _find_first_sprite(c)
+		if s:
 			return s
 	return null
+
+
+func _hide_visuals_recursive(node: Node) -> void:
+	if node is CanvasItem:
+		node.visible = false
+	for c in node.get_children():
+		_hide_visuals_recursive(c)

@@ -26,6 +26,7 @@ enabled=PackedStringArray("res://addons/GitGodot/plugin.cfg")
 [global_group]
 
 player=""
+interactable=""
 
 [input]
 

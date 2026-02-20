@@ -1,13 +1,10 @@
 [gd_scene format=3 uid="uid://bu0u2s2ex755m"]
 
 [ext_resource type="PackedScene" uid="uid://b0eb7ryv2foaw" path="res://Scenes/Templates/Entities/Player_Entity_Template.tscn" id="1_03ses"]
+[ext_resource type="PackedScene" uid="uid://dfwht10plwohx" path="res://Scenes/Templates/World/GroundItemPickup.tscn" id="2_cve23"]
 [ext_resource type="PackedScene" uid="uid://7g4e08mi54jk" path="res://Scenes/Templates/EquipmentItems/shield_test_tower.tscn" id="2_ppsvi"]
-[ext_resource type="PackedScene" uid="uid://c1mbhyoas1a07" path="res://Scenes/Templates/EquipmentItems/shield_test_buckler.tscn" id="3_td8wx"]
-[ext_resource type="PackedScene" uid="uid://c8cgfaprfybnj" path="res://Scenes/Templates/EquipmentItems/MeleeWeapon_TestKnife.tscn" id="4_vr7ox"]
 [ext_resource type="PackedScene" uid="uid://x8af1856mm26" path="res://Scenes/Templates/EquipmentItems/MeleeWeapon_TestHammer.tscn" id="5_4h0rj"]
-[ext_resource type="PackedScene" uid="uid://wmfb80ryka6h" path="res://Scenes/Templates/EquipmentItems/RangedWeapon_TestPistol.tscn" id="6_wpux7"]
 [ext_resource type="PackedScene" uid="uid://b1jaqla1140rq" path="res://Scenes/Templates/EquipmentItems/RangedWeapon_TestShotgun.tscn" id="7_ithr2"]
-[ext_resource type="PackedScene" uid="uid://d27yklcx82qqb" path="res://Scenes/Templates/EquipmentItems/Spell_TestFireball.tscn" id="8_ssc0u"]
 [ext_resource type="PackedScene" uid="uid://bbdm1sehe51l3" path="res://Scenes/Templates/EquipmentItems/Spell_TestFrostball.tscn" id="9_lvjt1"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
@@ -68,27 +65,26 @@ y_sort_enabled = true
 
 [node name="Player" parent="YSortLayer" unique_id=423000657 instance=ExtResource("1_03ses")]
 position = Vector2(80, -16)
+initial_faction = 0
 
-[node name="Shield_TestTower" parent="." unique_id=1537972764 instance=ExtResource("2_ppsvi")]
-position = Vector2(24, -176)
+[node name="GroundItemPickup" parent="YSortLayer" unique_id=635862218 instance=ExtResource("2_cve23")]
+position = Vector2(32, -168)
+item_scene = ExtResource("5_4h0rj")
 
-[node name="Shield_TestBuckler" parent="." unique_id=2047757009 instance=ExtResource("3_td8wx")]
-position = Vector2(144, -176)
+[node name="GroundItemPickup2" parent="YSortLayer" unique_id=428809953 instance=ExtResource("2_cve23")]
+position = Vector2(168, -168)
+slot_kind = 1
+item_scene = ExtResource("7_ithr2")
+slot_override = 1
 
-[node name="Melee_TestKnife" parent="." unique_id=1248259724 instance=ExtResource("4_vr7ox")]
-position = Vector2(232, -176)
+[node name="GroundItemPickup3" parent="YSortLayer" unique_id=1958929955 instance=ExtResource("2_cve23")]
+position = Vector2(280, -168)
+slot_kind = 2
+item_scene = ExtResource("9_lvjt1")
+slot_override = 2
 
-[node name="Melee_TestHammer" parent="." unique_id=1186064283 instance=ExtResource("5_4h0rj")]
-position = Vector2(320, -176)
-
-[node name="Ranged_TestPistol" parent="." unique_id=1141442304 instance=ExtResource("6_wpux7")]
-position = Vector2(448, -176)
-
-[node name="RangedWeapon_TestShotgun" parent="." unique_id=328927431 instance=ExtResource("7_ithr2")]
-position = Vector2(560, -176)
-
-[node name="Spell_TestFireball" parent="." unique_id=1152230158 instance=ExtResource("8_ssc0u")]
-position = Vector2(784, -176)
-
-[node name="Spell_TestFrostball" parent="." unique_id=2115374820 instance=ExtResource("9_lvjt1")]
-position = Vector2(672, -176)
+[node name="GroundItemPickup4" parent="YSortLayer" unique_id=198587058 instance=ExtResource("2_cve23")]
+position = Vector2(416, -168)
+slot_kind = 3
+item_scene = ExtResource("2_ppsvi")
+slot_override = 3

@@ -14,6 +14,8 @@ func _ready() -> void:
 	monitoring = true
 	monitorable = false
 
+	print("[Interactor] READY:", get_parent(), "action=", action_name, "require_group=", require_group, "group=", interactable_group)
+
 	body_entered.connect(_on_entered)
 	body_exited.connect(_on_exited)
 	area_entered.connect(_on_entered)
@@ -22,7 +24,10 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(action_name):
+		print("\n[Interactor] interact pressed")
+		print("[Interactor] raw candidates:", _candidates)
 		var target: Node = get_best_interactable()
+		print("[Interactor] best target:", target)
 		if target != null:
 			_do_interact(target)
 
@@ -60,31 +65,41 @@ func get_best_interactable() -> Node:
 
 func _do_interact(target: Node) -> void:
 	var interactor_owner: Node = get_parent()
+	print("[Interactor] _do_interact target:", target, "owner:", interactor_owner)
 
 	# Respect can_interact if present
 	if target.has_method(&"can_interact"):
 		var res: Variant = target.call(&"can_interact", interactor_owner)
+		print("[Interactor] can_interact?", res)
 		if res is bool and (res as bool) == false:
+			print("[Interactor] blocked by can_interact")
 			return
 
 	if target.has_method(&"interact"):
+		print("[Interactor] calling interact()")
 		target.call(&"interact", interactor_owner)
+	else:
+		print("[Interactor] target has no interact()")
 
 
 func _on_entered(node: Node) -> void:
+	print("[Interactor] entered:", node)
 	var n: Node = _resolve_interactable(node)
 	if n == null:
 		return
 	if _candidates.has(n):
 		return
 	_candidates.append(n)
+	print("[Interactor] +candidate:", n, "count=", _candidates.size())
 
 
 func _on_exited(node: Node) -> void:
+	print("[Interactor] exited:", node)
 	var n: Node = _resolve_interactable(node)
 	if n == null:
 		return
 	_candidates.erase(n)
+	print("[Interactor] -candidate:", n, "count=", _candidates.size())
 
 
 func _resolve_interactable(node: Node) -> Node:

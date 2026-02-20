@@ -40,6 +40,8 @@ func get_item() -> Node:
 
 func take_item() -> Node:
 	var owner_entity: Node = _owner_entity()
+	print("[EquipmentSlot] take_item slot=", Equipment.slot_kind_name(int(slot_kind)), "owner=", owner_entity)
+
 	var old: Node = get_item()
 	if old == null:
 		return null
@@ -55,11 +57,14 @@ func take_item() -> Node:
 # Equip new item. Returns old item (if free_old=false, caller can reuse it).
 func set_item(item: Node, free_old: bool = true) -> Node:
 	var owner_entity: Node = _owner_entity()
+	print("[EquipmentSlot] set_item slot=", Equipment.slot_kind_name(int(slot_kind)), "new=", item, "free_old=", free_old, "owner=", owner_entity)
+
 	var old: Node = get_item()
 
 	if item != null and not Equipment.is_item_valid_for_slot(item, int(slot_kind)):
 		push_warning("EquipmentSlot(%s): tried to equip invalid item '%s'." %
 			[Equipment.slot_kind_name(int(slot_kind)), item.name])
+		print("[EquipmentSlot] FAIL: invalid item for slot")
 		return null
 
 	# Unequip old
@@ -79,6 +84,7 @@ func set_item(item: Node, free_old: bool = true) -> Node:
 		if item.has_method(&"on_equipped"):
 			item.call(&"on_equipped", owner_entity)
 
+	print("[EquipmentSlot] equipped now:", get_item(), "old was:", old)
 	changed.emit(get_item(), old)
 	return old
 

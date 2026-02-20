@@ -18,15 +18,18 @@ initial_item_scene = ExtResource("3_elcqj")
 
 [node name="RangedSlot" type="Node" parent="." unique_id=1681126984]
 script = ExtResource("2_88lbc")
+slot_kind = 1
 allow_multiple = null
 initial_item_scene = ExtResource("4_0blv5")
 
 [node name="SpellSlot" type="Node" parent="." unique_id=1739323574]
 script = ExtResource("2_88lbc")
+slot_kind = 2
 allow_multiple = null
 initial_item_scene = ExtResource("5_2chi6")
 
 [node name="ShieldSlot" type="Node" parent="." unique_id=1862735357]
 script = ExtResource("6_0blv5")
+slot_kind = 3
 allow_multiple = null
 initial_item_scene = ExtResource("7_6yrri")

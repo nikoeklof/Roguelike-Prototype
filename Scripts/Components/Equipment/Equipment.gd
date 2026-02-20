@@ -39,6 +39,16 @@ func cycle_active_slot(dir: int, reason: String = "cycle") -> void:
 		idx = 0
 	idx = (idx + (1 if dir >= 0 else -1)) % order.size()
 	set_active_slot(order[idx], reason)
+	
+
+func set_active_slot_melee(reason: String = "slot_melee") -> void:
+	set_active_slot(Combat.AttackKind.MELEE, reason)
+
+func set_active_slot_ranged(reason: String = "slot_ranged") -> void:
+	set_active_slot(Combat.AttackKind.RANGED, reason)
+
+func set_active_slot_spell(reason: String = "slot_spell") -> void:
+	set_active_slot(Combat.AttackKind.SPELL, reason)
 
 
 func get_item_for_kind(kind: int) -> Node:
@@ -117,30 +127,45 @@ static func is_item_valid_for_slot(item: Node, slot_kind: int) -> bool:
 
 # --- Swap API with validation (does NOT drop; returns replaced item) ---
 func swap_item_in_slot(slot_kind: int, new_item: Node) -> Node:
+	print("\n---- EQUIPMENT swap_item_in_slot ----")
+	print("slot_kind:", slot_kind, "(", slot_kind_name(slot_kind), ")")
+	print("new_item:", new_item)
+
 	if new_item == null:
+		print("[Equipment] FAIL: new_item is null")
 		return null
 
 	if not is_item_valid_for_slot(new_item, slot_kind):
 		push_warning("Equipment: swap rejected. Item '%s' not valid for slot %s." %
 			[new_item.name, slot_kind_name(slot_kind)])
+		print("[Equipment] FAIL: validation rejected")
 		return null
 
-	var slot := _slot(_slot_path_from_kind(slot_kind))
+	var slot_path := _slot_path_from_kind(slot_kind)
+	print("[Equipment] slot_path:", slot_path)
+	var slot := _slot(slot_path)
+	print("[Equipment] slot node:", slot)
 	if slot == null:
 		push_warning("Equipment: swap rejected. Missing slot node for %s." % slot_kind_name(slot_kind))
+		print("[Equipment] FAIL: slot node missing")
 		return null
 
+	var old_item: Node = null
 	if slot.has_method("set_item"):
-		return slot.call("set_item", new_item, false) as Node
+		old_item = slot.call("set_item", new_item, false) as Node
+		print("[Equipment] slot.set_item returned old_item:", old_item)
+		print("[Equipment] new_item parent after set_item:", new_item.get_parent())
+	else:
+		print("[Equipment] WARNING: slot has no set_item(), using fallback")
+		old_item = _get_equipped(slot)
+		if old_item != null:
+			slot.remove_child(old_item)
+		for c in slot.get_children():
+			(c as Node).queue_free()
+		slot.add_child(new_item)
 
-	# Fallback: manual (no lifecycle)
-	var old := _get_equipped(slot)
-	if old != null:
-		slot.remove_child(old)
-	for c in slot.get_children():
-		(c as Node).queue_free()
-	slot.add_child(new_item)
-	return old
+	print("---- END EQUIPMENT swap_item_in_slot ----\n")
+	return old_item
 
 
 # --- Internals ---
