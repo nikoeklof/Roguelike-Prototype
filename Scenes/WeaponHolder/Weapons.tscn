@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://tw3y3fkbbegg"]
+
+[ext_resource type="Script" uid="uid://q455ex6d7uye" path="res://Scripts/Components/Equipment/Items/MeleeWeapon.gd" id="1_6fvox"]
+[ext_resource type="Script" uid="uid://ch1c15j4brwlw" path="res://Scripts/Components/Equipment/Items/RangedWeapon.gd" id="2_3jlph"]
+
+[node name="Weapons" type="Node" unique_id=1672687539]
+
+[node name="MeleeWeapon" type="Node" parent="." unique_id=1710761780]
+script = ExtResource("1_6fvox")
+
+[node name="RangedWeapon" type="Node" parent="." unique_id=1383282616]
+script = ExtResource("2_3jlph")

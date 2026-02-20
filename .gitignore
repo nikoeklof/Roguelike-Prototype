@@ -1,0 +1,37 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+/Art/
+/Sounds/
+/TileSets/
+/Sprites/
+/addons/
+/Sprites.zip
+# gitignore for Visual Studio Code
+.vscode/
+# Ignore build files
+/build/
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+# Ignore log files
+*.log
+# Ignore temporary files
+*.tmp
+*.bak
+# Ignore user-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+# Ignore compiled files
+*.exe
+*.dll
+*.so
+*.dylib
+# Ignore package files
+*.zip
+*.tar.gz
+*.rar
+# Ignore node modules
+node_modules/

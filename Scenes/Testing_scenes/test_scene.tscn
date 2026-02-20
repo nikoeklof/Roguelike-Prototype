@@ -1,0 +1,94 @@
+[gd_scene format=3 uid="uid://bu0u2s2ex755m"]
+
+[ext_resource type="PackedScene" uid="uid://b0eb7ryv2foaw" path="res://Scenes/Templates/Entities/Player_Entity_Template.tscn" id="1_03ses"]
+[ext_resource type="PackedScene" uid="uid://7g4e08mi54jk" path="res://Scenes/Templates/EquipmentItems/shield_test_tower.tscn" id="2_ppsvi"]
+[ext_resource type="PackedScene" uid="uid://c1mbhyoas1a07" path="res://Scenes/Templates/EquipmentItems/shield_test_buckler.tscn" id="3_td8wx"]
+[ext_resource type="PackedScene" uid="uid://c8cgfaprfybnj" path="res://Scenes/Templates/EquipmentItems/MeleeWeapon_TestKnife.tscn" id="4_vr7ox"]
+[ext_resource type="PackedScene" uid="uid://x8af1856mm26" path="res://Scenes/Templates/EquipmentItems/MeleeWeapon_TestHammer.tscn" id="5_4h0rj"]
+[ext_resource type="PackedScene" uid="uid://wmfb80ryka6h" path="res://Scenes/Templates/EquipmentItems/RangedWeapon_TestPistol.tscn" id="6_wpux7"]
+[ext_resource type="PackedScene" uid="uid://b1jaqla1140rq" path="res://Scenes/Templates/EquipmentItems/RangedWeapon_TestShotgun.tscn" id="7_ithr2"]
+[ext_resource type="PackedScene" uid="uid://d27yklcx82qqb" path="res://Scenes/Templates/EquipmentItems/Spell_TestFireball.tscn" id="8_ssc0u"]
+[ext_resource type="PackedScene" uid="uid://bbdm1sehe51l3" path="res://Scenes/Templates/EquipmentItems/Spell_TestFrostball.tscn" id="9_lvjt1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
+size = Vector2(1169, 20)
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_r5l72"]
+vertices = PackedVector2Array(1147.5625, 291.46875, 1149.3984, 291.42188, 1149.3984, 601.03125, 887.1094, 297.72656, 886.0781, 225.22656, 1144.7734, 25.273438, 23.21875, 620.7578, 602.1875, 304.5078, 349.39844, 302.28125, 19.953125, 296.79688, 20.601563, 296.77344, 349.39844, 227.71094, 20.601563, 14.9296875)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2), PackedInt32Array(0, 2, 3, 4, 5), PackedInt32Array(3, 2, 6, 7), PackedInt32Array(8, 7, 6), PackedInt32Array(8, 6, 9, 10), PackedInt32Array(11, 8, 10, 12), PackedInt32Array(11, 12, 5, 4)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(-17, 262, 386, 246, 386, 266, 839, 270, 598, 268, 1186, 254, 1186, 637, -13, 658), PackedVector2Array(-16, -22, 1181, -11, 1184, 275, 850, 262, -16, 266)])
+parsed_collision_mask = 1
+agent_radius = 36.6
+
+[node name="test_scene" type="Node2D" unique_id=391386651]
+
+[node name="floor" type="StaticBody2D" parent="." unique_id=1068574041]
+position = Vector2(524, 389)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="floor" unique_id=1046366328]
+shape = SubResource("RectangleShape2D_3dogw")
+
+[node name="floor2" type="StaticBody2D" parent="." unique_id=1668032]
+position = Vector2(524, 389)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="floor2" unique_id=229769624]
+position = Vector2(608, -274)
+rotation = 1.5707964
+shape = SubResource("RectangleShape2D_3dogw")
+
+[node name="floor4" type="StaticBody2D" parent="." unique_id=1768705674]
+position = Vector2(-651, 349)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="floor4" unique_id=2037409394]
+position = Vector2(608, -274)
+rotation = 1.5707964
+shape = SubResource("RectangleShape2D_3dogw")
+
+[node name="floor3" type="StaticBody2D" parent="." unique_id=1802622652]
+position = Vector2(524, 389)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="floor3" unique_id=108522699]
+position = Vector2(11, -628)
+shape = SubResource("RectangleShape2D_3dogw")
+
+[node name="floor5" type="StaticBody2D" parent="." unique_id=344166971]
+position = Vector2(534, 529)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="floor5" unique_id=1463025990]
+position = Vector2(37.000004, -498)
+scale = Vector2(0.375, 0.375)
+shape = SubResource("RectangleShape2D_3dogw")
+
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=601011939]
+position = Vector2(-40, -237)
+navigation_polygon = SubResource("NavigationPolygon_r5l72")
+
+[node name="YSortLayer" type="Node2D" parent="." unique_id=346884288]
+y_sort_enabled = true
+
+[node name="Player" parent="YSortLayer" unique_id=423000657 instance=ExtResource("1_03ses")]
+position = Vector2(80, -16)
+
+[node name="Shield_TestTower" parent="." unique_id=1537972764 instance=ExtResource("2_ppsvi")]
+position = Vector2(24, -176)
+
+[node name="Shield_TestBuckler" parent="." unique_id=2047757009 instance=ExtResource("3_td8wx")]
+position = Vector2(144, -176)
+
+[node name="Melee_TestKnife" parent="." unique_id=1248259724 instance=ExtResource("4_vr7ox")]
+position = Vector2(232, -176)
+
+[node name="Melee_TestHammer" parent="." unique_id=1186064283 instance=ExtResource("5_4h0rj")]
+position = Vector2(320, -176)
+
+[node name="Ranged_TestPistol" parent="." unique_id=1141442304 instance=ExtResource("6_wpux7")]
+position = Vector2(448, -176)
+
+[node name="RangedWeapon_TestShotgun" parent="." unique_id=328927431 instance=ExtResource("7_ithr2")]
+position = Vector2(560, -176)
+
+[node name="Spell_TestFireball" parent="." unique_id=1152230158 instance=ExtResource("8_ssc0u")]
+position = Vector2(784, -176)
+
+[node name="Spell_TestFrostball" parent="." unique_id=2115374820 instance=ExtResource("9_lvjt1")]
+position = Vector2(672, -176)

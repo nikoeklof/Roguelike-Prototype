@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://b8j5l6j04afkq"]
+
+[ext_resource type="Script" uid="uid://bc76ps0gq6e5d" path="res://Scripts/Components/Combat/Executors/MeleeSlashExecutor.gd" id="1_p1s5o"]
+
+[node name="MeleeSlashExecutor" type="Node" unique_id=1989065433]
+script = ExtResource("1_p1s5o")

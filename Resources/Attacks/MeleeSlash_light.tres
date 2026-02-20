@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MeleeSlashVariant" format=3 uid="uid://kcpcabc841h8"]
+
+[ext_resource type="Script" uid="uid://ceqkd2wuyljun" path="res://Scripts/Components/Combat/Variants/MeleeSlashVariant.gd" id="1_3rfh1"]
+[ext_resource type="PackedScene" uid="uid://b8j5l6j04afkq" path="res://Scenes/Combat/Executors/MeleeSlashExecutor.tscn" id="1_12brt"]
+
+[resource]
+script = ExtResource("1_3rfh1")
+executor_scene = ExtResource("1_12brt")
+recovery_time = 0.12
+metadata/_custom_type_script = "uid://ceqkd2wuyljun"

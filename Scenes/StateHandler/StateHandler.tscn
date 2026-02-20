@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://b8s1g24kyrtsq"]
+
+[ext_resource type="Script" uid="uid://bumo3j07auq41" path="res://Scripts/StateMachine/StateHandler.gd" id="1_ug4wf"]
+[ext_resource type="Script" uid="uid://c0i18uc7jujg" path="res://Scripts/States/Locomotion/Idle.gd" id="2_lbga7"]
+[ext_resource type="Script" uid="uid://dsfbnsscp8kn4" path="res://Scripts/States/Combat/Attack.gd" id="3_stk6j"]
+[ext_resource type="Script" uid="uid://wbnylfo1x7ld" path="res://Scripts/States/Locomotion/Walk.gd" id="4_o6t3v"]
+[ext_resource type="Script" uid="uid://rpmmcrxywk5o" path="res://Scripts/States/Combat/Hurt.gd" id="5_isfbc"]
+
+[node name="StateHandler" type="Node" unique_id=1266186412]
+script = ExtResource("1_ug4wf")
+
+[node name="Idle" type="Node" parent="." unique_id=1942199328]
+script = ExtResource("2_lbga7")
+
+[node name="Attack" type="Node" parent="." unique_id=709312755]
+script = ExtResource("3_stk6j")
+
+[node name="Walk" type="Node" parent="." unique_id=14925190]
+script = ExtResource("4_o6t3v")
+
+[node name="Hurt" type="Node" parent="." unique_id=209892331]
+script = ExtResource("5_isfbc")
