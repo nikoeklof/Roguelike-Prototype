@@ -18,6 +18,7 @@ parsed_collision_mask = 1
 agent_radius = 36.6
 
 [node name="test_scene" type="Node2D" unique_id=391386651]
+y_sort_enabled = true
 
 [node name="floor" type="StaticBody2D" parent="." unique_id=1068574041]
 position = Vector2(524, 389)
@@ -34,7 +35,7 @@ rotation = 1.5707964
 shape = SubResource("RectangleShape2D_3dogw")
 
 [node name="floor4" type="StaticBody2D" parent="." unique_id=1768705674]
-position = Vector2(-651, 349)
+position = Vector2(-664, 392)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="floor4" unique_id=2037409394]
 position = Vector2(608, -274)
@@ -57,33 +58,30 @@ scale = Vector2(0.375, 0.375)
 shape = SubResource("RectangleShape2D_3dogw")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=601011939]
-position = Vector2(-40, -237)
+position = Vector2(-40, -232)
 navigation_polygon = SubResource("NavigationPolygon_r5l72")
 
-[node name="YSortLayer" type="Node2D" parent="." unique_id=346884288]
-y_sort_enabled = true
-
-[node name="Player" parent="YSortLayer" unique_id=423000657 instance=ExtResource("1_03ses")]
-position = Vector2(80, -16)
+[node name="Player" parent="." unique_id=423000657 instance=ExtResource("1_03ses")]
+position = Vector2(128, 40)
 initial_faction = 0
 
-[node name="GroundItemPickup" parent="YSortLayer" unique_id=635862218 instance=ExtResource("2_cve23")]
-position = Vector2(32, -168)
+[node name="GroundItemPickup" parent="." unique_id=635862218 instance=ExtResource("2_cve23")]
+position = Vector2(488, -168)
 item_scene = ExtResource("5_4h0rj")
 
-[node name="GroundItemPickup2" parent="YSortLayer" unique_id=428809953 instance=ExtResource("2_cve23")]
+[node name="GroundItemPickup2" parent="." unique_id=1289264530 instance=ExtResource("2_cve23")]
 position = Vector2(168, -168)
 slot_kind = 1
 item_scene = ExtResource("7_ithr2")
 slot_override = 1
 
-[node name="GroundItemPickup3" parent="YSortLayer" unique_id=1958929955 instance=ExtResource("2_cve23")]
+[node name="GroundItemPickup3" parent="." unique_id=636444247 instance=ExtResource("2_cve23")]
 position = Vector2(280, -168)
 slot_kind = 2
 item_scene = ExtResource("9_lvjt1")
 slot_override = 2
 
-[node name="GroundItemPickup4" parent="YSortLayer" unique_id=198587058 instance=ExtResource("2_cve23")]
+[node name="GroundItemPickup4" parent="." unique_id=549000379 instance=ExtResource("2_cve23")]
 position = Vector2(416, -168)
 slot_kind = 3
 item_scene = ExtResource("2_ppsvi")

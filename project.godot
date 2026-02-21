@@ -13,11 +13,21 @@ config_version=5
 config/name="Survivors_test"
 run/main_scene="uid://bu0u2s2ex755m"
 config/features=PackedStringArray("4.6", "Forward Plus")
+run/max_fps=60
 config/icon="res://icon.svg"
+
+[autoload]
+
+GameClock="*uid://phsoknmb2wgw"
 
 [display]
 
 window/size/mode=2
+
+[editor]
+
+movie_writer/ogv/encoding_speed=1
+movie_writer/movie_file="E:/Godot_inial_soot/Showcase movies/inventory_item_swap_showcase.avi"
 
 [editor_plugins]
 

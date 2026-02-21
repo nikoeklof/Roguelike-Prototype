@@ -25,12 +25,14 @@ var _hit_ids: Dictionary = {}
 
 
 func try_attack(dir: Vector2, owner_entity: Node) -> bool:
-	if owner_entity == null or not can_attack():
+	if owner_entity == null:
+		return false
+	if not can_attack():
 		return false
 
 	_commit_cooldown()
 
-	var d: Vector2 = dir
+	var d := dir
 	if d.length() < 0.001:
 		d = Vector2.RIGHT
 	else:
@@ -41,17 +43,19 @@ func try_attack(dir: Vector2, owner_entity: Node) -> bool:
 
 
 func _run_attack(owner_entity: Node, dir: Vector2) -> void:
+	# IMPORTANT: run gameplay waits in PHYSICS time so Movie Maker/render FPS doesn't slow gameplay.
 	if windup_time > 0.0:
-		await get_tree().create_timer(windup_time).timeout
+		await get_tree().create_timer(windup_time, true, true).timeout
 
 	_spawn_hitbox(owner_entity, dir)
-	await get_tree().create_timer(maxf(0.01, active_time)).timeout
+
+	await get_tree().create_timer(maxf(0.01, active_time), true, true).timeout
+
 	_cleanup_hitbox()
 
 	if recovery_time > 0.0:
-		await get_tree().create_timer(recovery_time).timeout
+		await get_tree().create_timer(recovery_time, true, true).timeout
 
-	print("[%s] attack_finished" % label)
 	attack_finished.emit()
 
 
@@ -63,18 +67,19 @@ func _spawn_hitbox(owner_entity: Node, dir: Vector2) -> void:
 	_hitbox.monitoring = true
 	_hitbox.monitorable = false
 
-	# Placeholder-friendly default: detect anything.
-	_hitbox.collision_layer = 1 << 3 # Hitbox
-	_hitbox.collision_mask = 1 << 4  # Hurtbox only
+	# Keep your existing layers/masks if you already have Hurtbox/Hitbox conventions.
+	# If you don't, this still works as a generic overlap detector.
+	_hitbox.collision_layer = 0
+	_hitbox.collision_mask = 0x7FFFFFFF
 
-	# ✅ IMPORTANT: local space so it stays attached to the owner as it moves
+	# Local attachment so it moves with owner
 	_hitbox.position = Vector2.ZERO
 	_hitbox.rotation = dir.angle()
 
-	var shape: RectangleShape2D = RectangleShape2D.new()
+	var shape := RectangleShape2D.new()
 	shape.size = hitbox_size
 
-	var cs: CollisionShape2D = CollisionShape2D.new()
+	var cs := CollisionShape2D.new()
 	cs.shape = shape
 	cs.position = hitbox_offset
 	_hitbox.add_child(cs)
@@ -104,6 +109,8 @@ func _try_damage(owner_entity: Node, other: Node, dir: Vector2) -> void:
 		return
 
 	var victim_root: Node = _resolve_victim_root(other)
+	if victim_root == null:
+		victim_root = other
 
 	if one_hit_per_target:
 		var id: int = victim_root.get_instance_id()
@@ -120,21 +127,30 @@ func _try_damage(owner_entity: Node, other: Node, dir: Vector2) -> void:
 	if hp == null:
 		return
 
-	if not hp.take_damage(damage, owner_entity):
+	# If your Health.take_damage returns void in your project, this still works.
+	if hp.has_method(&"take_damage"):
+		hp.call(&"take_damage", damage, owner_entity)
+	else:
 		return
 
 	if knockback > 0.0 and victim_root is CharacterBody2D:
-		var cb: CharacterBody2D = victim_root as CharacterBody2D
+		var cb := victim_root as CharacterBody2D
 		cb.velocity += dir.normalized() * knockback
 
+
+# -------------------------
+# Helpers (self-contained)
+# -------------------------
 
 func _resolve_victim_root(n: Node) -> Node:
 	var cur: Node = n
 	for _i in 6:
 		if cur == null:
 			break
+		# Prefer Entity if you use it
 		if cur is Entity:
 			return cur
+		# Or if it owns health, treat it as the victim root
 		if _find_health(cur) != null:
 			return cur
 		cur = cur.get_parent()
@@ -144,25 +160,54 @@ func _resolve_victim_root(n: Node) -> Node:
 func _find_health(root: Node) -> Health:
 	if root == null:
 		return null
+
+	# Entity component lookup if available
 	if root is Entity:
-		var h: Health = (root as Entity).find_component(&"Health") as Health
+		var h := (root as Entity).find_component(&"Health") as Health
 		if h != null:
 			return h
-	return root.get_node_or_null("Health") as Health
+
+	# Common direct child name
+	var direct := root.get_node_or_null("Health")
+	if direct is Health:
+		return direct as Health
+
+	# Otherwise, search shallowly
+	for c in root.get_children():
+		if c is Health:
+			return c as Health
+
+	return null
 
 
 func _find_faction(root: Node) -> Faction:
 	if root == null:
 		return null
+
 	if root is Entity:
-		var f: Faction = (root as Entity).find_component(&"Faction") as Faction
+		var f := (root as Entity).find_component(&"Faction") as Faction
 		if f != null:
 			return f
-	return root.get_node_or_null("Faction") as Faction
+
+	var direct := root.get_node_or_null("Faction")
+	if direct is Faction:
+		return direct as Faction
+
+	for c in root.get_children():
+		if c is Faction:
+			return c as Faction
+
+	return null
 
 
 func _can_damage(attacker_root: Node, victim_root: Node) -> bool:
-	var src_f: Faction = _find_faction(attacker_root)
-	if src_f == null:
+	# If no faction system, allow damage.
+	var attacker_f := _find_faction(attacker_root)
+	if attacker_f == null:
 		return true
-	return src_f.can_damage(victim_root)
+
+	# Your Faction component likely implements can_damage(target)
+	if attacker_f.has_method(&"can_damage"):
+		return bool(attacker_f.call(&"can_damage", victim_root))
+
+	return true

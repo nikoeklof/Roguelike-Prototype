@@ -3,13 +3,12 @@ class_name EquipmentSlot
 
 signal changed(new_item: Node, old_item: Node)
 
-# Which slot kind is this?
 @export var slot_kind: Equipment.SlotKind = Equipment.SlotKind.MELEE
-
 @export var allow_multiple: bool = false
-
-# Optional default item to spawn at runtime if slot is empty.
 @export var initial_item_scene: PackedScene
+
+# NEW: hide item sprites while equipped (prevents “extra sprite on ground”)
+@export var hide_equipped_item_visuals: bool = true
 
 
 func _ready() -> void:
@@ -40,11 +39,13 @@ func get_item() -> Node:
 
 func take_item() -> Node:
 	var owner_entity: Node = _owner_entity()
-	print("[EquipmentSlot] take_item slot=", Equipment.slot_kind_name(int(slot_kind)), "owner=", owner_entity)
 
 	var old: Node = get_item()
 	if old == null:
 		return null
+
+	# Make unequipped item visible again (so it can be dropped / shown as a pickup if desired)
+	_set_visuals_recursive(old, true)
 
 	if old.has_method(&"on_unequipped"):
 		old.call(&"on_unequipped", owner_entity)
@@ -57,18 +58,17 @@ func take_item() -> Node:
 # Equip new item. Returns old item (if free_old=false, caller can reuse it).
 func set_item(item: Node, free_old: bool = true) -> Node:
 	var owner_entity: Node = _owner_entity()
-	print("[EquipmentSlot] set_item slot=", Equipment.slot_kind_name(int(slot_kind)), "new=", item, "free_old=", free_old, "owner=", owner_entity)
-
 	var old: Node = get_item()
 
 	if item != null and not Equipment.is_item_valid_for_slot(item, int(slot_kind)):
 		push_warning("EquipmentSlot(%s): tried to equip invalid item '%s'." %
 			[Equipment.slot_kind_name(int(slot_kind)), item.name])
-		print("[EquipmentSlot] FAIL: invalid item for slot")
 		return null
 
 	# Unequip old
 	if old != null and not allow_multiple:
+		_set_visuals_recursive(old, true)
+
 		if old.has_method(&"on_unequipped"):
 			old.call(&"on_unequipped", owner_entity)
 
@@ -81,10 +81,14 @@ func set_item(item: Node, free_old: bool = true) -> Node:
 		if item.get_parent() != null:
 			item.get_parent().remove_child(item)
 		add_child(item)
+
+		# Hide equipped visuals to prevent “extra sprite in world”
+		if hide_equipped_item_visuals:
+			_set_visuals_recursive(item, false)
+
 		if item.has_method(&"on_equipped"):
 			item.call(&"on_equipped", owner_entity)
 
-	print("[EquipmentSlot] equipped now:", get_item(), "old was:", old)
 	changed.emit(get_item(), old)
 	return old
 
@@ -99,3 +103,10 @@ func _owner_entity() -> Node:
 	if equipment == null:
 		return null
 	return equipment.get_parent()
+
+
+func _set_visuals_recursive(node: Node, visible: bool) -> void:
+	if node is CanvasItem:
+		(node as CanvasItem).visible = visible
+	for c in node.get_children():
+		_set_visuals_recursive(c, visible)

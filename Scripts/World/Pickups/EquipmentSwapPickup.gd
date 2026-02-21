@@ -7,8 +7,15 @@ class_name EquipmentSwapPickup
 @export var hide_item_node_in_pickup: bool = true
 @export var block_while_attacking: bool = true
 
+# --- throw animation tuning ---
+@export var throw_enabled: bool = true
+@export var throw_duration: float = 0.18
+@export var throw_offset_radius: float = 22.0
+@export var throw_scale_pop: float = 1.12
+
 var _item: Node = null
 var _sprite: Sprite2D = null
+var _is_animating_throw: bool = false
 
 
 func _ready() -> void:
@@ -16,18 +23,13 @@ func _ready() -> void:
 	monitorable = true
 	add_to_group("interactable")
 
-	print("[Pickup] READY:", name)
-
 	_sprite = _find_first_sprite(self)
 
 	if item_scene != null and _item == null:
-		print("[Pickup] spawning item:", item_scene.resource_path)
 		set_item(item_scene.instantiate())
 
 
 func set_item(item: Node) -> void:
-	print("[Pickup] set_item ->", item)
-
 	if _item != null and is_instance_valid(_item):
 		if _item.get_parent() == self:
 			remove_child(_item)
@@ -47,81 +49,103 @@ func set_item(item: Node) -> void:
 
 
 func can_interact(interactor: Node) -> bool:
-	print("[Pickup] can_interact by:", interactor)
+	if _is_animating_throw:
+		return false
 
-	if _item == null:
-		print("[Pickup] FAIL: no item")
+	if _item == null or not is_instance_valid(_item):
 		return false
 
 	if not block_while_attacking:
 		return true
 
 	var combat := _resolve_combat(interactor)
-	print("[Pickup] combat:", combat)
-
 	if combat and combat.has_method("is_attacking"):
-		var attacking: bool = bool(combat.call("is_attacking"))
-		print("[Pickup] attacking?", attacking)
-		return not attacking
+		return not bool(combat.call("is_attacking"))
 
 	return true
 
 
 func interact(interactor: Node) -> void:
-	print("\n========== INTERACT START ==========")
-	print("[Pickup] interact from:", interactor)
-	print("[Pickup] item:", _item)
-
 	if not can_interact(interactor):
-		print("[Pickup] blocked by can_interact")
+		return
+
+	if _item == null or not is_instance_valid(_item):
 		return
 
 	var equipment: Equipment = _resolve_equipment(interactor)
-	print("[Pickup] equipment:", equipment)
-
 	if equipment == null:
-		print("[Pickup] FAIL: equipment not found")
 		return
+
+	var origin_pos: Vector2 = global_position
 
 	var slot_kind: int = _infer_slot_kind(_item)
 	if slot_override_enabled:
 		slot_kind = int(slot_override)
 
-	print("[Pickup] inferred slot_kind:", _infer_slot_kind(_item))
-	print("[Pickup] slot_kind:", slot_kind)
-
 	var picked: Node = _item
 	_item = null
 
-	print("[Pickup] attempting swap...")
 	var old_item: Node = equipment.swap_item_in_slot(slot_kind, picked)
 
-	print("[Pickup] swap returned old_item:", old_item)
-	print("[Pickup] picked parent after swap:", picked.get_parent())
-
+	# Swap rejected: item not parented anywhere -> restore
 	if picked.get_parent() == null:
-		print("[Pickup] swap rejected -> restoring")
 		set_item(picked)
 		return
 
+	# Slot empty: pickup consumed
 	if old_item == null:
-		print("[Pickup] slot empty -> pickup consumed")
 		queue_free()
 		return
 
-	print("[Pickup] swap success -> dropping old item")
+	# Pickup becomes dropped item
 	set_item(old_item)
-	print("========== INTERACT END ==========\n")
+
+	# Animate the dropped pickup flying out from the character back to the pickup origin
+	if throw_enabled:
+		_play_throw_from_to(interactor, origin_pos)
+	else:
+		global_position = origin_pos
+
+
+func _play_throw_from_to(interactor: Node, target_origin: Vector2) -> void:
+	_is_animating_throw = true
+	monitorable = false # prevent re-interacting mid-flight
+
+	# Start at the character position (best effort)
+	var start_pos := target_origin
+	if interactor is Node2D:
+		start_pos = (interactor as Node2D).global_position
+	global_position = start_pos
+
+	# Land near the original pickup spot with a small random offset
+	var offset := Vector2(
+		randf_range(-throw_offset_radius, throw_offset_radius),
+		randf_range(-throw_offset_radius, throw_offset_radius)
+	)
+	var end_pos := target_origin + offset
+
+	# --- IMPORTANT: run tweens in PHYSICS time so capture FPS doesn't affect them ---
+	var t := create_tween()
+	t.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	t.set_trans(Tween.TRANS_QUAD)
+	t.set_ease(Tween.EASE_OUT)
+	t.tween_property(self, "global_position", end_pos, throw_duration)
+
+	if _sprite != null:
+		_sprite.scale = Vector2.ONE
+		var t2 := create_tween()
+		t2.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+		t2.tween_property(_sprite, "scale", Vector2.ONE * throw_scale_pop, throw_duration * 0.5)
+		t2.tween_property(_sprite, "scale", Vector2.ONE, throw_duration * 0.5)
+
+	t.finished.connect(func():
+		monitorable = true
+		_is_animating_throw = false
+	)
 
 
 func _resolve_equipment(entity: Node) -> Equipment:
-	# If your interactor passes the Entity root, this succeeds
-	if entity is Entity:
-		var eq := (entity as Entity).find_component(&"Equipment") as Equipment
-		if eq != null:
-			return eq
-
-	# Otherwise, just search downward from whatever node we got
+	# Robust: find Equipment anywhere under the node we received
 	return _find_equipment_recursive(entity)
 
 
@@ -160,7 +184,9 @@ func _update_pickup_visual() -> void:
 	var tex: Texture2D = null
 
 	if _item and _item.has_method("get_pickup_icon"):
-		tex = _item.call("get_pickup_icon")
+		var res: Variant = _item.call("get_pickup_icon")
+		if res is Texture2D:
+			tex = res as Texture2D
 
 	if tex == null and _item != null:
 		var s := _find_first_sprite(_item)
