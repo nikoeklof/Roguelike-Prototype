@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://c368frngd0f6p"]
+
+[ext_resource type="PackedScene" uid="uid://b0eb7ryv2foaw" path="res://Scenes/Templates/Entities/Player_Entity_Template.tscn" id="1_7cxed"]
+[ext_resource type="PackedScene" uid="uid://bwksy64ngqgra" path="res://Scenes/WorldGen/floor_spawner.tscn" id="2_5cmkh"]
+
+[node name="Node2D" type="Node2D" unique_id=1786143231]
+
+[node name="FloorSpawner" parent="." unique_id=1367362986 instance=ExtResource("2_5cmkh")]
+seed = 44469
+main_len = 6
+branch_density = 1.0
+branch_len_ratio = 0.5
+clump_penalty = 4.0
+straight_bias = 0.5
+player_path = NodePath("../Player")
+
+[node name="Player" parent="." unique_id=423000657 instance=ExtResource("1_7cxed")]

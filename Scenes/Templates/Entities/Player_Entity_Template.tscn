@@ -338,13 +338,13 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_d71ut"]
-size = Vector2(44, 32)
+size = Vector2(11, 8)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tm314"]
-size = Vector2(44, 32)
+size = Vector2(11, 8)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_d71ut"]
-radius = 72.0
+radius = 25.0
 
 [node name="Player" type="CharacterBody2D" unique_id=423000657]
 collision_layer = 2
@@ -377,7 +377,7 @@ debug_print_facing = true
 [node name="AimRay" type="RayCast2D" parent="FacingPointer" unique_id=541430737]
 collide_with_areas = true
 script = ExtResource("9_d71ut")
-ray_length = 200.0
+ray_length = 125.0
 
 [node name="WeaponSocket" type="Node2D" parent="FacingPointer/AimRay" unique_id=914614911]
 
@@ -407,12 +407,12 @@ visual_root_path = NodePath("../Visual")
 socket_path = NodePath("../FacingPointer/AimRay/WeaponSocket")
 
 [node name="Visual" type="Node2D" parent="." unique_id=161710324]
+position = Vector2(0, -5)
+scale = Vector2(2, 2)
 
 [node name="Sprite" type="AnimatedSprite2D" parent="Visual" unique_id=448449294]
 texture_filter = 1
 material = SubResource("ShaderMaterial_4vlro")
-position = Vector2(2, -24)
-scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_7oruq")
 animation = &"walking_left"
 
@@ -420,20 +420,28 @@ animation = &"walking_left"
 root_node = NodePath("")
 
 [node name="PlayerCamera" type="Camera2D" parent="." unique_id=1757673326]
+zoom = Vector2(2, 2)
 
 [node name="StateHandler" parent="." unique_id=1266186412 instance=ExtResource("18_p0go8")]
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=555033056]
+position = Vector2(0, -5)
+scale = Vector2(2, 2)
 collision_layer = 16
 collision_mask = 8
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=779696000]
+position = Vector2(-0.5, 6)
 shape = SubResource("RectangleShape2D_d71ut")
 
 [node name="WorldCollider" type="CollisionShape2D" parent="." unique_id=464013779]
+position = Vector2(-1, 7)
+scale = Vector2(2, 2)
 shape = SubResource("RectangleShape2D_tm314")
 
 [node name="InteractionArea" type="Area2D" parent="." unique_id=514886212]
+position = Vector2(-1, -1)
+scale = Vector2(2, 2)
 collision_layer = 0
 script = ExtResource("20_tm314")
 
