@@ -385,6 +385,7 @@ ray_length = 125.0
 script = ExtResource("9_7r15b")
 
 [node name="Equipment" parent="." unique_id=526877775 instance=ExtResource("11_5nqxw")]
+unique_name_in_owner = true
 
 [node name="Mover" type="Node" parent="." unique_id=102850989]
 script = ExtResource("10_ovmla")
@@ -420,7 +421,6 @@ animation = &"walking_left"
 root_node = NodePath("")
 
 [node name="PlayerCamera" type="Camera2D" parent="." unique_id=1757673326]
-zoom = Vector2(2, 2)
 
 [node name="StateHandler" parent="." unique_id=1266186412 instance=ExtResource("18_p0go8")]
 

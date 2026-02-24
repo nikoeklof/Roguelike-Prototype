@@ -2,14 +2,13 @@
 
 [ext_resource type="Script" uid="uid://dn7esc7hm51if" path="res://Scripts/Components/Equipment/Items/Weapons/PlaceholderRangedWeapon.gd" id="1_sr73k"]
 [ext_resource type="Texture2D" uid="uid://d1lfmisuu8trc" path="res://Art/Items/Weapons/wep_ranged_a.png" id="2_h65d3"]
+[ext_resource type="PackedScene" uid="uid://cosg8jgc5pgfy" path="res://Scenes/Templates/EquipmentItems/Projectile_template.tscn" id="2_pi4m2"]
 
 [node name="Ranged_TestPistol" type="Node2D" unique_id=1141442304]
 script = ExtResource("1_sr73k")
 label = "Test Pistol"
-projectile_speed = 800.0
-knockback = 40.0
-spread_degrees = 4.0
 cooldown_sec = 0.18
+projectile_scene = ExtResource("2_pi4m2")
 allow_move_during_attack = true
 pickup_slot_kind = 1
 

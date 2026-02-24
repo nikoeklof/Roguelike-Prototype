@@ -3,6 +3,9 @@ class_name PlaceholderMeleeWeapon
 
 @export var label: String = "PlaceholderMelee"
 
+# Legacy placeholder tuning
+@export_range(0.0, 10.0, 0.01) var cooldown_sec: float = 0.25
+
 # Damage + timings
 @export var damage: float = 1.0
 @export var windup_time: float = 0.0
@@ -30,7 +33,7 @@ func try_attack(dir: Vector2, owner_entity: Node) -> bool:
 	if not can_attack():
 		return false
 
-	_commit_cooldown()
+	commit_cooldown(cooldown_sec)
 
 	var d := dir
 	if d.length() < 0.001:
@@ -67,12 +70,9 @@ func _spawn_hitbox(owner_entity: Node, dir: Vector2) -> void:
 	_hitbox.monitoring = true
 	_hitbox.monitorable = false
 
-	# Keep your existing layers/masks if you already have Hurtbox/Hitbox conventions.
-	# If you don't, this still works as a generic overlap detector.
 	_hitbox.collision_layer = 0
 	_hitbox.collision_mask = 0x7FFFFFFF
 
-	# Local attachment so it moves with owner
 	_hitbox.position = Vector2.ZERO
 	_hitbox.rotation = dir.angle()
 
@@ -104,7 +104,6 @@ func _try_damage(owner_entity: Node, other: Node, dir: Vector2) -> void:
 	if other == null or owner_entity == null:
 		return
 
-	# Don’t hit self or children
 	if other == owner_entity or owner_entity.is_ancestor_of(other):
 		return
 
@@ -127,7 +126,6 @@ func _try_damage(owner_entity: Node, other: Node, dir: Vector2) -> void:
 	if hp == null:
 		return
 
-	# If your Health.take_damage returns void in your project, this still works.
 	if hp.has_method(&"take_damage"):
 		hp.call(&"take_damage", damage, owner_entity)
 	else:
@@ -138,19 +136,13 @@ func _try_damage(owner_entity: Node, other: Node, dir: Vector2) -> void:
 		cb.velocity += dir.normalized() * knockback
 
 
-# -------------------------
-# Helpers (self-contained)
-# -------------------------
-
 func _resolve_victim_root(n: Node) -> Node:
 	var cur: Node = n
 	for _i in 6:
 		if cur == null:
 			break
-		# Prefer Entity if you use it
 		if cur is Entity:
 			return cur
-		# Or if it owns health, treat it as the victim root
 		if _find_health(cur) != null:
 			return cur
 		cur = cur.get_parent()
@@ -161,18 +153,15 @@ func _find_health(root: Node) -> Health:
 	if root == null:
 		return null
 
-	# Entity component lookup if available
 	if root is Entity:
 		var h := (root as Entity).find_component(&"Health") as Health
 		if h != null:
 			return h
 
-	# Common direct child name
 	var direct := root.get_node_or_null("Health")
 	if direct is Health:
 		return direct as Health
 
-	# Otherwise, search shallowly
 	for c in root.get_children():
 		if c is Health:
 			return c as Health
@@ -201,12 +190,10 @@ func _find_faction(root: Node) -> Faction:
 
 
 func _can_damage(attacker_root: Node, victim_root: Node) -> bool:
-	# If no faction system, allow damage.
 	var attacker_f := _find_faction(attacker_root)
 	if attacker_f == null:
 		return true
 
-	# Your Faction component likely implements can_damage(target)
 	if attacker_f.has_method(&"can_damage"):
 		return bool(attacker_f.call(&"can_damage", victim_root))
 

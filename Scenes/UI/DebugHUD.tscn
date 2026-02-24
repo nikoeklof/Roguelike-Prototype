@@ -1,0 +1,74 @@
+[gd_scene format=3 uid="uid://wj0aehlmsmj3"]
+
+[ext_resource type="Script" uid="uid://c5jqp4hcymtsn" path="res://Scripts/UI/DebugHUD.gd" id="1_rx5bx"]
+[ext_resource type="Script" uid="uid://dayo3tfgagwfa" path="res://Scripts/UI/MinimapControl.gd" id="2_vu0vq"]
+
+[node name="DebugHud" type="CanvasLayer" unique_id=1698329193]
+follow_viewport_enabled = true
+script = ExtResource("1_rx5bx")
+
+[node name="Root" type="Control" parent="." unique_id=1974708067]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -312.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="HBox" type="HBoxContainer" parent="Root" unique_id=925669853]
+layout_mode = 1
+offset_right = 604.0
+offset_bottom = 334.0
+
+[node name="MapPanel" type="PanelContainer" parent="Root/HBox" unique_id=1027720584]
+clip_contents = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Root/HBox/MapPanel" unique_id=221748097]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Root/HBox/MapPanel/VBoxContainer" unique_id=117524172]
+layout_mode = 2
+text = "MAP"
+
+[node name="SeedLabel" type="Label" parent="Root/HBox/MapPanel/VBoxContainer" unique_id=160445333]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+text = "Seed:"
+autowrap_mode = 2
+
+[node name="Minimap" type="Control" parent="Root/HBox/MapPanel/VBoxContainer" unique_id=1029199898]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("2_vu0vq")
+metadata/_custom_type_script = "uid://dayo3tfgagwfa"
+
+[node name="InventoryPanel" type="PanelContainer" parent="Root/HBox" unique_id=1778764822]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Root/HBox/InventoryPanel" unique_id=1325696456]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Root/HBox/InventoryPanel/VBoxContainer" unique_id=1788852791]
+layout_mode = 2
+text = "INVENTORY"
+
+[node name="EquipList" type="ItemList" parent="Root/HBox/InventoryPanel/VBoxContainer" unique_id=1593128673]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Details" type="RichTextLabel" parent="Root/HBox/InventoryPanel/VBoxContainer" unique_id=1916105400]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3

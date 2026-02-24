@@ -7,15 +7,36 @@ class_name EquipmentSwapPickup
 @export var hide_item_node_in_pickup: bool = true
 @export var block_while_attacking: bool = true
 
+# --- deterministic item instance rolling (new system) ---
+@export var deterministic_roll_enabled: bool = true
+@export_range(0, 8, 1) var roll_attribute_count: int = 0
+@export var roll_seed_salt: int = 0
+
 # --- throw animation tuning ---
 @export var throw_enabled: bool = true
 @export var throw_duration: float = 0.18
 @export var throw_offset_radius: float = 22.0
 @export var throw_scale_pop: float = 1.12
 
+# --- tooltip tuning ---
+@export var tooltip_enabled: bool = true
+@export var tooltip_local_offset: Vector2 = Vector2(-60.0, -64.0)
+@export_range(120.0, 600.0, 10.0) var tooltip_width: float = 220.0
+
+@export_range(8, 48, 1) var tooltip_font_size: int = 14
+@export_range(8, 64, 1) var tooltip_title_font_size: int = 16 # (reserved for later formatter upgrade)
+@export_range(0, 32, 1) var tooltip_padding: int = 8
+@export var tooltip_use_background: bool = true
+
 var _item: Node = null
 var _sprite: Sprite2D = null
 var _is_animating_throw: bool = false
+var _did_initial_roll: bool = false
+
+# UI state
+var _in_pickup_radius: bool = false
+var _tooltip_panel: PanelContainer = null
+var _tooltip_text: RichTextLabel = null
 
 
 func _ready() -> void:
@@ -25,8 +46,17 @@ func _ready() -> void:
 
 	_sprite = _find_first_sprite(self)
 
+	if tooltip_enabled:
+		_build_tooltip()
+
 	if item_scene != null and _item == null:
 		set_item(item_scene.instantiate())
+		_try_roll_initial_instance()
+		_refresh_tooltip()
+
+
+func get_item() -> Node:
+	return _item
 
 
 func set_item(item: Node) -> void:
@@ -46,6 +76,35 @@ func set_item(item: Node) -> void:
 			_hide_visuals_recursive(_item)
 
 	_update_pickup_visual()
+	_refresh_tooltip()
+
+
+func _try_roll_initial_instance() -> void:
+	# Only roll once per pickup node, and only for initial spawned item_scene instance.
+	if _did_initial_roll:
+		return
+	_did_initial_roll = true
+
+	if not deterministic_roll_enabled:
+		return
+	if _item == null or not is_instance_valid(_item):
+		return
+
+	ItemPickupRoller.apply_roll_if_possible(self, _item, roll_attribute_count, roll_seed_salt)
+	_refresh_tooltip()
+
+
+# ------------------------------------------------------------
+# Interactor proximity callbacks (called by Interactor.gd)
+# ------------------------------------------------------------
+func on_interactor_entered(_interactor_owner: Node) -> void:
+	_in_pickup_radius = true
+	_refresh_tooltip()
+
+
+func on_interactor_exited(_interactor_owner: Node) -> void:
+	_in_pickup_radius = false
+	_refresh_tooltip()
 
 
 func can_interact(interactor: Node) -> bool:
@@ -97,7 +156,7 @@ func interact(interactor: Node) -> void:
 		queue_free()
 		return
 
-	# Pickup becomes dropped item
+	# Pickup becomes dropped item (IMPORTANT: preserve its instance; do not reroll)
 	set_item(old_item)
 
 	# Animate the dropped pickup flying out from the character back to the pickup origin
@@ -111,20 +170,17 @@ func _play_throw_from_to(interactor: Node, target_origin: Vector2) -> void:
 	_is_animating_throw = true
 	monitorable = false # prevent re-interacting mid-flight
 
-	# Start at the character position (best effort)
 	var start_pos := target_origin
 	if interactor is Node2D:
 		start_pos = (interactor as Node2D).global_position
 	global_position = start_pos
 
-	# Land near the original pickup spot with a small random offset
 	var offset := Vector2(
 		randf_range(-throw_offset_radius, throw_offset_radius),
 		randf_range(-throw_offset_radius, throw_offset_radius)
 	)
 	var end_pos := target_origin + offset
 
-	# --- IMPORTANT: run tweens in PHYSICS time so capture FPS doesn't affect them ---
 	var t := create_tween()
 	t.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	t.set_trans(Tween.TRANS_QUAD)
@@ -144,8 +200,74 @@ func _play_throw_from_to(interactor: Node, target_origin: Vector2) -> void:
 	)
 
 
+# ------------------------------------------------------------
+# Tooltip UI
+# ------------------------------------------------------------
+func _build_tooltip() -> void:
+	_tooltip_panel = PanelContainer.new()
+	_tooltip_panel.name = "ItemTooltip"
+	_tooltip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tooltip_panel.position = tooltip_local_offset
+	_tooltip_panel.custom_minimum_size = Vector2(tooltip_width, 0.0)
+
+	# Background styling
+	if not tooltip_use_background:
+		var empty_style := StyleBoxEmpty.new()
+		_tooltip_panel.add_theme_stylebox_override("panel", empty_style)
+	else:
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0, 0, 0, 0.75)
+		style.corner_radius_top_left = 6
+		style.corner_radius_top_right = 6
+		style.corner_radius_bottom_left = 6
+		style.corner_radius_bottom_right = 6
+		style.content_margin_left = tooltip_padding
+		style.content_margin_right = tooltip_padding
+		style.content_margin_top = tooltip_padding
+		style.content_margin_bottom = tooltip_padding
+		_tooltip_panel.add_theme_stylebox_override("panel", style)
+
+	_tooltip_text = RichTextLabel.new()
+	_tooltip_text.name = "Text"
+	_tooltip_text.fit_content = true
+	_tooltip_text.bbcode_enabled = true
+	_tooltip_text.scroll_active = false
+	_tooltip_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tooltip_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+
+	# Font override
+	var font := ThemeDB.fallback_font
+	if font != null:
+		_tooltip_text.add_theme_font_override("normal_font", font)
+		_tooltip_text.add_theme_font_size_override("normal_font_size", tooltip_font_size)
+
+	_tooltip_panel.add_child(_tooltip_text)
+	add_child(_tooltip_panel)
+
+
+func _refresh_tooltip() -> void:
+	if not tooltip_enabled:
+		return
+	if _tooltip_panel == null or _tooltip_text == null:
+		return
+
+	if _item == null or not is_instance_valid(_item):
+		_tooltip_panel.visible = false
+		return
+
+	_tooltip_panel.visible = true
+	_tooltip_text.clear()
+
+	if _in_pickup_radius:
+		_tooltip_text.append_text(ItemTooltipFormatter.format_expanded(_item))
+	else:
+		_tooltip_text.append_text(ItemTooltipFormatter.format_compact(_item))
+
+
+# ------------------------------------------------------------
+# Existing helpers
+# ------------------------------------------------------------
 func _resolve_equipment(entity: Node) -> Equipment:
-	# Robust: find Equipment anywhere under the node we received
 	return _find_equipment_recursive(entity)
 
 
@@ -161,7 +283,6 @@ func _find_equipment_recursive(root: Node) -> Equipment:
 		var found := _find_equipment_recursive(c)
 		if found != null:
 			return found
-
 	return null
 
 
