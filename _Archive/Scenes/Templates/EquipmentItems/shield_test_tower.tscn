@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://7g4e08mi54jk"]
+
+[ext_resource type="Script" uid="uid://0ferei7cg6yd" path="res://Scripts/Components/Equipment/Items/Shields/TestShield.gd" id="1_isg2k"]
+[ext_resource type="Texture2D" uid="uid://df8hcb1ytjmd6" path="res://Art/Items/Weapons/wep_shield_b.png" id="2_aq2yi"]
+
+[node name="Shield_TestTower" type="Node2D" unique_id=1537972764]
+script = ExtResource("1_isg2k")
+label = "Test Buckler"
+bonus_max_hp = 5.0
+move_speed_mult = 0.85
+damage_taken_mult = 0.85
+flat_damage_reduction = 0.5
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1661798455]
+texture = ExtResource("2_aq2yi")

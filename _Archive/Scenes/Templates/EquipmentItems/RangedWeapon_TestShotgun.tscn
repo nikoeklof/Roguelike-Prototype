@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://b1jaqla1140rq"]
+
+[ext_resource type="Script" uid="uid://dn7esc7hm51if" path="res://Scripts/Components/Equipment/Items/Weapons/PlaceholderRangedWeapon.gd" id="1_2owwy"]
+[ext_resource type="Texture2D" uid="uid://dbr3y17ebisuy" path="res://Art/Items/Weapons/wep_ranged_b.png" id="2_y4sj8"]
+
+[node name="RangedWeapon_TestShotgun" type="Node2D" unique_id=328927431]
+script = ExtResource("1_2owwy")
+label = "Test Shotgun"
+damage = 0.8
+projectile_speed = 720.0
+projectile_lifetime = 0.9
+knockback = 25.0
+spread_degrees = 28.0
+projectiles_per_shot = 6
+pickup_slot_kind = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=951632381]
+texture = ExtResource("2_y4sj8")

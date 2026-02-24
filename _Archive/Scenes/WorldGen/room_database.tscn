@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://crl0huli6sttp"]
+
+[ext_resource type="Script" uid="uid://8fvjixunqscs" path="res://Scripts/WorldGen/RoomDatabase.gd" id="1_vkm77"]
+[ext_resource type="PackedScene" uid="uid://bgw48rrmw52wx" path="res://Scenes/Templates/World/RoomGen/RoomChunk_template.tscn" id="2_0e7hu"]
+
+[node name="RoomDatabase" type="Node" unique_id=465291409]
+script = ExtResource("1_vkm77")
+fallback_room_scene = ExtResource("2_0e7hu")

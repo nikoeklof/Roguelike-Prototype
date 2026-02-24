@@ -6,20 +6,31 @@ class_name ComponentLocator
 static func find_child_by_class(owner: Node, cls: StringName) -> Node:
 	if owner == null:
 		return null
-	for c in owner.get_children():
+	for c: Node in owner.get_children():
 		if c != null and c.is_class(cls):
 			return c
 	return null
+
 
 # Finds the first node (BFS) under `owner` matching `cls`.
 static func find_in_tree_by_class(owner: Node, cls: StringName) -> Node:
 	if owner == null:
 		return null
+
 	var q: Array[Node] = [owner]
+
 	while not q.is_empty():
-		var n := q.pop_front()
+		var v: Variant = q.pop_front()
+		var n: Node = v as Node
+		if n == null:
+			continue
+
 		if n != owner and n.is_class(cls):
 			return n
-		for ch in n.get_children():
-			q.append(ch)
+
+		for ch_v: Variant in n.get_children():
+			var ch: Node = ch_v as Node
+			if ch != null:
+				q.append(ch)
+
 	return null

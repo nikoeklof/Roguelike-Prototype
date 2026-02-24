@@ -2,6 +2,7 @@ extends Node2D
 class_name FloorSpawner
 
 signal floor_spawned(start_room: Node2D)
+signal floor_plan_generated(plan: FloorGenerator.FloorPlan)
 
 @export var room_scene: PackedScene
 @export var room_database: RoomDatabase
@@ -20,18 +21,16 @@ var runtime_seed: int = 0
 # --------------------------------------------------
 @export var main_len: int = 18
 
-# Branching derived from main_len
 @export_range(0.0, 2.0, 0.05) var branch_density: float = 0.35
 @export_range(0.0, 1.0, 0.05) var branch_len_ratio: float = 0.35
 @export_range(1, 10, 1) var branch_len_min: int = 2
 @export_range(1, 30, 1) var branch_len_max_cap: int = 8
 
-# Layout shaping
 @export_range(0.0, 10.0, 0.1) var clump_penalty: float = 3.0
 @export_range(0.0, 5.0, 0.05) var straight_bias: float = 0.9
 @export_range(0, 3, 1) var min_separation: int = 1
 
-# Debug minimap
+# Debug minimap (world space one)
 @export var draw_debug_minimap: bool = true
 @export var minimap_cell_px: int = 24
 @export var minimap_offset: Vector2 = Vector2(16, 16)
@@ -49,9 +48,12 @@ var _gen: FloorGenerator
 var _plan: FloorGenerator.FloorPlan
 var _room_instances: Dictionary = {}
 
+
 # --------------------------------------------------
 
 func _ready() -> void:
+	add_to_group("floor_spawner")
+
 	if room_scene == null and room_database == null:
 		push_error("FloorSpawner: set room_scene OR room_database.")
 		return
@@ -82,11 +84,27 @@ func _ready() -> void:
 		straight_bias,
 		min_separation
 	)
+	if _plan == null:
+		push_error("FloorSpawner: generator returned NULL plan!")
+		return
 
 	_spawn(_plan)
 	_place_player_in_start_room(_plan)
 
+	# 🔹 Emit AFTER everything is ready
+	floor_plan_generated.emit(_plan)
+	print("Generated plan:", _plan)
+	print("Coords count:", _plan.coords.size() if _plan != null else -1)
 	queue_redraw()
+
+
+# --------------------------------------------------
+# Public API (for DebugHUD)
+# --------------------------------------------------
+
+func get_floor_plan() -> FloorGenerator.FloorPlan:
+	return _plan
+
 
 # --------------------------------------------------
 
@@ -123,6 +141,7 @@ func _spawn(plan: FloorGenerator.FloorPlan) -> void:
 
 		_room_instances[coord] = inst
 
+
 # --------------------------------------------------
 
 func _apply_door_state(room: Node2D, exits_mask: int) -> void:
@@ -130,6 +149,7 @@ func _apply_door_state(room: Node2D, exits_mask: int) -> void:
 	_set_door_collider_open(room, "RoomCollision/EastWall_Door",  (exits_mask & FloorGenerator.E) != 0)
 	_set_door_collider_open(room, "RoomCollision/SouthWall_Door", (exits_mask & FloorGenerator.S) != 0)
 	_set_door_collider_open(room, "RoomCollision/WestWall_Door",  (exits_mask & FloorGenerator.W) != 0)
+
 
 func _set_door_collider_open(room: Node2D, path: String, should_be_open: bool) -> void:
 	var n: Node = room.get_node_or_null(NodePath(path))
@@ -144,6 +164,7 @@ func _set_door_collider_open(room: Node2D, path: String, should_be_open: bool) -
 		return
 
 	n.set_deferred("disabled", should_be_open)
+
 
 # --------------------------------------------------
 
@@ -170,12 +191,14 @@ func _place_player_in_start_room(plan: FloorGenerator.FloorPlan) -> void:
 	emit_signal("floor_spawned", start_room)
 	queue_redraw()
 
+
 func _find_start_coord(plan: FloorGenerator.FloorPlan) -> Vector2i:
 	for coord: Vector2i in plan.coords:
 		var rn: FloorGenerator.RoomNode = plan.rooms[coord]
 		if rn.kind == &"START":
 			return coord
 	return Vector2i.ZERO
+
 
 func _get_player_spawn_position_in_room(room: Node2D) -> Vector2:
 	var marker: Node2D = room.get_node_or_null(NodePath("Spawns/%s" % String(player_spawn_marker_name)))
@@ -184,43 +207,8 @@ func _get_player_spawn_position_in_room(room: Node2D) -> Vector2:
 
 	return room.global_position + Vector2(float(ROOM_SIZE.x) * 0.5, float(ROOM_SIZE.y) * 0.5)
 
+
 # --------------------------------------------------
 
 func _room_pick_seed(floor_seed: int, coord: Vector2i, exits_mask: int, kind: StringName) -> int:
 	return hash("%d|%d|%d|%d|%s" % [floor_seed, coord.x, coord.y, exits_mask, String(kind)])
-
-# --------------------------------------------------
-# Debug minimap
-# --------------------------------------------------
-
-func _camera_top_left_world() -> Vector2:
-	var cam: Camera2D = get_viewport().get_camera_2d()
-	if cam == null:
-		return Vector2.ZERO
-
-	var zoom: Vector2 = cam.zoom
-	if zoom.x == 0.0: zoom.x = 1.0
-	if zoom.y == 0.0: zoom.y = 1.0
-
-	var half: Vector2 = (get_viewport_rect().size * 0.5) / zoom
-	return cam.global_position - half
-
-func _draw() -> void:
-	if not draw_debug_minimap or _plan == null:
-		return
-
-	var origin: Vector2 = _camera_top_left_world() + minimap_offset
-
-	for c: Vector2i in _plan.coords:
-		var n: FloorGenerator.RoomNode = _plan.rooms[c]
-		var p: Vector2 = origin + Vector2(c.x, c.y) * float(minimap_cell_px)
-		var rect := Rect2(p, Vector2.ONE * float(minimap_cell_px))
-
-		var col: Color = Color(0.85, 0.85, 0.85)
-		if n.kind == &"START":
-			col = Color.GREEN
-		elif n.kind == &"BOSS":
-			col = Color.RED
-
-		draw_rect(rect, col, true)
-		draw_rect(rect, Color.BLACK, false, 2.0)

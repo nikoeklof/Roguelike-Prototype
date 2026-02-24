@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://b40oan84uh2up"]
+
+[ext_resource type="Script" uid="uid://bi8t3q08r6d27" path="res://Scripts/Components/Equipment/Items/Shield.gd" id="1_00dj8"]
+
+[node name="Shield" type="Node" unique_id=356697995]
+script = ExtResource("1_00dj8")
+
+[node name="Visual" type="Node2D" parent="." unique_id=59976309]
+
+[node name="Sprite2D" type="Sprite2D" parent="Visual" unique_id=1639073082]

@@ -2,10 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://b0eb7ryv2foaw" path="res://Scenes/Templates/Entities/Player_Entity_Template.tscn" id="1_03ses"]
 [ext_resource type="PackedScene" uid="uid://dfwht10plwohx" path="res://Scenes/Templates/World/GroundItemPickup.tscn" id="2_cve23"]
-[ext_resource type="PackedScene" uid="uid://7g4e08mi54jk" path="res://Scenes/Templates/EquipmentItems/shield_test_tower.tscn" id="2_ppsvi"]
-[ext_resource type="PackedScene" uid="uid://x8af1856mm26" path="res://Scenes/Templates/EquipmentItems/MeleeWeapon_TestHammer.tscn" id="5_4h0rj"]
-[ext_resource type="PackedScene" uid="uid://b1jaqla1140rq" path="res://Scenes/Templates/EquipmentItems/RangedWeapon_TestShotgun.tscn" id="7_ithr2"]
-[ext_resource type="PackedScene" uid="uid://bbdm1sehe51l3" path="res://Scenes/Templates/EquipmentItems/Spell_TestFrostball.tscn" id="9_lvjt1"]
+[ext_resource type="PackedScene" uid="uid://dthhydfmrsuhn" path="res://Scenes/Items/Weapons/WPN_TestSword.tscn" id="3_7sioq"]
+[ext_resource type="PackedScene" uid="uid://wj0aehlmsmj3" path="res://Scenes/UI/DebugHUD.tscn" id="3_cve23"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
 size = Vector2(1169, 20)
@@ -66,23 +64,12 @@ position = Vector2(128, 40)
 initial_faction = 0
 
 [node name="GroundItemPickup" parent="." unique_id=635862218 instance=ExtResource("2_cve23")]
-position = Vector2(488, -168)
-item_scene = ExtResource("5_4h0rj")
+position = Vector2(128, -56)
+item_scene = ExtResource("3_7sioq")
+block_while_attacking = false
 
-[node name="GroundItemPickup2" parent="." unique_id=1289264530 instance=ExtResource("2_cve23")]
-position = Vector2(168, -168)
-slot_kind = 1
-item_scene = ExtResource("7_ithr2")
-slot_override = 1
-
-[node name="GroundItemPickup3" parent="." unique_id=636444247 instance=ExtResource("2_cve23")]
-position = Vector2(280, -168)
-slot_kind = 2
-item_scene = ExtResource("9_lvjt1")
-slot_override = 2
-
-[node name="GroundItemPickup4" parent="." unique_id=549000379 instance=ExtResource("2_cve23")]
-position = Vector2(416, -168)
-slot_kind = 3
-item_scene = ExtResource("2_ppsvi")
-slot_override = 3
+[node name="DebugHud" parent="." unique_id=1698329193 instance=ExtResource("3_cve23")]
+scale = Vector2(0.8, 0.8)
+transform = Transform2D(0.8, 0, 0, 0.8, 0, 0)
+follow_viewport_enabled = false
+player_root_path = NodePath("../Player")

@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://cd8g7jkyp7sx7"]
+
+[ext_resource type="Script" uid="uid://ch1c15j4brwlw" path="res://Scripts/Components/Equipment/Items/RangedWeapon.gd" id="1_l48yt"]
+
+[node name="RangedWeapon" type="Node2D" unique_id=2040042474]
+script = ExtResource("1_l48yt")
+
+[node name="Visual" type="Node2D" parent="." unique_id=1848585108]
+
+[node name="Sprite2D" type="Sprite2D" parent="Visual" unique_id=1404836961]
+
+[node name="HitboxOrigin" type="Marker2D" parent="." unique_id=1341355281]
+
+[node name="Cooldown" type="Timer" parent="." unique_id=15538344]

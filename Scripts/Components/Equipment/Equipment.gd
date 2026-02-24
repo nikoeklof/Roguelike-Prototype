@@ -39,7 +39,7 @@ func cycle_active_slot(dir: int, reason: String = "cycle") -> void:
 		idx = 0
 	idx = (idx + (1 if dir >= 0 else -1)) % order.size()
 	set_active_slot(order[idx], reason)
-	
+
 
 func set_active_slot_melee(reason: String = "slot_melee") -> void:
 	set_active_slot(Combat.AttackKind.MELEE, reason)
@@ -198,3 +198,16 @@ func _kind_name(kind: int) -> String:
 		Combat.AttackKind.SPELL: return "SPELL"
 		Combat.AttackKind.NONE: return "NONE"
 		_: return "UNKNOWN(%d)" % kind
+
+
+# ------------------------------------------------------------
+# Debug/UI helper (read-only)
+# ------------------------------------------------------------
+func get_equipped_items_debug() -> Dictionary[String, Node]:
+	# Stable, explicit view of what’s equipped. Used by DebugHUD.
+	var out: Dictionary[String, Node] = {}
+	out["MELEE"] = _get_equipped(_slot(melee_slot_path))
+	out["RANGED"] = _get_equipped(_slot(ranged_slot_path))
+	out["SPELL"] = _get_equipped(_slot(spell_slot_path))
+	out["SHIELD"] = _get_equipped(_slot(shield_slot_path))
+	return out

@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://kkdwsrbsp4n6"]
+
+[ext_resource type="TileSet" uid="uid://dev878l5nx66c" path="res://Art/Tilesets/room_gen_tileset_test.tres" id="1_7iotm"]
+
+[node name="TileMapLayer" type="TileMapLayer" unique_id=1864327464]
+tile_set = ExtResource("1_7iotm")

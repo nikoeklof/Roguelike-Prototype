@@ -92,6 +92,11 @@ func _on_entered(node: Node) -> void:
 	_candidates.append(n)
 	print("[Interactor] +candidate:", n, "count=", _candidates.size())
 
+	# NEW: notify interactable so it can show UI / highlight
+	var owner := get_parent()
+	if owner != null and n.has_method(&"on_interactor_entered"):
+		n.call(&"on_interactor_entered", owner)
+
 
 func _on_exited(node: Node) -> void:
 	print("[Interactor] exited:", node)
@@ -100,6 +105,11 @@ func _on_exited(node: Node) -> void:
 		return
 	_candidates.erase(n)
 	print("[Interactor] -candidate:", n, "count=", _candidates.size())
+
+	# NEW: notify interactable so it can hide UI / highlight
+	var owner := get_parent()
+	if owner != null and n.has_method(&"on_interactor_exited"):
+		n.call(&"on_interactor_exited", owner)
 
 
 func _resolve_interactable(node: Node) -> Node:

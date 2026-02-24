@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://bbdm1sehe51l3"]
+
+[ext_resource type="Script" uid="uid://keuvip0nprq3" path="res://Scripts/Components/Equipment/Items/Spells/PlaceholderSpell.gd" id="1_yv7kd"]
+[ext_resource type="Texture2D" uid="uid://bdh6vqvhddirp" path="res://Art/Items/Weapons/wep_spell_b.png" id="2_3y6ep"]
+
+[node name="Spell_TestFrostball" type="Node2D" unique_id=2115374820]
+script = ExtResource("1_yv7kd")
+label = "Test Frostball"
+damage = 1.0
+projectile_speed = 620.0
+projectile_lifetime = 1.4
+knockback = 20.0
+cooldown_sec = 0.35
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=201936859]
+texture = ExtResource("2_3y6ep")

@@ -12,16 +12,21 @@ func _physics_process(_delta: float) -> void:
 	if entity == null:
 		return
 
-	var control := _get_control(entity)
-	if control == null:
-		return
-
 	var fallback := Vector2.RIGHT
 	var fp := entity.get_node_or_null("FacingPointer") as FacingPointer
 	if fp != null and fp.facing_vector.length() > 0.001:
 		fallback = fp.facing_vector
 
-	var dir := control.aim_dir(fallback)
+	# During manual facing (used by Attack state), we MUST follow FacingPointer.
+	# This keeps WeaponSocket/AimRay aligned with the attack direction and prevents hitbox drift.
+	var dir := fallback
+	if fp != null and fp.has_manual_override():
+		dir = fp.facing_vector
+	else:
+		var control := _get_control(entity)
+		if control != null:
+			dir = control.aim_dir(fallback)
+
 	if dir.length() < 0.001:
 		dir = fallback
 	else:

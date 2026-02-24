@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://bwksy64ngqgra"]
+
+[ext_resource type="Script" uid="uid://c3jkbqm575wlf" path="res://Scripts/WorldGen/FloorSpawner.gd" id="1_liia8"]
+[ext_resource type="Script" uid="uid://8fvjixunqscs" path="res://Scripts/WorldGen/RoomDatabase.gd" id="2_dsi2y"]
+
+[node name="FloorSpawner" type="Node2D" unique_id=1367362986 node_paths=PackedStringArray("room_database")]
+script = ExtResource("1_liia8")
+room_database = NodePath("RoomDatabase")
+
+[node name="RoomDatabase" type="Node" parent="." unique_id=1086203349]
+script = ExtResource("2_dsi2y")
+metadata/_custom_type_script = "uid://8fvjixunqscs"
