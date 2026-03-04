@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://cv0r3gb0d82xu"]
+
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_8i4ug"]
+[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="2_b3vx2"]
+
+[sub_resource type="Resource" id="Resource_b3vx2"]
+script = ExtResource("1_8i4ug")
+damage = 4.0
+cooldown_sec = 0.12
+windup_time = 0.02
+recovery_time = 0.02
+knockback = 0.3
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[resource]
+script = ExtResource("2_b3vx2")
+display_name = "SMG"
+category = 1
+base_stats = SubResource("Resource_b3vx2")
+metadata/_custom_type_script = "uid://bhof2rvqrnl7f"

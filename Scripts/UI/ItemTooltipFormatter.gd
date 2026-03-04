@@ -1,48 +1,34 @@
 extends RefCounted
 class_name ItemTooltipFormatter
 
-static func category_name_from_item_def(def: ItemDef) -> String:
-	if def == null:
-		return "Item"
-	match def.category:
-		ItemDef.Category.MELEE: return "Melee"
-		ItemDef.Category.RANGED: return "Ranged"
-		ItemDef.Category.SPELL: return "Spell"
-		ItemDef.Category.SHIELD: return "Shield"
-		_: return "Item"
-
 
 static func get_item_def_from_node(item_node: Node) -> ItemDef:
 	if item_node == null:
 		return null
-	if "item_def" in item_node:
-		var v: Variant = item_node.get("item_def")
-		if v is ItemDef:
-			return v as ItemDef
-	if item_node.has_method(&"get_item_def"):
-		var v2: Variant = item_node.call(&"get_item_def")
-		if v2 is ItemDef:
-			return v2 as ItemDef
+	if item_node is ItemNode:
+		var it: ItemNode = item_node as ItemNode
+		var inst: ItemInstance = it.get_item_instance()
+		if inst != null:
+			return inst.def
 	return null
 
 
 static func get_item_instance_from_node(item_node: Node) -> ItemInstance:
 	if item_node == null:
 		return null
-	if item_node.has_method(&"get_item_instance"):
-		var v: Variant = item_node.call(&"get_item_instance")
-		if v is ItemInstance:
-			return v as ItemInstance
+	if item_node is ItemNode:
+		return (item_node as ItemNode).get_item_instance()
 	return null
 
 
-static func get_item_display_name(item_node: Node) -> String:
-	if item_node == null:
-		return "Unknown"
-	var def := get_item_def_from_node(item_node)
-	if def != null and def.display_name != "":
-		return def.display_name
-	if "name" in item_node and str(item_node.name) != "":
+static func get_item_name_from_node(item_node: Node) -> String:
+	var def: ItemDef = get_item_def_from_node(item_node)
+	if def != null:
+		if def.display_name != "":
+			return def.display_name
+		if def.id != &"":
+			return str(def.id)
+	if item_node != null:
 		return str(item_node.name)
 	return "Item"
 
@@ -52,10 +38,10 @@ static func format_attributes(inst: ItemInstance) -> String:
 		return "None"
 
 	var names: Array[String] = []
-	for a in inst.attributes:
+	for a: ItemAttribute in inst.attributes:
 		if a == null:
 			continue
-		var n := a.display_name
+		var n: String = String(a.display_name)
 		if n == "":
 			n = str(a.id)
 		if n == "":
@@ -70,108 +56,97 @@ static func format_attributes(inst: ItemInstance) -> String:
 
 static func format_compact(item_node: Node) -> String:
 	# Always-visible tooltip when not in pickup radius:
-	# Type + rarity + attributes
-	var def := get_item_def_from_node(item_node)
-	var inst := get_item_instance_from_node(item_node)
+	# Name + rarity + attributes + category
+	var def: ItemDef = get_item_def_from_node(item_node)
+	var inst: ItemInstance = get_item_instance_from_node(item_node)
 
-	var type_name := category_name_from_item_def(def)
-	var rar := 0
+	var label: String = get_item_name_from_node(item_node)
+
 	if inst != null:
-		rar = inst.rarity()
+		label += " (⭐%d)" % inst.rarity()
+		label += "\nAttrs: %s" % format_attributes(inst)
 
-	var attrs := format_attributes(inst)
+	if def != null:
+		label += "\nType: %s" % _category_name(def.category)
 
-	var title := "%s (Rarity %d)" % [type_name, rar]
-	return "[b]%s[/b]\n%s" % [title, attrs]
+	return label
 
 
 static func format_expanded(item_node: Node) -> String:
-	# In pickup radius: type + rarity + attributes + base stats (computed)
-	var def := get_item_def_from_node(item_node)
-	var inst := get_item_instance_from_node(item_node)
+	# Expanded tooltip when in pickup radius:
+	# Name + type + rarity + stats + attributes
+	var def: ItemDef = get_item_def_from_node(item_node)
+	var inst: ItemInstance = get_item_instance_from_node(item_node)
 
-	var type_name := category_name_from_item_def(def)
-	var rar := 0
+	var out: String = ""
+	out += get_item_name_from_node(item_node)
+
+	if def != null:
+		out += "  [%s]" % _category_name(def.category)
+
 	if inst != null:
-		rar = inst.rarity()
+		out += "  (⭐%d)" % inst.rarity()
 
-	var name := get_item_display_name(item_node)
-	var attrs := format_attributes(inst)
+	out += "\n"
 
-	var out := "[b]%s[/b]\n%s (Rarity %d)\n\n[b]Attributes[/b]\n%s\n" % [
-		name, type_name, rar, attrs
-	]
+	# Stats block: we *can* compute without CombatContext, but your compute_stats currently expects it.
+	# So we show base stats safely; if you later want context-aware numbers, pass context in.
+	if def != null:
+		var base: ItemStats = def.get_base_stats_safe()
+		out += _format_stats_block(base)
 
-	if inst == null:
-		out += "\n[i]No ItemInstance found.[/i]"
-		return out
+	if inst != null:
+		out += "\nAttrs: %s" % format_attributes(inst)
 
-	# Compute stats without an owner (pure numbers for UI/debug)
-	var ctx := CombatContext.new()
-	ctx.owner = null
-	ctx.aim_dir = Vector2.RIGHT
-	ctx.item = item_node
-	ctx.item_instance = inst
-
-	var s := inst.compute_stats(ctx)
-
-	out += "\n[b]Stats[/b]\n"
-	out += _format_stats_for_category(def, s)
+	out += "\n[Press E to swap]"
 	return out
 
 
-static func _format_stats_for_category(def: ItemDef, s: ItemStats) -> String:
-	if s == null:
-		return "None"
+static func _format_stats_block(stats: ItemStats) -> String:
+	if stats == null:
+		return "Stats: (none)\n"
 
 	var lines: Array[String] = []
+	# Keep this conservative: only show fields that are meaningful in your ItemStats.
+	# If you add/remove fields later, this won't break compilation.
+	if not is_zero_approx(stats.damage):
+		lines.append("Damage: %s" % _fmt_float(stats.damage))
+	if not is_zero_approx(stats.cooldown_sec):
+		lines.append("Cooldown: %ss" % _fmt_float(stats.cooldown_sec))
+	if not is_zero_approx(stats.windup_time):
+		lines.append("Windup: %ss" % _fmt_float(stats.windup_time))
+	if not is_zero_approx(stats.recovery_time):
+		lines.append("Recovery: %ss" % _fmt_float(stats.recovery_time))
 
-	var cat := ItemDef.Category.MELEE
-	if def != null:
-		cat = def.category
+	# Int-like stats
+	if int(stats.projectile_count) != 0:
+		lines.append("Projectiles: %d" % int(stats.projectile_count))
+	if int(stats.pierce) != 0:
+		lines.append("Pierce: %d" % int(stats.pierce))
 
-	match cat:
-		ItemDef.Category.MELEE:
-			lines.append("Damage: %s" % _f(s.damage))
-			lines.append("Cooldown: %ss (%s atk/s)" % [_f(s.cooldown_sec), _attack_speed(s.cooldown_sec)])
-			if s.windup_time > 0.0: lines.append("Windup: %ss" % _f(s.windup_time))
-			if s.recovery_time > 0.0: lines.append("Recovery: %ss" % _f(s.recovery_time))
-			if s.active_time > 0.0: lines.append("Active: %ss" % _f(s.active_time))
-			if s.knockback > 0.0: lines.append("Knockback: %s" % _f(s.knockback))
-
-		ItemDef.Category.RANGED:
-			lines.append("Damage: %s" % _f(s.damage))
-			lines.append("Cooldown: %ss (%s shots/s)" % [_f(s.cooldown_sec), _attack_speed(s.cooldown_sec)])
-			if s.windup_time > 0.0: lines.append("Windup: %ss" % _f(s.windup_time))
-
-		ItemDef.Category.SPELL:
-			lines.append("Power: %s" % _f(s.damage))
-			lines.append("Cooldown: %ss" % _f(s.cooldown_sec))
-			if s.windup_time > 0.0: lines.append("Cast Time: %ss" % _f(s.windup_time))
-
-		ItemDef.Category.SHIELD:
-			if s.bonus_max_hp != 0.0: lines.append("Max HP: %+s" % _f(s.bonus_max_hp))
-			if s.heal_on_equip != 0.0: lines.append("Heal on Equip: %+s" % _f(s.heal_on_equip))
-			if not is_equal_approx(s.move_speed_mult, 1.0): lines.append("Move Speed: x%s" % _f(s.move_speed_mult))
-			if not is_equal_approx(s.damage_taken_mult, 1.0): lines.append("Damage Taken: x%s" % _f(s.damage_taken_mult))
-			if s.flat_damage_reduction != 0.0: lines.append("Flat DR: %+s" % _f(s.flat_damage_reduction))
-
-		_:
-			lines.append("Damage: %s" % _f(s.damage))
-			lines.append("Cooldown: %ss" % _f(s.cooldown_sec))
+	if not is_zero_approx(stats.knockback):
+		lines.append("Knockback: %s" % _fmt_float(stats.knockback))
 
 	if lines.is_empty():
-		return "None"
+		return "Stats: (base)\n"
 
-	return "\n".join(lines)
-
-
-static func _attack_speed(cooldown_sec: float) -> String:
-	var cd := maxf(0.001, cooldown_sec)
-	var aps := 1.0 / cd
-	return _f(aps)
+	return "Stats:\n- " + "\n- ".join(lines) + "\n"
 
 
-static func _f(v: float) -> String:
-	# Nice compact float for UI
-	return String.num(v, 2).rstrip("0").rstrip(".")
+static func _fmt_float(v: float) -> String:
+	# Small, stable formatting (no Variant inference).
+	return ("%0.2f" % v).rstrip("0").rstrip(".")
+
+
+static func _category_name(cat: int) -> String:
+	match cat:
+		ItemDef.Category.MELEE:
+			return "Melee"
+		ItemDef.Category.RANGED:
+			return "Ranged"
+		ItemDef.Category.SPELL:
+			return "Spell"
+		ItemDef.Category.SHIELD:
+			return "Shield"
+		_:
+			return "Item"

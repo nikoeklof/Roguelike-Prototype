@@ -27,7 +27,7 @@ movie_writer/movie_file="E:/Godot_inial_soot/Showcase movies/inventory_item_swap
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/GitGodot/plugin.cfg")
+enabled=PackedStringArray("res://addons/GitGodot/plugin.cfg", "res://addons/item_tools/plugin.cfg")
 
 [global_group]
 

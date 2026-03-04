@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="HitscanModeAttribute" format=3 uid="uid://bj74i5p507wrc"]
+
+[ext_resource type="Script" uid="uid://bmf0mseupkx2g" path="res://Scripts/Items/Attributes/Ranged/HitscanAttribute.gd" id="1_hvjah"]
+
+[resource]
+script = ExtResource("1_hvjah")
+display_name = "Hitscan"
+editor_description = "Makes the shots hitscan"
+metadata/_custom_type_script = "uid://bt2f52k5ydybm"

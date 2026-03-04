@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://dsw6lbih5c75m"]
+
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_o0fqu"]
+[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="2_bqh06"]
+
+[sub_resource type="Resource" id="Resource_bqh06"]
+script = ExtResource("1_o0fqu")
+damage = 10.0
+cooldown_sec = 0.6
+windup_time = 0.1
+recovery_time = 0.1
+knockback = 1.0
+hitbox_offset = Vector2(0.6, 0)
+hitbox_size = Vector2(1.2, 1)
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[resource]
+script = ExtResource("2_bqh06")
+display_name = "Sword"
+base_stats = SubResource("Resource_bqh06")
+metadata/_custom_type_script = "uid://bhof2rvqrnl7f"

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://c1pus5kyxtei2"]
+
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_2wqdy"]
+[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="2_adgl4"]
+
+[sub_resource type="Resource" id="Resource_adgl4"]
+script = ExtResource("1_2wqdy")
+damage = 5.0
+cooldown_sec = 0.9
+windup_time = 0.1
+recovery_time = 0.15
+projectile_count = 5
+knockback = 1.5
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[resource]
+script = ExtResource("2_adgl4")
+display_name = "Shotgun"
+category = 1
+base_stats = SubResource("Resource_adgl4")
+metadata/_custom_type_script = "uid://bhof2rvqrnl7f"

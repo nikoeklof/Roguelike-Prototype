@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://bovg38x0nqxmj"]
+
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_dndog"]
+[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="2_lwg0m"]
+
+[sub_resource type="Resource" id="Resource_lwg0m"]
+script = ExtResource("1_dndog")
+damage = 8.0
+cooldown_sec = 0.45
+windup_time = 0.05
+recovery_time = 0.05
+knockback = 0.8
+hitbox_size = Vector2(1, 1)
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[resource]
+script = ExtResource("2_lwg0m")
+display_name = "Pistol"
+category = 1
+base_stats = SubResource("Resource_lwg0m")
+metadata/_custom_type_script = "uid://bhof2rvqrnl7f"

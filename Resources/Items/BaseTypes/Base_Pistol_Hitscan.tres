@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://dnadu57i8svlx"]
+
+[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="1_e6wgd"]
+[ext_resource type="Script" uid="uid://cmuxtevt4ki8e" path="res://Scripts/Items/Attributes/Ranged/ExtraProjectilesAttribute.gd" id="2_buf5t"]
+[ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="2_g7vm0"]
+[ext_resource type="Script" uid="uid://dwix0u3btcnae" path="res://Scripts/Items/Attributes/Ranged/PenetrationAttribute.gd" id="3_ntq45"]
+[ext_resource type="Script" uid="uid://xexiflbe5mdw" path="res://Scripts/Items/Attributes/BonusDamageOnHitAttribute.gd" id="4_3bgl3"]
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="5_pal4r"]
+[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="6_d7jbp"]
+
+[sub_resource type="Resource" id="Resource_v6ynl"]
+script = ExtResource("2_buf5t")
+display_name = "Extra projectiles"
+metadata/_custom_type_script = "uid://cmuxtevt4ki8e"
+
+[sub_resource type="Resource" id="Resource_glnbe"]
+script = ExtResource("3_ntq45")
+display_name = "Penetration"
+metadata/_custom_type_script = "uid://dwix0u3btcnae"
+
+[sub_resource type="Resource" id="Resource_ppqpy"]
+script = ExtResource("4_3bgl3")
+display_name = "Bonus damage"
+metadata/_custom_type_script = "uid://xexiflbe5mdw"
+
+[sub_resource type="Resource" id="Resource_tq7j2"]
+script = ExtResource("5_pal4r")
+damage = 1.0
+cooldown_sec = 0.2
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[sub_resource type="Resource" id="Resource_rhuxs"]
+script = ExtResource("6_d7jbp")
+display_name = "Pistol"
+category = 1
+base_stats = SubResource("Resource_tq7j2")
+allowed_attributes = Array[ExtResource("1_e6wgd")]([SubResource("Resource_v6ynl"), SubResource("Resource_glnbe"), SubResource("Resource_ppqpy")])
+metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
+
+[resource]
+script = ExtResource("2_g7vm0")
+item_def = SubResource("Resource_rhuxs")
+max_attribute_count = 3
+metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"

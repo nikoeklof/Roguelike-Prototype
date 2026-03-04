@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="BonusDamageOnHitAttribute" format=3 uid="uid://bpbv0wdfy584y"]
+
+[ext_resource type="Script" uid="uid://xexiflbe5mdw" path="res://Scripts/Items/Attributes/BonusDamageOnHitAttribute.gd" id="1_4h567"]
+
+[resource]
+script = ExtResource("1_4h567")
+display_name = "Bonus damage on hit"
+metadata/_custom_type_script = "uid://bt2f52k5ydybm"

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="BeamModeAttribute" format=3 uid="uid://bqhodycc22vxn"]
+
+[ext_resource type="Script" uid="uid://dkcrsmxocmy6p" path="res://Scripts/Items/Attributes/Ranged/BeamModeAttribute.gd" id="1_04hkb"]
+
+[resource]
+script = ExtResource("1_04hkb")
+display_name = "Beam "
+editor_description = "Makes shots a beam that penetrates "
+metadata/_custom_type_script = "uid://bt2f52k5ydybm"

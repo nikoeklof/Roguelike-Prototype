@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ExtraProjectilesAttribute" format=3 uid="uid://crmqq77vwamy8"]
+
+[ext_resource type="Script" uid="uid://cmuxtevt4ki8e" path="res://Scripts/Items/Attributes/Ranged/ExtraProjectilesAttribute.gd" id="1_ys3mj"]
+
+[resource]
+script = ExtResource("1_ys3mj")
+display_name = "Extra shots"
+editor_description = "Increase shot count by 1"
+metadata/_custom_type_script = "uid://bt2f52k5ydybm"

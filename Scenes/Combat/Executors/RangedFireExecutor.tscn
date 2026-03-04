@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://gn75l0bj6muw"]
+
+[ext_resource type="Script" uid="uid://b2coctxch5ti" path="res://Scripts/Components/Combat/Executors/RangedFireExecutor.gd" id="1_n1nji"]
+
+[node name="RangedFireExecutor" type="Node" unique_id=373433698]
+script = ExtResource("1_n1nji")

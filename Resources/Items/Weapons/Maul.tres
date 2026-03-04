@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://uv71ihvbvfa7"]
+
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="2_8psvq"]
+[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="2_ce5db"]
+
+[sub_resource type="Resource" id="Resource_0jo7v"]
+script = ExtResource("2_8psvq")
+damage = 18.0
+cooldown_sec = 1.2
+windup_time = 0.2
+recovery_time = 0.2
+knockback = 2.5
+hitbox_offset = Vector2(0.8, 0)
+hitbox_size = Vector2(1.6, 1.2)
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[resource]
+script = ExtResource("2_ce5db")
+display_name = "Maul"
+base_stats = SubResource("Resource_0jo7v")
+metadata/_custom_type_script = "uid://bhof2rvqrnl7f"

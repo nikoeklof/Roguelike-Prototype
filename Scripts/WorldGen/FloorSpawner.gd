@@ -48,6 +48,10 @@ var _gen: FloorGenerator
 var _plan: FloorGenerator.FloorPlan
 var _room_instances: Dictionary = {}
 
+# If true, the FloorSpawner will find ItemSpawner nodes inside each room and
+# call spawn_with_run_seed(runtime_seed) deterministically.
+@export var spawn_room_items: bool = true
+
 
 # --------------------------------------------------
 
@@ -65,7 +69,9 @@ func _ready() -> void:
 	# ---- seed selection ----
 	runtime_seed = seed
 	if randomize_seed:
-		runtime_seed = int(Time.get_unix_time_from_system()) ^ Engine.get_frames_drawn()
+		var unix_time: int = int(Time.get_unix_time_from_system())
+		var frames: int = int(Engine.get_frames_drawn())
+		runtime_seed = unix_time ^ frames
 
 	if print_seed_to_console:
 		print("FLOOR SEED: ", runtime_seed)
@@ -119,7 +125,7 @@ func _spawn(plan: FloorGenerator.FloorPlan) -> void:
 
 		var ps: PackedScene = room_scene
 		if room_database != null:
-			var rng := RandomNumberGenerator.new()
+			var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 			rng.seed = _room_pick_seed(plan.seed, coord, rn.exits_mask, rn.kind)
 			ps = room_database.pick_scene(rn.exits_mask, rng)
 
@@ -139,7 +145,46 @@ func _spawn(plan: FloorGenerator.FloorPlan) -> void:
 		if apply_door_colliders:
 			_apply_door_state(inst, rn.exits_mask)
 
+		if spawn_room_items:
+			_wire_item_spawners_for_room(inst, coord)
+
 		_room_instances[coord] = inst
+
+
+func _wire_item_spawners_for_room(room: Node2D, coord: Vector2i) -> void:
+	# Find ItemSpawner nodes that are authored inside the room scene.
+	# (Room scenes can place one or more ItemSpawner nodes, e.g. under a "Spawns" node.)
+	var nodes: Array[Node] = room.find_children("", "ItemSpawner", true, false)
+	if nodes.is_empty():
+		return
+
+	var spawners: Array[ItemSpawner] = []
+	for n: Node in nodes:
+		if n is ItemSpawner:
+			spawners.append(n as ItemSpawner)
+
+	if spawners.is_empty():
+		return
+
+	# Stable ordering: by position, then by node path.
+	spawners.sort_custom(Callable(self, "_item_spawner_sort"))
+
+	for i: int in range(spawners.size()):
+		var s: ItemSpawner = spawners[i]
+		s.auto_room_coord = coord
+		s.auto_room_local_index = i
+		s.spawn_with_run_seed(runtime_seed)
+
+
+func _item_spawner_sort(a: ItemSpawner, b: ItemSpawner) -> bool:
+	var pa: Vector2 = a.global_position
+	var pb: Vector2 = b.global_position
+
+	if pa.x == pb.x:
+		if pa.y == pb.y:
+			return String(a.get_path()) < String(b.get_path())
+		return pa.y < pb.y
+	return pa.x < pb.x
 
 
 # --------------------------------------------------

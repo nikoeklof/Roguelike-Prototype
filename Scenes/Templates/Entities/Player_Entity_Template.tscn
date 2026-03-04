@@ -15,7 +15,6 @@
 [ext_resource type="Script" uid="uid://dwn0m7cfouyed" path="res://Scripts/Components/Combat/Combat.gd" id="12_qdh38"]
 [ext_resource type="Script" uid="uid://crj5c0y8pbwvf" path="res://Scripts/Animation/AnimDriver.gd" id="13_x8u2g"]
 [ext_resource type="Script" uid="uid://d38xstn1bs221" path="res://Scripts/Animation/AnimSet.gd" id="14_s8hwr"]
-[ext_resource type="Script" uid="uid://vni6q616vsch" path="res://Scripts/Components/Combat/AttackController.gd" id="15_02ocv"]
 [ext_resource type="PackedScene" uid="uid://b8s1g24kyrtsq" path="res://Scenes/StateHandler/StateHandler.tscn" id="18_p0go8"]
 [ext_resource type="Script" uid="uid://8avggln5hcfi" path="res://Scripts/Interaction/Interactor.gd" id="20_tm314"]
 [ext_resource type="Shader" uid="uid://ckaf4vkfk1rxi" path="res://Art/Shaders/HurtFlash.gdshader" id="21_yc78x"]
@@ -401,11 +400,6 @@ anim_player = NodePath("../Visual/Sprite/AnimationPlayer")
 anim_set = SubResource("Resource_rmh8v")
 facing_pointer_path = NodePath("../FacingPointer")
 velocity_source = NodePath("..")
-
-[node name="AttackController" type="Node" parent="." unique_id=1707589112]
-script = ExtResource("15_02ocv")
-visual_root_path = NodePath("../Visual")
-socket_path = NodePath("../FacingPointer/AimRay/WeaponSocket")
 
 [node name="Visual" type="Node2D" parent="." unique_id=161710324]
 position = Vector2(0, -5)

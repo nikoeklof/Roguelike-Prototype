@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://c8x6or1oclhbr"]
+
+[ext_resource type="Script" uid="uid://q455ex6d7uye" path="res://Scripts/Components/Equipment/Items/MeleeWeapon.gd" id="1_5jc2x"]
+[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="2_3gl4r"]
+[ext_resource type="Script" uid="uid://xexiflbe5mdw" path="res://Scripts/Items/Attributes/BonusDamageOnHitAttribute.gd" id="3_cu5qv"]
+[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="3_higg2"]
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="3_wtqce"]
+[ext_resource type="Script" uid="uid://dddt5iljwqqmo" path="res://Scripts/Items/Attributes/LungeAttribute.gd" id="4_gamhm"]
+[ext_resource type="Script" uid="uid://ct1yo2gk8wn3a" path="res://Scripts/Items/Attributes/Spells/PlayerHasteAttribute.gd" id="5_qsceb"]
+
+[sub_resource type="Resource" id="Resource_nkd4p"]
+script = ExtResource("3_cu5qv")
+metadata/_custom_type_script = "uid://xexiflbe5mdw"
+
+[sub_resource type="Resource" id="Resource_60xq2"]
+script = ExtResource("4_gamhm")
+metadata/_custom_type_script = "uid://dddt5iljwqqmo"
+
+[sub_resource type="Resource" id="Resource_pu0nr"]
+script = ExtResource("5_qsceb")
+metadata/_custom_type_script = "uid://ct1yo2gk8wn3a"
+
+[sub_resource type="Resource" id="Resource_b1jh0"]
+script = ExtResource("3_wtqce")
+damage = 1.0
+cooldown_sec = 0.2
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[sub_resource type="Resource" id="Resource_wtqce"]
+script = ExtResource("3_higg2")
+display_name = "Dagger_base"
+base_stats = SubResource("Resource_b1jh0")
+allowed_attributes = Array[ExtResource("2_3gl4r")]([SubResource("Resource_nkd4p"), SubResource("Resource_60xq2"), SubResource("Resource_pu0nr")])
+metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
+
+[node name="WPN_MELEE_DAGGER_BASE" type="Node2D" unique_id=1545012483]
+script = ExtResource("1_5jc2x")
+item_def = SubResource("Resource_wtqce")
+metadata/_custom_type_script = "uid://q455ex6d7uye"
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=434354665]

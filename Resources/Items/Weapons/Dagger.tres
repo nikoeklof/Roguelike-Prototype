@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://chpxjgwd0dnl8"]
+
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="2_8rske"]
+[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="2_x2bnc"]
+
+[sub_resource type="Resource" id="Resource_gg1vu"]
+script = ExtResource("2_8rske")
+damage = 6.0
+cooldown_sec = 0.25
+windup_time = 0.03
+recovery_time = 0.05
+knockback = 0.4
+hitbox_offset = Vector2(0.4, 0)
+hitbox_size = Vector2(0.8, 0.8)
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[resource]
+script = ExtResource("2_x2bnc")
+display_name = "Dagger"
+base_stats = SubResource("Resource_gg1vu")
+metadata/_custom_type_script = "uid://bhof2rvqrnl7f"

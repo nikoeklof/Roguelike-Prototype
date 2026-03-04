@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="PenetrationAttribute" format=3 uid="uid://hc1ru4t6otak"]
+
+[ext_resource type="Script" uid="uid://dwix0u3btcnae" path="res://Scripts/Items/Attributes/Ranged/PenetrationAttribute.gd" id="1_266ls"]
+
+[resource]
+script = ExtResource("1_266ls")
+display_name = "Penetration"
+editor_description = "Allows projectiles and hitscan weapons to penetrate"
+metadata/_custom_type_script = "uid://bt2f52k5ydybm"

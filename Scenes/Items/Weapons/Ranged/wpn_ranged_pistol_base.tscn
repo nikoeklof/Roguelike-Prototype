@@ -1,0 +1,54 @@
+[gd_scene format=3 uid="uid://d1bccb2wjg6ei"]
+
+[ext_resource type="Script" uid="uid://ch1c15j4brwlw" path="res://Scripts/Components/Equipment/Items/RangedWeapon.gd" id="1_in43o"]
+[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="2_5c20m"]
+[ext_resource type="Script" uid="uid://xexiflbe5mdw" path="res://Scripts/Items/Attributes/BonusDamageOnHitAttribute.gd" id="3_y1xqo"]
+[ext_resource type="Script" uid="uid://cmuxtevt4ki8e" path="res://Scripts/Items/Attributes/Ranged/ExtraProjectilesAttribute.gd" id="4_gsw0h"]
+[ext_resource type="Script" uid="uid://dwix0u3btcnae" path="res://Scripts/Items/Attributes/Ranged/PenetrationAttribute.gd" id="5_dc51d"]
+[ext_resource type="Script" uid="uid://bmf0mseupkx2g" path="res://Scripts/Items/Attributes/Ranged/HitscanAttribute.gd" id="6_5c20m"]
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="6_xidb7"]
+[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="7_enrir"]
+
+[sub_resource type="Resource" id="Resource_wl8jb"]
+script = ExtResource("3_y1xqo")
+display_name = "Damage on hit"
+metadata/_custom_type_script = "uid://xexiflbe5mdw"
+
+[sub_resource type="Resource" id="Resource_tffl6"]
+script = ExtResource("4_gsw0h")
+display_name = "Extra Shots"
+metadata/_custom_type_script = "uid://cmuxtevt4ki8e"
+
+[sub_resource type="Resource" id="Resource_lipk3"]
+script = ExtResource("5_dc51d")
+display_name = "Penetration"
+metadata/_custom_type_script = "uid://dwix0u3btcnae"
+
+[sub_resource type="Resource" id="Resource_y1xqo"]
+script = ExtResource("6_5c20m")
+range = 800.0
+display_name = "HitScan"
+metadata/_custom_type_script = "uid://bmf0mseupkx2g"
+
+[sub_resource type="Resource" id="Resource_s3a7k"]
+script = ExtResource("6_xidb7")
+damage = 1.0
+cooldown_sec = 0.2
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[sub_resource type="Resource" id="Resource_2fqha"]
+script = ExtResource("7_enrir")
+display_name = "Pistol_base"
+category = 1
+base_stats = SubResource("Resource_s3a7k")
+allowed_attributes = Array[ExtResource("2_5c20m")]([SubResource("Resource_wl8jb"), SubResource("Resource_tffl6"), SubResource("Resource_lipk3"), SubResource("Resource_y1xqo")])
+metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
+
+[node name="wpn_ranged_pistol_base" type="Node2D" unique_id=762095982]
+script = ExtResource("1_in43o")
+item_def = SubResource("Resource_2fqha")
+allow_move_during_attack = true
+pickup_slot_kind = 1
+metadata/_custom_type_script = "uid://ch1c15j4brwlw"
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1769395475]

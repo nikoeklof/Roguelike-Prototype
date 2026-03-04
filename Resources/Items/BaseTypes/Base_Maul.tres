@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://dki8qndxyoqep"]
+
+[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="1_if6pt"]
+[ext_resource type="Script" uid="uid://dddt5iljwqqmo" path="res://Scripts/Items/Attributes/LungeAttribute.gd" id="2_4mthp"]
+[ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="2_ucwwe"]
+[ext_resource type="Script" uid="uid://xexiflbe5mdw" path="res://Scripts/Items/Attributes/BonusDamageOnHitAttribute.gd" id="3_e2bcc"]
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="4_csdmk"]
+[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="5_d0m71"]
+
+[sub_resource type="Resource" id="Resource_gaa7u"]
+script = ExtResource("2_4mthp")
+metadata/_custom_type_script = "uid://dddt5iljwqqmo"
+
+[sub_resource type="Resource" id="Resource_aqwp7"]
+script = ExtResource("3_e2bcc")
+metadata/_custom_type_script = "uid://xexiflbe5mdw"
+
+[sub_resource type="Resource" id="Resource_h4i0p"]
+script = ExtResource("2_4mthp")
+metadata/_custom_type_script = "uid://dddt5iljwqqmo"
+
+[sub_resource type="Resource" id="Resource_gh4tv"]
+script = ExtResource("3_e2bcc")
+metadata/_custom_type_script = "uid://xexiflbe5mdw"
+
+[sub_resource type="Resource" id="Resource_pv362"]
+script = ExtResource("4_csdmk")
+damage = 5.0
+cooldown_sec = 1.5
+windup_time = 0.5
+recovery_time = 1.0
+active_time = 0.3
+knockback = 50.0
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[sub_resource type="Resource" id="Resource_2gk8s"]
+script = ExtResource("5_d0m71")
+display_name = "Maul"
+base_stats = SubResource("Resource_pv362")
+allowed_attributes = Array[ExtResource("1_if6pt")]([SubResource("Resource_h4i0p"), SubResource("Resource_gh4tv")])
+metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
+
+[resource]
+script = ExtResource("2_ucwwe")
+item_def = SubResource("Resource_2gk8s")
+allowed_attributes = Array[ExtResource("1_if6pt")]([SubResource("Resource_gaa7u"), SubResource("Resource_aqwp7")])
+metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"

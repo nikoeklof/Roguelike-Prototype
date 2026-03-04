@@ -7,6 +7,7 @@
 /Sprites/
 /addons/
 /Sprites.zip
+*.tmp
 # gitignore for Visual Studio Code
 .vscode/
 # Ignore build files

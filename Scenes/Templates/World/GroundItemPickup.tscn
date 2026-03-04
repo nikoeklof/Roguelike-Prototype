@@ -1,15 +1,12 @@
 [gd_scene format=3 uid="uid://dfwht10plwohx"]
 
 [ext_resource type="Script" uid="uid://cx7hc0sik2req" path="res://Scripts/World/Pickups/GroundItemPickup.gd" id="1_4ccs4"]
-[ext_resource type="PackedScene" uid="uid://bod5beiu7uocb" path="res://Scenes/Templates/EquipmentItems/Melee_Weapon_Template.tscn" id="2_54ias"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_nc7mq"]
 radius = 8.0
 
 [node name="GroundItemPickup" type="Area2D" unique_id=635862218 groups=["interactable"]]
 script = ExtResource("1_4ccs4")
-item_scene = ExtResource("2_54ias")
-roll_attribute_count = 1
 throw_scale_pop = 2.0
 tooltip_width = 200.0
 

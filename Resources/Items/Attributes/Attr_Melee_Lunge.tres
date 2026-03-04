@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="LungeAttribute" format=3 uid="uid://dm8iiyb51jkrs"]
+
+[ext_resource type="Script" uid="uid://dddt5iljwqqmo" path="res://Scripts/Items/Attributes/LungeAttribute.gd" id="1_v8oob"]
+
+[resource]
+script = ExtResource("1_v8oob")
+display_name = "Lunge"
+editor_description = "Adds a lunge to melee attack"
+metadata/_custom_type_script = "uid://bt2f52k5ydybm"
