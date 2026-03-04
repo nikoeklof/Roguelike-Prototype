@@ -92,6 +92,9 @@ func get_attack_variant(ctx: CombatContext) -> AttackVariant:
 
 	# Mechanical defaults (attributes can override via modify_ranged_shot)
 	v.default_mode = default_mode
+	# Preferred: mode is rolled and stored on the ItemInstance.
+	if _instance != null and int(_instance.ranged_mode) >= 0:
+		v.default_mode = int(_instance.ranged_mode)
 	v.spread_degrees = spread_degrees
 	v.spread_pattern_degrees = spread_pattern_degrees
 	v.muzzle_offset = muzzle_offset

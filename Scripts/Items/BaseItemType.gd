@@ -3,20 +3,15 @@ class_name BaseItemType
 
 @export var id: StringName = &""
 @export var item_def: ItemDef
-
+@export var pool_def: AttributePoolDef
 @export_range(0, 6, 1) var min_attribute_count: int = 0
 @export_range(0, 6, 1) var max_attribute_count: int = 2
 
 # StringName -> int (starting stat levels)
 @export var start_stat_levels: Dictionary = {}
 
-# Manual attribute pool override (optional). If non-empty, this pool is used.
-@export var allowed_attributes: Array[ItemAttribute] = []
-@export var attribute_weights: Array[float] = []
 
-# Automatic pool building from resources folder (by prefix).
-@export var use_auto_attribute_pool: bool = true
-@export var auto_attribute_root: String = "res://Resources/Items/Attributes"
+# Pool selection
 @export var auto_include_global: bool = true
 
 # Optional “weapon token” used for weapon-specific pools:
@@ -30,8 +25,9 @@ class_name BaseItemType
 
 @export var use_ranged_mode_roll: bool = true
 
-# If true, the chosen mode’s mode-attribute is forced into the item.
-@export var force_mode_attribute: bool = true
+# Deprecated: shot mode is no longer represented by a forced "mode attribute".
+# Kept only to avoid breaking older .tres resources that may still serialize this field.
+@export var force_mode_attribute: bool = false
 
 # Weights for picking a mode when rolling ranged items.
 # (PROJECTILE is the “default” mode. HITSCAN and BEAM require mode attributes.)
@@ -43,9 +39,6 @@ class_name BaseItemType
 # Use -1 for “random”.
 @export var locked_ranged_mode: int = -1 # uses RangedShotData.ShotMode values
 
-
-func has_manual_pool() -> bool:
-	return allowed_attributes.size() > 0
 
 
 func get_weapon_token() -> String:

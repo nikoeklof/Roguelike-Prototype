@@ -74,8 +74,7 @@ func _roll_item_instance_from_base_type(base_type: BaseItemType, item_seed: int)
     var chosen_mode: int = -1
     if int(base_type.item_def.category) == ItemDef.Category.RANGED and base_type.use_ranged_mode_roll:
         chosen_mode = sp._roll_ranged_mode(item_seed, base_type)
-        if base_type.force_mode_attribute:
-            sp._force_mode_attribute_if_needed(inst, base_type, chosen_mode)
+        inst.ranged_mode = chosen_mode
 
     sp._roll_attributes(inst, base_type, item_seed, attr_count, chosen_mode)
 

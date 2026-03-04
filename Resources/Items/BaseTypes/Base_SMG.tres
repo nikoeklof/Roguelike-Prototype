@@ -3,11 +3,13 @@
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="1"]
 [ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="1_iflyq"]
 [ext_resource type="Resource" uid="uid://cv0r3gb0d82xu" path="res://Resources/Items/Weapons/SMG.tres" id="2"]
+[ext_resource type="Resource" uid="uid://bsyk2qdhttneq" path="res://Resources/Items/Pools/Pool_Ranged_All.tres" id="3"]
 
 [resource]
 script = ExtResource("1")
 id = &"base_smg"
 item_def = ExtResource("2")
+pool_def = ExtResource("3")
 min_attribute_count = 1
 max_attribute_count = 3
 auto_weapon_token = "SMG"

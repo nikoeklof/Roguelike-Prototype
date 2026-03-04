@@ -50,7 +50,7 @@ scale = Vector2(0.375, 0.375)
 shape = SubResource("RectangleShape2D_3dogw")
 
 [node name="Player" parent="." unique_id=423000657 instance=ExtResource("1_kyx5t")]
-position = Vector2(128, 40)
+position = Vector2(66, 114)
 
 [node name="DebugHud" parent="." unique_id=1698329193 instance=ExtResource("2_tiaw2")]
 scale = Vector2(0.8, 0.8)
@@ -59,6 +59,7 @@ follow_viewport_enabled = false
 player_root_path = NodePath("../Player")
 
 [node name="ItemSpawner" type="Node2D" parent="." unique_id=1281174536]
+position = Vector2(172, -151)
 script = ExtResource("3_x3clo")
 pickup_scene = ExtResource("4_s54dy")
 base_type = ExtResource("5_x3clo")

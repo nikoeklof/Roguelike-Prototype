@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="AttributePoolDef" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Items/AttributePoolDef.gd" id="1"]
+[ext_resource type="Resource" path="res://Resources/Items/Attributes/Attr_Global_BonusDamageOnHit.tres" id="2"]
+[ext_resource type="Resource" path="res://Resources/Items/Attributes/Attr_Melee_Common_Lunge.tres" id="3"]
+[ext_resource type="Resource" path="res://Resources/Items/Attributes/Attr_Melee_Lunge.tres" id="4"]
+
+[resource]
+script = ExtResource("1")
+include_global = true
+global_attributes = Array[Resource]([ExtResource("2")])
+melee_common = Array[Resource]([ExtResource("3"), ExtResource("4")])
+ranged_common = Array[Resource]([])
+spell_common = Array[Resource]([])
+shield_common = Array[Resource]([])
+ranged_projectile = Array[Resource]([])
+ranged_hitscan = Array[Resource]([])
+ranged_beam = Array[Resource]([])
+weapon_token_pools = {}
+exclude = Array[Resource]([])

@@ -4,6 +4,10 @@ class_name ItemInstance
 @export var def: ItemDef
 @export var seed: int = 0
 
+# Rolled shot mode for ranged items. This is the ONLY place shot mode lives
+# (mode is not represented by attributes anymore).
+@export var ranged_mode: int = -1
+
 @export var stat_levels: Dictionary = {}
 @export var attributes: Array[ItemAttribute] = []
 
@@ -65,7 +69,19 @@ func compute_stats(context: CombatContext) -> ItemStats:
 		return out
 
 	# Template base stats
-	var base: ItemStats = def.get_base_stats_safe().duplicate_typed()
+	# IMPORTANT: In tool mode, def can be a placeholder Resource.
+	# Placeholders expose exported properties but DO NOT have script methods,
+	# so do not call def.get_base_stats_safe(). Read exported property directly.
+	var base_stats: ItemStats = def.base_stats if def.base_stats != null else ItemStats.new()
+	var base: ItemStats
+	if base_stats != null:
+		var dup: Resource = base_stats.duplicate(true) # built-in, placeholder-safe
+		if dup is ItemStats:
+			base = dup as ItemStats
+		else:
+			base = ItemStats.new()
+	else:
+		base = ItemStats.new()
 
 	# Collect modifiers from attributes + instance upgrades.
 	var mods: Array[StatModifier] = _collect_stat_modifiers(context)
@@ -109,25 +125,35 @@ func _mods_for(all_mods: Array[StatModifier], stat: StringName) -> Array[StatMod
 func _collect_stat_modifiers(context: CombatContext) -> Array[StatModifier]:
 	var out: Array[StatModifier] = []
 
-	# Attribute modifiers (domain-scoped)
 	var attrs: Array[ItemAttribute] = ItemAttributeBus._sorted_attrs(self)
 	for a: ItemAttribute in attrs:
 		if a == null:
 			continue
-		if not a.applies_to_domain(ItemAttributeBus.DOMAIN_STATS):
+
+		# Placeholder-safe: placeholders have no script methods.
+		# In tool mode, skip them instead of crashing.
+		if a.resource_path == "":
 			continue
+
+		if a.has_method("applies_to_domain"):
+			if not a.applies_to_domain(ItemAttributeBus.DOMAIN_STATS):
+				continue
+		# If no method, treat as not applicable
+		else:
+			continue
+
 		# Preferred pipeline
 		if a.has_method("contribute_modifiers"):
 			a.contribute_modifiers(context, self, ItemAttributeBus.DOMAIN_STATS, out)
 			continue
-		# Legacy fallback (should become unused once all attributes migrate)
-		var add: ItemStats = a.get_stat_additive(context, self)
-		if add != null:
-			_legacy_itemstats_to_mods(add, a.id, out)
 
-	# Per-instance upgrades as modifiers.
+		# Legacy fallback
+		if a.has_method("get_stat_additive"):
+			var add: ItemStats = a.get_stat_additive(context, self)
+			if add != null:
+				_legacy_itemstats_to_mods(add, a.id, out)
+
 	_apply_instance_upgrade_modifiers(out)
-
 	return out
 
 
@@ -193,51 +219,3 @@ func _apply_instance_upgrade_modifiers(out: Array[StatModifier]) -> void:
 	var proj_lvl: int = get_upgrade_level(String(StatId.PROJECTILE_COUNT))
 	if proj_lvl > 0:
 		out.append(StatModifier.new(StatId.PROJECTILE_COUNT, StatModifier.Op.ADD, proj_lvl, 10, src))
-
-	var pierce_lvl: int = get_upgrade_level(String(StatId.PIERCE))
-	if pierce_lvl > 0:
-		out.append(StatModifier.new(StatId.PIERCE, StatModifier.Op.ADD, pierce_lvl, 10, src))
-
-	var k_lvl: int = get_upgrade_level(String(StatId.KNOCKBACK))
-	if k_lvl > 0:
-		out.append(StatModifier.new(StatId.KNOCKBACK, StatModifier.Op.ADD, float(k_lvl) * 0.2, 10, src))
-
-	var size_lvl: int = get_upgrade_level(String(StatId.HITBOX_SIZE))
-	if size_lvl > 0:
-		var delta: float = float(size_lvl) * 0.05
-		out.append(StatModifier.new(StatId.HITBOX_SIZE, StatModifier.Op.ADD, Vector2(delta, delta), 10, src))
-
-	var offset_lvl: int = get_upgrade_level(String(StatId.HITBOX_OFFSET))
-	if offset_lvl > 0:
-		var delta_off: float = float(offset_lvl) * 0.05
-		out.append(StatModifier.new(StatId.HITBOX_OFFSET, StatModifier.Op.ADD, Vector2(delta_off, delta_off), 10, src))
-
-	var flatdr_lvl: int = get_upgrade_level(String(StatId.FLAT_DAMAGE_REDUCTION))
-	if flatdr_lvl > 0:
-		out.append(StatModifier.new(StatId.FLAT_DAMAGE_REDUCTION, StatModifier.Op.ADD, float(flatdr_lvl) * 0.5, 10, src))
-
-	var hp_lvl: int = get_upgrade_level(String(StatId.BONUS_MAX_HP))
-	if hp_lvl > 0:
-		out.append(StatModifier.new(StatId.BONUS_MAX_HP, StatModifier.Op.ADD, float(hp_lvl) * 1.0, 10, src))
-
-	var heal_lvl: int = get_upgrade_level(String(StatId.HEAL_ON_EQUIP))
-	if heal_lvl > 0:
-		out.append(StatModifier.new(StatId.HEAL_ON_EQUIP, StatModifier.Op.ADD, float(heal_lvl) * 1.0, 10, src))
-
-	var active_lvl: int = get_upgrade_level(String(StatId.ACTIVE_TIME))
-	if active_lvl > 0:
-		out.append(StatModifier.new(StatId.ACTIVE_TIME, StatModifier.Op.ADD, float(active_lvl) * 0.1, 10, src))
-
-	var ms_lvl: int = get_upgrade_level(String(StatId.MOVE_SPEED_MULT))
-	if ms_lvl > 0:
-		var mul_ms: float = pow(1.05, float(ms_lvl)) - 1.0
-		out.append(StatModifier.new(StatId.MOVE_SPEED_MULT, StatModifier.Op.MUL, mul_ms, 10, src))
-
-	var dt_lvl: int = get_upgrade_level(String(StatId.DAMAGE_TAKEN_MULT))
-	if dt_lvl > 0:
-		var mul_dt: float = pow(0.98, float(dt_lvl)) - 1.0
-		out.append(StatModifier.new(StatId.DAMAGE_TAKEN_MULT, StatModifier.Op.MUL, mul_dt, 10, src))
-
-
-## Upgrades are now applied through the modifier pipeline in
-## _apply_instance_upgrade_modifiers().

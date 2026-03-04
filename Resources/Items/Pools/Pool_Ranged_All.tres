@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AttributePoolDef" format=3 uid="uid://bsyk2qdhttneq"]
+
+[ext_resource type="Script" uid="uid://bo58hs72paoxt" path="res://Scripts/Items/AttributePoolDef.gd" id="1"]
+[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="1_wnqwr"]
+[ext_resource type="Resource" uid="uid://bpbv0wdfy584y" path="res://Resources/Items/Attributes/Attr_Global_BonusDamageOnHit.tres" id="2"]
+[ext_resource type="Resource" path="res://Resources/Items/Attributes/Attr_Ranged_Common_MoreProjectiles.tres" id="3"]
+[ext_resource type="Resource" path="res://Resources/Items/Attributes/Attr_Ranged_Common_Penetration.tres" id="4"]
+
+[resource]
+script = ExtResource("1")
+global_attributes = Array[ExtResource("1_wnqwr")]([ExtResource("2")])
+ranged_common = Array[ExtResource("1_wnqwr")]([ExtResource("3"), ExtResource("4")])
