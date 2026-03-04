@@ -14,6 +14,7 @@ metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [resource]
 script = ExtResource("2_b3vx2")
+id = &"smg"
 display_name = "SMG"
 category = 1
 base_stats = SubResource("Resource_b3vx2")

@@ -5,6 +5,9 @@ class_name ParryWindowAttribute
 @export var collider_size: Vector2 = Vector2(26, 18)
 @export var local_offset: Vector2 = Vector2(16, 0)
 
+func default_domains() -> PackedStringArray:
+	return PackedStringArray(["parry"])
+
 func on_parry(context: CombatContext, _item_instance: ItemInstance) -> void:
 	if context == null or context.owner == null:
 		return

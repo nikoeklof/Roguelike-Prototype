@@ -15,6 +15,7 @@ metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [resource]
 script = ExtResource("2_adgl4")
+id = &"shotgun"
 display_name = "Shotgun"
 category = 1
 base_stats = SubResource("Resource_adgl4")

@@ -5,6 +5,9 @@ class_name EnemySlowAuraAttribute
 @export_range(0.1, 0.99, 0.01) var slow_mult: float = 0.70
 @export_range(0.1, 20.0, 0.1) var duration_sec: float = 4.0
 
+func default_domains() -> PackedStringArray:
+	return PackedStringArray(["cast"])
+
 
 func on_cast_apply(context: CombatContext, item_instance: ItemInstance) -> void:
 	if context == null or context.owner == null:

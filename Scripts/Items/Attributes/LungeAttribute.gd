@@ -12,6 +12,9 @@ class_name LungeAttribute
 const _META_TWEEN: StringName = &"__lunge_tween"
 const _META_LAST: StringName = &"__lunge_last"
 
+func default_domains() -> PackedStringArray:
+	return PackedStringArray(["attack_start"])
+
 
 func on_attack_start(context: CombatContext, _item_instance: ItemInstance) -> void:
 	if context == null:
@@ -59,10 +62,6 @@ func on_attack_start(context: CombatContext, _item_instance: ItemInstance) -> vo
 
 	var end_cb: Callable = Callable(self, "_clear_lunge_meta").bind(body)
 	tween.tween_callback(end_cb)
-
-
-func default_domains() -> PackedStringArray:
-	return PackedStringArray([String(AttributeDomains.ATTACK_START)])
 
 
 func _lunge_step(traveled: float, body: CharacterBody2D, dir: Vector2) -> void:

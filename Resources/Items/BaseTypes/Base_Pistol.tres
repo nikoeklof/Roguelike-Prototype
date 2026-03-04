@@ -1,11 +1,11 @@
-[gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://dnadu57i8svlx"]
+[gd_resource type="Resource" script_class="BaseItemType" format=3]
 
 [ext_resource type="Script" path="res://Scripts/Items/BaseItemType.gd" id="1"]
 [ext_resource type="Resource" path="res://Resources/Items/Weapons/Pistol.tres" id="2"]
 
 [resource]
 script = ExtResource("1")
-id = &"base_pistol_hitscan"
+id = &"base_pistol"
 item_def = ExtResource("2")
 min_attribute_count = 1
 max_attribute_count = 3
@@ -21,4 +21,4 @@ force_mode_attribute = true
 weight_projectile = 1.0
 weight_hitscan = 0.6
 weight_beam = 0.35
-locked_ranged_mode = 1
+locked_ranged_mode = -1

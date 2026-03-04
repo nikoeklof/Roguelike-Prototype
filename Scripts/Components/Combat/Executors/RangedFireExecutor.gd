@@ -8,7 +8,6 @@ class_name RangedFireExecutor
 
 var _beam_tween: Tween = null
 var _beam_line: Line2D = null
-var _attr_bus: CombatAttributeBus
 
 
 func execute() -> void:
@@ -18,8 +17,7 @@ func execute() -> void:
 		finish(false)
 		return
 
-	_attr_bus = CombatAttributeBus.new(context)
-	_attr_bus.dispatch_attack_start()
+	_dispatch_attack_start()
 
 	if variant.windup_time > 0.0:
 		await get_tree().create_timer(variant.windup_time, true, true).timeout
@@ -33,8 +31,12 @@ func execute() -> void:
 
 
 func _dispatch_attack_start() -> void:
-	if _attr_bus != null:
-		_attr_bus.dispatch_attack_start()
+	if context == null:
+		return
+	var inst: ItemInstance = context.item_instance
+	if inst == null:
+		return
+	ItemAttributeBus.dispatch_attack_start(context, inst)
 
 
 func _fire(v: RangedFireVariant) -> void:
@@ -112,9 +114,7 @@ func _build_base_shot(
 func _dispatch_modify_shot(shot: RangedShotData, inst: ItemInstance) -> void:
 	if inst == null:
 		return
-	if _attr_bus == null:
-		_attr_bus = CombatAttributeBus.new(context)
-	_attr_bus.dispatch_modify_ranged_shot(shot)
+	ItemAttributeBus.dispatch_modify_ranged_shot(context, shot, inst)
 
 
 func _execute_shot(shot: RangedShotData, inst: ItemInstance) -> void:
@@ -182,9 +182,7 @@ func _fire_projectile(shot: RangedShotData, inst: ItemInstance) -> void:
 	p.setup(vel, shot.gravity, shot.lifetime_sec, int(round(shot.damage)), shot.pierce, context.owner)
 
 	if inst != null:
-		if _attr_bus == null:
-			_attr_bus = CombatAttributeBus.new(context)
-		_attr_bus.dispatch_projectile_spawn(p)
+		ItemAttributeBus.dispatch_projectile_spawn(context, p, inst)
 
 	var owner: Node = context.owner
 	if owner != null and owner.get_parent() != null:
@@ -306,9 +304,7 @@ func _apply_ranged_hit(victim_node: Node, collider_node: Node, base_damage: floa
 		hit.base_damage = dmg
 		hit.damage = dmg
 
-		if _attr_bus == null:
-			_attr_bus = CombatAttributeBus.new(context)
-		_attr_bus.dispatch_on_hit(hit)
+		ItemAttributeBus.dispatch_hit(context, hit, inst)
 
 		dmg = hit.damage
 

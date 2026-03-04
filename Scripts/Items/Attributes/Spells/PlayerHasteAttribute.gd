@@ -4,6 +4,9 @@ class_name PlayerHasteAttribute
 @export_range(1.01, 3.0, 0.01) var move_speed_mult: float = 1.25
 @export_range(0.1, 20.0, 0.1) var duration_sec: float = 4.0
 
+func default_domains() -> PackedStringArray:
+	return PackedStringArray(["cast"])
+
 func on_cast_apply(context: CombatContext, item_instance: ItemInstance) -> void:
 	if context == null or context.owner == null:
 		return

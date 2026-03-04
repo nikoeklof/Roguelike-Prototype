@@ -5,7 +5,6 @@ var _hit_ids: Dictionary = {}
 var _hitbox: Area2D
 var _origin_node: Node2D
 var _fallback_owner_2d: Node2D
-var _attr_bus: CombatAttributeBus
 
 
 func execute() -> void:
@@ -18,8 +17,7 @@ func execute() -> void:
 	var inst: ItemInstance = context.item_instance
 	var stats: ItemStats = inst.compute_stats(context) if inst != null else null
 
-	_attr_bus = CombatAttributeBus.new(context)
-	_attr_bus.dispatch_attack_start()
+	_dispatch_attack_start()
 
 	var windup: float = stats.windup_time if stats != null else 0.0
 	var active_time: float = stats.active_time if stats != null else 0.10
@@ -54,8 +52,12 @@ func _physics_process(_delta: float) -> void:
 
 
 func _dispatch_attack_start() -> void:
-	if _attr_bus != null:
-		_attr_bus.dispatch_attack_start()
+	if context == null:
+		return
+	var inst: ItemInstance = context.item_instance
+	if inst == null:
+		return
+	ItemAttributeBus.dispatch_attack_start(context, inst)
 
 
 func _spawn_hitbox(v: MeleeSlashVariant) -> void:
@@ -186,9 +188,7 @@ func _dispatch_on_hit(victim_root: Node, collider: Node, base_damage: float) -> 
 	hit.base_damage = base_damage
 	hit.damage = base_damage
 
-	if _attr_bus == null:
-		_attr_bus = CombatAttributeBus.new(context)
-	_attr_bus.dispatch_on_hit(hit)
+	ItemAttributeBus.dispatch_hit(context, hit, inst)
 
 	return hit.damage
 

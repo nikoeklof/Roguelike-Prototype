@@ -1,43 +1,24 @@
 [gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://ch6uawoeugf1x"]
 
-[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="1_47e3m"]
-[ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="2_0b31t"]
-[ext_resource type="Script" uid="uid://ct1yo2gk8wn3a" path="res://Scripts/Items/Attributes/Spells/PlayerHasteAttribute.gd" id="2_kky6w"]
-[ext_resource type="Script" uid="uid://dddt5iljwqqmo" path="res://Scripts/Items/Attributes/LungeAttribute.gd" id="3_hh080"]
-[ext_resource type="Script" uid="uid://xexiflbe5mdw" path="res://Scripts/Items/Attributes/BonusDamageOnHitAttribute.gd" id="4_pd1ok"]
-[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="5_vp4vu"]
-[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="6_cto63"]
-
-[sub_resource type="Resource" id="Resource_fikkt"]
-script = ExtResource("2_kky6w")
-metadata/_custom_type_script = "uid://ct1yo2gk8wn3a"
-
-[sub_resource type="Resource" id="Resource_db6e5"]
-script = ExtResource("3_hh080")
-metadata/_custom_type_script = "uid://dddt5iljwqqmo"
-
-[sub_resource type="Resource" id="Resource_bma1o"]
-script = ExtResource("4_pd1ok")
-metadata/_custom_type_script = "uid://xexiflbe5mdw"
-
-[sub_resource type="Resource" id="Resource_n2u1h"]
-script = ExtResource("5_vp4vu")
-damage = 1.0
-cooldown_sec = 0.3
-windup_time = 0.05
-active_time = 0.1
-knockback = 5.0
-metadata/_custom_type_script = "uid://cv0h8ksph1drm"
-
-[sub_resource type="Resource" id="Resource_808rf"]
-script = ExtResource("6_cto63")
-display_name = "Dagger"
-base_stats = SubResource("Resource_n2u1h")
-metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
+[ext_resource type="Script" path="res://Scripts/Items/BaseItemType.gd" id="1"]
+[ext_resource type="Resource" path="res://Resources/Items/Weapons/Dagger.tres" id="2"]
 
 [resource]
-script = ExtResource("2_0b31t")
-item_def = SubResource("Resource_808rf")
+script = ExtResource("1")
+id = &"base_dagger"
+item_def = ExtResource("2")
+min_attribute_count = 1
 max_attribute_count = 3
-allowed_attributes = Array[ExtResource("1_47e3m")]([SubResource("Resource_fikkt"), SubResource("Resource_db6e5"), SubResource("Resource_bma1o")])
-metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"
+start_stat_levels = {}
+allowed_attributes = Array[Resource]([])
+attribute_weights = Array[float]([])
+use_auto_attribute_pool = true
+auto_attribute_root = "res://Resources/Items/Attributes"
+auto_include_global = true
+auto_weapon_token = "Dagger"
+use_ranged_mode_roll = true
+force_mode_attribute = true
+weight_projectile = 1.0
+weight_hitscan = 0.6
+weight_beam = 0.35
+locked_ranged_mode = -1

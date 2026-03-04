@@ -3,11 +3,9 @@ class_name ExtraProjectilesAttribute
 
 @export_range(1, 10, 1) var extra_projectiles: int = 1
 
-func get_stat_additive(_context: CombatContext, _item_instance: ItemInstance) -> ItemStats:
-	var s := ItemStats.new()
-	s.projectile_count = extra_projectiles
-	return s
-
-
 func default_domains() -> PackedStringArray:
-	return PackedStringArray([String(AttributeDomains.STATS)])
+	return PackedStringArray(["stats"])
+
+func contribute_modifiers(_context: CombatContext, _item_instance: ItemInstance, _domain: StringName, out_mods: Array) -> void:
+	# Int ADD
+	out_mods.append(StatModifier.new(StatId.PROJECTILE_COUNT, StatModifier.Op.ADD, extra_projectiles, 50, id))

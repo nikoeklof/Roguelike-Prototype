@@ -6,6 +6,9 @@ class_name ReflectProjectilesAttribute
 @export var local_offset: Vector2 = Vector2(16, 0)
 @export_range(0.5, 3.0, 0.05) var reflect_speed_mult: float = 1.0
 
+func default_domains() -> PackedStringArray:
+	return PackedStringArray(["parry"])
+
 func on_parry(context: CombatContext, _item_instance: ItemInstance) -> void:
 	if context == null or context.owner == null:
 		return

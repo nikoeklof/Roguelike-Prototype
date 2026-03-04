@@ -4,38 +4,10 @@
 [ext_resource type="PackedScene" uid="uid://wj0aehlmsmj3" path="res://Scenes/UI/DebugHUD.tscn" id="2_tiaw2"]
 [ext_resource type="Script" uid="uid://dpt1ah3dct4go" path="res://Scripts/World/Spawners/ItemSpawner.gd" id="3_x3clo"]
 [ext_resource type="PackedScene" uid="uid://dfwht10plwohx" path="res://Scenes/Templates/World/GroundItemPickup.tscn" id="4_s54dy"]
-[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="4_sn2kg"]
-[ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="5_s54dy"]
-[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="7_k1kh3"]
+[ext_resource type="Resource" uid="uid://8ljp76qu0ced" path="res://Resources/Items/BaseTypes/Base_SMG.tres" id="5_x3clo"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
 size = Vector2(1169, 20)
-
-[sub_resource type="Resource" id="Resource_x3clo"]
-script = ExtResource("7_k1kh3")
-category = 1
-metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
-
-[sub_resource type="Resource" id="Resource_sn2kg"]
-script = ExtResource("5_s54dy")
-item_def = SubResource("Resource_x3clo")
-metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"
-
-[sub_resource type="Resource" id="Resource_6dspf"]
-script = ExtResource("5_s54dy")
-metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"
-
-[sub_resource type="Resource" id="Resource_qpqqc"]
-script = ExtResource("5_s54dy")
-metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"
-
-[sub_resource type="Resource" id="Resource_j6656"]
-script = ExtResource("5_s54dy")
-metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"
-
-[sub_resource type="Resource" id="Resource_cmiqf"]
-script = ExtResource("5_s54dy")
-metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"
 
 [node name="test_scene" type="Node2D" unique_id=391386651]
 y_sort_enabled = true
@@ -78,7 +50,7 @@ scale = Vector2(0.375, 0.375)
 shape = SubResource("RectangleShape2D_3dogw")
 
 [node name="Player" parent="." unique_id=423000657 instance=ExtResource("1_kyx5t")]
-position = Vector2(516, -36)
+position = Vector2(128, 40)
 
 [node name="DebugHud" parent="." unique_id=1698329193 instance=ExtResource("2_tiaw2")]
 scale = Vector2(0.8, 0.8)
@@ -86,32 +58,8 @@ transform = Transform2D(0.8, 0, 0, 0.8, 0, 0)
 follow_viewport_enabled = false
 player_root_path = NodePath("../Player")
 
-[node name="ItemSpawner" type="Node2D" parent="." unique_id=1672042566]
-position = Vector2(59, -156)
+[node name="ItemSpawner" type="Node2D" parent="." unique_id=1281174536]
 script = ExtResource("3_x3clo")
 pickup_scene = ExtResource("4_s54dy")
-base_type = SubResource("Resource_sn2kg")
-
-[node name="ItemSpawner2" type="Node2D" parent="." unique_id=252903564]
-position = Vector2(411, -151)
-script = ExtResource("3_x3clo")
-pickup_scene = ExtResource("4_s54dy")
-base_type = SubResource("Resource_6dspf")
-
-[node name="ItemSpawner3" type="Node2D" parent="." unique_id=1889439663]
-position = Vector2(256, -159)
-script = ExtResource("3_x3clo")
-pickup_scene = ExtResource("4_s54dy")
-base_type = SubResource("Resource_qpqqc")
-
-[node name="ItemSpawner4" type="Node2D" parent="." unique_id=1694070775]
-position = Vector2(620, -155)
-script = ExtResource("3_x3clo")
-pickup_scene = ExtResource("4_s54dy")
-base_type = SubResource("Resource_j6656")
-
-[node name="ItemSpawner5" type="Node2D" parent="." unique_id=1864163926]
-position = Vector2(826, -158)
-script = ExtResource("3_x3clo")
-pickup_scene = ExtResource("4_s54dy")
-base_type = SubResource("Resource_cmiqf")
+base_type = ExtResource("5_x3clo")
+metadata/_custom_type_script = "uid://dpt1ah3dct4go"

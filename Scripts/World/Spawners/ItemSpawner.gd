@@ -15,6 +15,42 @@ class_name ItemSpawner
 @export var run_seed_override: int = 0
 
 var _spawned: bool = false
+# Static Wrapper for the inspector plugin
+static func roll_preview(bt: BaseItemType, seed: int) -> ItemInstance:
+	if bt == null:
+		return null
+	if bt.item_def == null:
+		return null
+
+	var inst: ItemInstance = ItemInstance.new()
+	inst.def = bt.item_def
+	inst.seed = seed
+	inst.ensure_initialized()
+
+	# Apply starting stats
+	if not bt.start_stat_levels.is_empty():
+		for k: Variant in bt.start_stat_levels.keys():
+			var key: StringName = StringName(k)
+			inst.stat_levels[key] = int(bt.start_stat_levels[k])
+
+	# Roll attribute count
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed
+	var attr_count: int = rng.randi_range(bt.min_attribute_count, bt.max_attribute_count)
+
+	var spawner := ItemSpawner.new()
+
+	var chosen_mode: int = -1
+
+	if int(bt.item_def.category) == ItemDef.Category.RANGED and bt.use_ranged_mode_roll:
+		chosen_mode = spawner._roll_ranged_mode(seed, bt)
+
+		if bt.force_mode_attribute:
+			spawner._force_mode_attribute_if_needed(inst, bt, chosen_mode)
+
+	spawner._roll_attributes(inst, bt, seed, attr_count, chosen_mode)
+
+	return inst
 
 
 func spawn_with_run_seed(run_seed: int) -> Node:
@@ -79,6 +115,7 @@ func spawn_with_run_seed(run_seed: int) -> Node:
 	pickup.global_position = global_position
 
 	return pickup
+
 
 
 func spawn() -> Node:
@@ -270,7 +307,7 @@ func _build_auto_pool(bt: BaseItemType, chosen_mode: int) -> Array[ItemAttribute
 	if root.is_empty():
 		return out
 
-	var token: String = bt.get_weapon_token()
+	var token: String = bt.auto_weapon_token
 
 	# Global always allowed
 	if bt.auto_include_global:

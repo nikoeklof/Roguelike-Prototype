@@ -36,3 +36,5 @@ Thumbs.db
 *.rar
 # Ignore node modules
 node_modules/
+# Ignore archive files
+_Archive/
