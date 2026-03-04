@@ -7,3 +7,7 @@ func get_stat_additive(_context: CombatContext, _item_instance: ItemInstance) ->
 	var s := ItemStats.new()
 	s.projectile_count = extra_projectiles
 	return s
+
+
+func default_domains() -> PackedStringArray:
+	return PackedStringArray([String(AttributeDomains.STATS)])

@@ -6,3 +6,7 @@ class_name HitscanModeAttribute
 func modify_ranged_shot(_context: CombatContext, shot: RangedShotData, _inst: ItemInstance) -> void:
 	shot.mode = RangedShotData.ShotMode.HITSCAN
 	shot.range = range
+
+
+func default_domains() -> PackedStringArray:
+	return PackedStringArray([String(AttributeDomains.RANGED_SHOT)])

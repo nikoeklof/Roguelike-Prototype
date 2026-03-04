@@ -10,3 +10,7 @@ func modify_ranged_shot(_context: CombatContext, shot: RangedShotData, _inst: It
 	shot.beam_duration_sec = duration_sec
 	shot.beam_tick_sec = tick_sec
 	shot.range = range
+
+
+func default_domains() -> PackedStringArray:
+	return PackedStringArray([String(AttributeDomains.RANGED_SHOT)])

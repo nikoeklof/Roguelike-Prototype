@@ -10,3 +10,7 @@ func on_hit(_context: CombatContext, hit: HitEvent, _item_instance: ItemInstance
 		return
 	# Modify final damage.
 	hit.damage = (hit.damage + flat_bonus) * (1.0 + percent_bonus)
+
+
+func default_domains() -> PackedStringArray:
+	return PackedStringArray([String(AttributeDomains.HIT)])

@@ -7,6 +7,9 @@ class_name ItemInstance
 @export var stat_levels: Dictionary = {}
 @export var attributes: Array[ItemAttribute] = []
 
+var _cached_sorted_attrs: Array[ItemAttribute] = []
+var _cache_dirty: bool = true
+
 
 func rarity() -> int:
 	return attributes.size()
@@ -41,6 +44,36 @@ func add_attribute(attr: ItemAttribute) -> void:
 	if attr == null:
 		return
 	attributes.append(attr)
+	_cache_dirty = true
+
+
+func get_attributes_sorted() -> Array[ItemAttribute]:
+	if not _cache_dirty and _cached_sorted_attrs.size() == attributes.size():
+		return _cached_sorted_attrs
+
+	_cached_sorted_attrs = []
+	for a: ItemAttribute in attributes:
+		if a != null:
+			_cached_sorted_attrs.append(a)
+
+	_cached_sorted_attrs.sort_custom(func(a: ItemAttribute, b: ItemAttribute) -> bool:
+		return _attr_sort_key(a) < _attr_sort_key(b)
+	)
+	_cache_dirty = false
+	return _cached_sorted_attrs
+
+
+func _attr_sort_key(a: ItemAttribute) -> String:
+	if a == null:
+		return ""
+	var id_str := String(a.id)
+	if id_str.is_empty():
+		id_str = String(a.display_name)
+	var sp := ""
+	var scr: Script = a.get_script() as Script
+	if scr != null:
+		sp = scr.resource_path
+	return id_str + "|" + sp
 
 
 func upgrade_stat(key: String, amount: int = 1) -> void:
@@ -68,12 +101,8 @@ func compute_stats(context: CombatContext) -> ItemStats:
 	out = def.get_base_stats_safe().duplicate_typed()
 
 	# Attribute additive stats
-	for a: ItemAttribute in attributes:
-		if a == null:
-			continue
-		var add: ItemStats = a.get_stat_additive(context, self)
-		if add != null:
-			out.apply_additive(add)
+	var bus := CombatAttributeBus.new(context)
+	out.apply_additive(bus.collect_stat_additives())
 
 	# Per-instance upgrade scaling (simple default rules)
 	_apply_instance_upgrades(out)

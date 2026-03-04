@@ -6,20 +6,14 @@
 [ext_resource type="PackedScene" uid="uid://dfwht10plwohx" path="res://Scenes/Templates/World/GroundItemPickup.tscn" id="4_s54dy"]
 [ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="4_sn2kg"]
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="5_s54dy"]
-[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="6_ypj4y"]
 [ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="7_k1kh3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
 size = Vector2(1169, 20)
 
-[sub_resource type="Resource" id="Resource_ypj4y"]
-script = ExtResource("6_ypj4y")
-metadata/_custom_type_script = "uid://cv0h8ksph1drm"
-
 [sub_resource type="Resource" id="Resource_x3clo"]
 script = ExtResource("7_k1kh3")
 category = 1
-base_stats = SubResource("Resource_ypj4y")
 metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
 
 [sub_resource type="Resource" id="Resource_sn2kg"]
