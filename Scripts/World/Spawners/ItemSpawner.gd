@@ -4,6 +4,8 @@ class_name ItemSpawner
 @export var pickup_scene: PackedScene
 @export var base_type: BaseItemType
 
+@export var auto_spawn_when_no_floor_spawner: bool = true
+
 @export var spawn_id: StringName = &""
 @export var drop_index: int = 0
 
@@ -13,9 +15,27 @@ class_name ItemSpawner
 
 @export var run_seed_override_enabled: bool = false
 @export var run_seed_override: int = 0
-
 var _spawned: bool = false
+const MELEE_TEMPLATE := preload("res://Scenes/Templates/EquipmentItems/Melee_Weapon_Template.tscn")
+const RANGED_TEMPLATE := preload("res://Scenes/Templates/EquipmentItems/Ranged_Weapon_template.tscn")
+const SPELL_TEMPLATE := preload("res://Scenes/Templates/EquipmentItems/Spell_Fireball_template.tscn")
+const SHIELD_TEMPLATE := preload("res://Scenes/Templates/EquipmentItems/Shield_template.tscn")
 
+
+func _ready() -> void:
+	# In authored floor rooms, FloorSpawner will call spawn_with_run_seed().
+	# In sandbox scenes, we auto-spawn on ready for fast iteration.
+	if Engine.is_editor_hint():
+		return
+	if _spawned:
+		return
+	if not auto_spawn_when_no_floor_spawner:
+		return
+	var fs: Node = get_tree().get_first_node_in_group("floor_spawner")
+	if fs != null:
+		return
+	# Use override if enabled, else default to 0 for sandbox.
+	spawn()
 
 static func roll_preview(bt: BaseItemType, seed: int) -> ItemInstance:
 	if bt == null or bt.item_def == null:
@@ -45,9 +65,17 @@ func spawn_with_run_seed(run_seed: int) -> Node:
 		return null
 	_spawned = true
 
-	if base_type == null or base_type.item_def == null or pickup_scene == null:
-		push_warning("ItemSpawner: Missing base_type/item_def/pickup_scene.")
+	if base_type == null or base_type.item_def == null:
+		push_warning("ItemSpawner: Missing base_type/item_def.")
 		return null
+
+	# If pickup_scene is not set, fall back to the default ground pickup scene.
+	if pickup_scene == null:
+		pickup_scene = load("res://Scenes/Templates/World/GroundItemPickup.tscn")
+		if pickup_scene == null:
+			push_warning("ItemSpawner: pickup_scene is null and default GroundItemPickup.tscn could not be loaded.")
+			return null
+
 
 	var sid: StringName = spawn_id
 	if sid == StringName() or String(sid).is_empty():
@@ -81,12 +109,13 @@ func spawn_with_run_seed(run_seed: int) -> Node:
 		return null
 
 	var pickup: EquipmentSwapPickup = pickup_node as EquipmentSwapPickup
-	var item_node: ItemNode = ItemNode.new()
-	item_node.set_item_instance(inst)
-	pickup.set_item(item_node)
-
-	get_parent().add_child(pickup)
-	pickup.global_position = global_position
+	var equip_item: Node = _make_equipment_item(inst)
+	if equip_item == null:
+		pickup.queue_free()
+		return null
+	pickup.set_item(equip_item)
+	get_parent().add_child.call_deferred(pickup)
+	pickup.set_deferred("global_position", global_position)
 	return pickup
 
 
@@ -100,6 +129,42 @@ func _compute_auto_spawn_id() -> StringName:
 		return &""
 	return StringName("room_%d_%d_pickup_%d" % [auto_room_coord.x, auto_room_coord.y, auto_room_local_index])
 
+
+func _make_equipment_item(inst: ItemInstance) -> Node:
+	if inst == null or inst.def == null:
+		return null
+
+	var cat := int(inst.def.category)
+	var scene: PackedScene = null
+
+	match cat:
+		ItemDef.Category.MELEE:
+			scene = MELEE_TEMPLATE
+		ItemDef.Category.RANGED:
+			scene = RANGED_TEMPLATE
+		ItemDef.Category.SPELL:
+			scene = SPELL_TEMPLATE
+		ItemDef.Category.SHIELD:
+			scene = SHIELD_TEMPLATE
+		_:
+			scene = MELEE_TEMPLATE
+
+	if scene == null:
+		return null
+
+	var n: Node = scene.instantiate()
+
+	# Preferred path: inject instance directly
+	if n.has_method(&"set_item_instance"):
+		n.call(&"set_item_instance", inst)
+	else:
+		# Fallback for older nodes: set def/seed if fields exist
+		if "item_def" in n:
+			n.set("item_def", inst.def)
+		if "item_seed" in n:
+			n.set("item_seed", inst.seed)
+
+	return n
 
 func _make_drop_seed(run_seed: int, id: StringName, idx: int) -> int:
 	var h: int = int(hash(id))
@@ -257,5 +322,3 @@ func _to_token(s: String) -> String:
 		out = out.substr(0, out.length() - 1)
 
 	return out
-
-

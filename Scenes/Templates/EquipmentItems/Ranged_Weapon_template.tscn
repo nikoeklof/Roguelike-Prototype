@@ -4,6 +4,7 @@
 
 [node name="RangedWeapon" type="Node2D" unique_id=2040042474]
 script = ExtResource("1_l48yt")
+pickup_slot_kind = 1
 
 [node name="Visual" type="Node2D" parent="." unique_id=1848585108]
 

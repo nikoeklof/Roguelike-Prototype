@@ -7,8 +7,6 @@ radius = 8.0
 
 [node name="GroundItemPickup" type="Area2D" unique_id=635862218 groups=["interactable"]]
 script = ExtResource("1_4ccs4")
-throw_scale_pop = 2.0
-tooltip_width = 200.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=722130518]
 shape = SubResource("CircleShape2D_nc7mq")

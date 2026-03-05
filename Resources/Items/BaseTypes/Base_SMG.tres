@@ -1,7 +1,6 @@
 [gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://8ljp76qu0ced"]
 
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="1"]
-[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="1_iflyq"]
 [ext_resource type="Resource" uid="uid://cv0r3gb0d82xu" path="res://Resources/Items/Weapons/SMG.tres" id="2"]
 [ext_resource type="Resource" uid="uid://bsyk2qdhttneq" path="res://Resources/Items/Pools/Pool_Ranged_All.tres" id="3"]
 

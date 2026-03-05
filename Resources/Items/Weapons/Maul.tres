@@ -17,7 +17,6 @@ metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 [resource]
 script = ExtResource("2_ce5db")
 id = &"maul"
-category = 0
 display_name = "Maul"
 base_stats = SubResource("Resource_0jo7v")
 metadata/_custom_type_script = "uid://bhof2rvqrnl7f"

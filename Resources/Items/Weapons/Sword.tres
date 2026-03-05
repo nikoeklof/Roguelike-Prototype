@@ -17,7 +17,6 @@ metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 [resource]
 script = ExtResource("2_bqh06")
 id = &"sword"
-category = 0
 display_name = "Sword"
 base_stats = SubResource("Resource_bqh06")
 metadata/_custom_type_script = "uid://bhof2rvqrnl7f"

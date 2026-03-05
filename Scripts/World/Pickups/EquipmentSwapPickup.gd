@@ -22,6 +22,8 @@ var _in_pickup_radius: bool = false
 var _tooltip_panel: PanelContainer = null
 var _tooltip_text: RichTextLabel = null
 
+@onready var _socket: Node2D = get_node_or_null("ItemSocket")
+
 
 func _ready() -> void:
 	monitoring = false
@@ -99,22 +101,39 @@ func interact(interactor: Node) -> void:
 	var picked: Node = _item
 	_item = null
 
+	# Attempt swap
 	var old_item: Node = equipment.swap_item_in_slot(slot_kind, picked)
 
-	if picked.get_parent() == null:
+	# ✅ Determine success by checking if 'picked' is now under Equipment
+	var success := is_instance_valid(picked) and _is_descendant_of(picked, equipment)
+
+	if not success:
+		# Swap failed: put the item back on the ground pickup and keep the pickup alive.
 		set_item(picked)
 		return
 
-	if old_item == null:
-		queue_free()
-		return
+	# Swap succeeded:
+	# - If we got an old item back, it becomes the new ground item.
+	# - If not, the pickup is consumed.
+	if old_item != null and is_instance_valid(old_item):
+		set_item(old_item)
 
-	set_item(old_item)
-
-	if throw_enabled:
-		_play_throw_from_to(interactor, origin_pos)
+		# Optional throw animation (same behavior you had)
+		if throw_enabled:
+			_play_throw_from_to(interactor, origin_pos)
+		else:
+			global_position = origin_pos
 	else:
-		global_position = origin_pos
+		queue_free()
+
+
+static func _is_descendant_of(node: Node, ancestor: Node) -> bool:
+	var p: Node = node
+	while p != null:
+		if p == ancestor:
+			return true
+		p = p.get_parent()
+	return false
 
 
 func _play_throw_from_to(interactor: Node, target_origin: Vector2) -> void:
@@ -152,11 +171,18 @@ func _play_throw_from_to(interactor: Node, target_origin: Vector2) -> void:
 
 
 func _build_tooltip() -> void:
+	var parent: Node = self
+	if _socket != null:
+		parent = _socket
+
 	_tooltip_panel = PanelContainer.new()
 	_tooltip_panel.name = "ItemTooltip"
 	_tooltip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_tooltip_panel.position = tooltip_local_offset
 	_tooltip_panel.custom_minimum_size = Vector2(tooltip_width, 0.0)
+
+	# Important: when Control is under Node2D, force nonzero width
+	_tooltip_panel.size = Vector2(tooltip_width, 0.0)
 
 	if not tooltip_use_background:
 		var empty_style: StyleBoxEmpty = StyleBoxEmpty.new()
@@ -182,13 +208,16 @@ func _build_tooltip() -> void:
 	_tooltip_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_tooltip_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
+	# Force width so it doesn't become a vertical line
+	_tooltip_text.custom_minimum_size = Vector2(tooltip_width, 0.0)
+
 	var font: Font = ThemeDB.fallback_font
 	if font != null:
 		_tooltip_text.add_theme_font_override("normal_font", font)
 		_tooltip_text.add_theme_font_size_override("normal_font_size", tooltip_font_size)
 
 	_tooltip_panel.add_child(_tooltip_text)
-	add_child(_tooltip_panel)
+	parent.add_child(_tooltip_panel)
 
 
 func _refresh_tooltip() -> void:
@@ -222,8 +251,7 @@ func _find_equipment_recursive(root: Node) -> Equipment:
 	if direct is Equipment:
 		return direct as Equipment
 
-	var children: Array = root.get_children()
-	for child in children:
+	for child in root.get_children():
 		var c: Node = child as Node
 		if c == null:
 			continue
@@ -234,21 +262,38 @@ func _find_equipment_recursive(root: Node) -> Equipment:
 
 
 func _infer_slot_kind(item: Node) -> int:
-	if item != null and item.has_method("get_pickup_slot_kind"):
-		return int(item.call("get_pickup_slot_kind"))
-	return Equipment.item_slot_kind(item)
+	# Best source of truth: ItemInstance.def.category
+	var inst: ItemInstance = ItemTooltipFormatter.get_item_instance(item)
+	if inst != null and inst.def != null:
+		match int(inst.def.category):
+			ItemDef.Category.MELEE:
+				return Equipment.SlotKind.MELEE
+			ItemDef.Category.RANGED:
+				return Equipment.SlotKind.RANGED
+			ItemDef.Category.SPELL:
+				return Equipment.SlotKind.SPELL
+			ItemDef.Category.SHIELD:
+				return Equipment.SlotKind.SHIELD
 
+	# Fallback to item-provided method if present
+	if item != null and item.has_method(&"get_pickup_slot_kind"):
+		var res: Variant = item.call(&"get_pickup_slot_kind")
+		return int(res)
+
+	# Last resort: old heuristic
+	return Equipment.item_slot_kind(item)
 
 func _update_pickup_visual() -> void:
 	if _sprite == null:
 		return
 
 	var tex: Texture2D = null
-	if _item != null and _item.has_method("get_pickup_icon"):
-		var res: Variant = _item.call("get_pickup_icon")
+	if _item != null and _item.has_method(&"get_pickup_icon"):
+		var res: Variant = _item.call(&"get_pickup_icon")
 		if res is Texture2D:
 			tex = res as Texture2D
 
+	# fallback: if item has an internal sprite
 	if tex == null and _item != null:
 		var s: Sprite2D = _find_first_sprite(_item)
 		if s != null:
@@ -260,8 +305,7 @@ func _update_pickup_visual() -> void:
 func _find_first_sprite(root: Node) -> Sprite2D:
 	if root is Sprite2D:
 		return root as Sprite2D
-	var children: Array = root.get_children()
-	for child in children:
+	for child in root.get_children():
 		var c: Node = child as Node
 		if c == null:
 			continue
@@ -272,8 +316,7 @@ func _find_first_sprite(root: Node) -> Sprite2D:
 
 
 func _find_item_child() -> Node:
-	var children: Array = get_children()
-	for child in children:
+	for child in get_children():
 		var n: Node = child as Node
 		if n == null:
 			continue
@@ -285,11 +328,10 @@ func _find_item_child() -> Node:
 			continue
 		if n is Control:
 			continue
-
-		if n.has_method("get_pickup_slot_kind") or n.has_method("get_item_instance") or n.has_method("compute_stats"):
+		if n.has_method(&"get_pickup_slot_kind") or n.has_method(&"get_item_instance") or n.has_method(&"compute_stats"):
 			return n
 
-	for child2 in children:
+	for child2 in get_children():
 		var n2: Node = child2 as Node
 		if n2 == null:
 			continue
@@ -309,9 +351,7 @@ func _find_item_child() -> Node:
 func _hide_visuals_recursive(node: Node) -> void:
 	if node is CanvasItem:
 		(node as CanvasItem).visible = false
-
-	var children: Array = node.get_children()
-	for child in children:
+	for child in node.get_children():
 		var c: Node = child as Node
 		if c != null:
 			_hide_visuals_recursive(c)

@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://b0eb7ryv2foaw" path="res://Scenes/Templates/Entities/Player_Entity_Template.tscn" id="1_kyx5t"]
 [ext_resource type="PackedScene" uid="uid://wj0aehlmsmj3" path="res://Scenes/UI/DebugHUD.tscn" id="2_tiaw2"]
 [ext_resource type="Script" uid="uid://dpt1ah3dct4go" path="res://Scripts/World/Spawners/ItemSpawner.gd" id="3_x3clo"]
-[ext_resource type="PackedScene" uid="uid://dfwht10plwohx" path="res://Scenes/Templates/World/GroundItemPickup.tscn" id="4_s54dy"]
+[ext_resource type="Resource" uid="uid://dd7da2d8a8a74" path="res://Resources/Items/BaseTypes/Base_Shotgun.tres" id="5_kyx5t"]
 [ext_resource type="Resource" uid="uid://8ljp76qu0ced" path="res://Resources/Items/BaseTypes/Base_SMG.tres" id="5_x3clo"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
@@ -61,6 +61,13 @@ player_root_path = NodePath("../Player")
 [node name="ItemSpawner" type="Node2D" parent="." unique_id=1281174536]
 position = Vector2(172, -151)
 script = ExtResource("3_x3clo")
-pickup_scene = ExtResource("4_s54dy")
 base_type = ExtResource("5_x3clo")
+metadata/_custom_type_script = "uid://dpt1ah3dct4go"
+
+[node name="ItemSpawner2" type="Node2D" parent="." unique_id=2119038145]
+position = Vector2(450, -148)
+script = ExtResource("3_x3clo")
+base_type = ExtResource("5_kyx5t")
+run_seed_override_enabled = true
+run_seed_override = 321321
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"

@@ -386,6 +386,18 @@ script = ExtResource("9_7r15b")
 [node name="Equipment" parent="." unique_id=526877775 instance=ExtResource("11_5nqxw")]
 unique_name_in_owner = true
 
+[node name="MeleeSlot" parent="Equipment" index="0" unique_id=1103842256]
+initial_item_scene = null
+
+[node name="RangedSlot" parent="Equipment" index="1" unique_id=1681126984]
+initial_item_scene = null
+
+[node name="SpellSlot" parent="Equipment" index="2" unique_id=1739323574]
+initial_item_scene = null
+
+[node name="ShieldSlot" parent="Equipment" index="3" unique_id=1862735357]
+initial_item_scene = null
+
 [node name="Mover" type="Node" parent="." unique_id=102850989]
 script = ExtResource("10_ovmla")
 
@@ -441,3 +453,5 @@ script = ExtResource("20_tm314")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea" unique_id=1202237707]
 shape = SubResource("CircleShape2D_d71ut")
+
+[editable path="Equipment"]
