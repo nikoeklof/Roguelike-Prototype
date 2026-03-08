@@ -1,15 +1,12 @@
 extends Weapon
 class_name RangedWeapon
 
-# ---- New data-driven item system ----
 @export var item_def: ItemDef
 @export var item_seed: int = 0
 @export_range(0, 8, 1) var editor_attribute_count: int = 0
 
-# Executor used by RangedFireVariant
 @export var ranged_executor_scene: PackedScene = preload("res://Scenes/Combat/Executors/RangedFireExecutor.tscn")
 
-# Inspector-driven mechanical defaults (attributes can override via modify_ranged_shot)
 @export var projectile_scene: PackedScene
 @export var muzzle_offset: Vector2 = Vector2.ZERO
 
@@ -21,17 +18,14 @@ class_name RangedWeapon
 @export_range(0.0, 60.0, 0.1) var spread_degrees: float = 0.0
 @export_range(0.0, 60.0, 0.1) var spread_pattern_degrees: float = 0.0
 
-# Default ranges for non-projectile modes (attributes can override)
 @export_range(1.0, 5000.0, 1.0) var hitscan_range: float = 900.0
 @export_range(1.0, 5000.0, 1.0) var beam_range: float = 900.0
 @export_range(0.05, 5.0, 0.01) var beam_duration_sec: float = 0.35
 @export_range(0.02, 1.0, 0.01) var beam_tick_sec: float = 0.10
 
-# Timing defaults if stats don’t provide them
 @export_range(0.0, 2.0, 0.01) var default_windup: float = 0.0
 @export_range(0.0, 2.0, 0.01) var default_recovery: float = 0.10
 
-# Default base mode (attributes can change shot.mode)
 @export var default_mode: RangedShotData.ShotMode = RangedShotData.ShotMode.PROJECTILE
 
 var _instance: ItemInstance = null
@@ -40,6 +34,7 @@ var _instance: ItemInstance = null
 func _ready() -> void:
 	if _instance != null:
 		return
+
 	if item_def == null:
 		push_warning("%s: item_def is null (RangedWeapon expects ItemDef)." % name)
 		return
@@ -65,71 +60,64 @@ func set_item_instance(inst: ItemInstance) -> void:
 
 
 func get_attack_variant(ctx: CombatContext) -> AttackVariant:
-	# Gate by weapon cooldown in the NEW executor path.
 	if not can_attack():
 		return null
 
 	if item_def == null:
 		return null
+
 	if _instance == null:
 		_ready()
+
 	if _instance == null:
 		return null
 
 	ctx.item_instance = _instance
 
-	var stats: ItemStats = _instance.compute_stats(ctx)
+	var variant: RangedFireVariant = RangedFireVariant.new()
+	variant.executor_scene = ranged_executor_scene
 
-	# Commit cooldown here so executor-path respects cooldown.
-	commit_cooldown(stats.cooldown_sec)
+	variant.windup_time = default_windup
+	variant.recovery_time = default_recovery
 
-	var v: RangedFireVariant = RangedFireVariant.new()
-	v.executor_scene = ranged_executor_scene
+	variant.default_mode = default_mode
+	if int(_instance.ranged_mode) >= 0:
+		variant.default_mode = int(_instance.ranged_mode)
 
-	# Timing (use stats if provided, otherwise inspector defaults)
-	v.windup_time = stats.windup_time if stats.windup_time > 0.0 else default_windup
-	v.recovery_time = stats.recovery_time if stats.recovery_time > 0.0 else default_recovery
+	variant.spread_degrees = spread_degrees
+	variant.spread_pattern_degrees = spread_pattern_degrees
+	variant.muzzle_offset = muzzle_offset
 
-	# Mechanical defaults (attributes can override via modify_ranged_shot)
-	v.default_mode = default_mode
-	# Preferred: mode is rolled and stored on the ItemInstance.
-	if _instance != null and int(_instance.ranged_mode) >= 0:
-		v.default_mode = int(_instance.ranged_mode)
-	v.spread_degrees = spread_degrees
-	v.spread_pattern_degrees = spread_pattern_degrees
-	v.muzzle_offset = muzzle_offset
+	variant.projectile_scene = projectile_scene
+	variant.projectile_speed = speed
+	variant.projectile_gravity = gravity
+	variant.projectile_lifetime_sec = lifetime_sec
+	variant.inherit_owner_velocity = inherit_owner_velocity
 
-	v.projectile_scene = projectile_scene
-	v.projectile_speed = speed
-	v.projectile_gravity = gravity
-	v.projectile_lifetime_sec = lifetime_sec
-	v.inherit_owner_velocity = inherit_owner_velocity
+	variant.hitscan_range = hitscan_range
+	variant.beam_range = beam_range
+	variant.beam_duration_sec = beam_duration_sec
+	variant.beam_tick_sec = beam_tick_sec
 
-	v.hitscan_range = hitscan_range
-	v.beam_range = beam_range
-	v.beam_duration_sec = beam_duration_sec
-	v.beam_tick_sec = beam_tick_sec
-
-	return v
+	return variant
 
 
 func try_attack(dir: Vector2, owner_entity: Node) -> bool:
-	# Legacy path kept only so older callers don’t break.
-	# Combat should be using get_attack_variant() + executor.
 	if owner_entity == null:
 		return false
 	if not can_attack():
 		return false
 
-	# If something calls try_attack directly, we still gate cooldown correctly.
-	var cd: float = 0.0
+	var cooldown_sec: float = 0.0
 	if _instance != null:
 		var ctx: CombatContext = CombatContext.new()
 		ctx.owner = owner_entity
 		ctx.aim_dir = dir.normalized() if dir.length() > 0.001 else Vector2.RIGHT
 		ctx.item = self
 		ctx.item_instance = _instance
-		cd = _instance.compute_stats(ctx).cooldown_sec
 
-	commit_cooldown(cd)
+		var stats: ItemStats = _instance.compute_stats(ctx)
+		cooldown_sec = stats.cooldown_sec
+
+	commit_cooldown(cooldown_sec)
 	return false

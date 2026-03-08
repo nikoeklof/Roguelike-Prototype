@@ -7,8 +7,8 @@ signal attack_finished(kind: int)
 enum AttackKind { NONE, MELEE, RANGED, SPELL }
 
 @export_node_path("Equipment") var equipment_path: NodePath = ^"Equipment"
-var _equipment: Equipment
 
+var _equipment: Equipment
 var _active_executor: AttackExecutor
 
 
@@ -24,12 +24,14 @@ func _notification(what: int) -> void:
 
 
 func _resolve_equipment() -> Equipment:
-	var e := get_node_or_null(equipment_path) as Equipment
+	var e: Equipment = get_node_or_null(equipment_path) as Equipment
 	if e != null:
 		return e
-	var entity := get_parent() as Entity
+
+	var entity: Entity = get_parent() as Entity
 	if entity == null:
 		return null
+
 	return entity.get_component(&"Equipment") as Equipment
 
 
@@ -40,59 +42,62 @@ func equipment() -> Equipment:
 
 
 func allows_movement_for(kind: int) -> bool:
-	var e := equipment()
+	var e: Equipment = equipment()
 	if e == null:
 		return true
-	var item := e.get_item_for_kind(kind)
+
+	var item: Node = e.get_item_for_kind(kind)
 	if item == null:
 		return true
+
 	if item is Weapon:
 		return (item as Weapon).allow_move_during_attack
+
 	if item is Spell:
 		return (item as Spell).allow_move_during_cast
+
 	return true
 
 
 func try_attack(kind: int, dir: Vector2) -> bool:
-	# Compatibility wrapper used by the current Attack state.
-	var e := equipment()
+	var e: Equipment = equipment()
 	if e == null:
 		return false
-	var owner_entity := get_parent()
+
+	var owner_entity: Node = get_parent()
 	if owner_entity == null:
 		return false
 
-	# If something is already executing, don't start a new one.
 	if _active_executor != null and is_instance_valid(_active_executor):
 		return false
 
-	var item := e.get_item_for_kind(kind)
+	var item: Node = e.get_item_for_kind(kind)
 	if item == null:
 		return false
 
-	var d := dir
-	if d.length() < 0.001:
-		d = Vector2.RIGHT
+	var aim_dir: Vector2 = dir
+	if aim_dir.length() < 0.001:
+		aim_dir = Vector2.RIGHT
 	else:
-		d = d.normalized()
+		aim_dir = aim_dir.normalized()
 
-	# --- New executor path ---
-	var variant := _get_variant_from_item(item, owner_entity, d)
+	var ctx: CombatContext = _build_context(owner_entity, aim_dir, item)
+	var variant: AttackVariant = _get_variant_from_item(item, ctx)
 	if variant != null:
-		return _run_variant(kind, variant, owner_entity, d, item)
+		return _run_variant(kind, variant, ctx)
 
-	# --- Legacy path (kept for gradual migration) ---
+	# Legacy fallback path
 	if item is Weapon:
-		var w := item as Weapon
+		var w: Weapon = item as Weapon
 		if not w.attack_finished.is_connected(_on_weapon_attack_finished):
 			w.attack_finished.connect(_on_weapon_attack_finished.bind(kind), CONNECT_ONE_SHOT)
-		return w.try_attack(d, owner_entity)
+		return w.try_attack(aim_dir, owner_entity)
 
 	if item is Spell:
-		var s := item as Spell
+		var s: Spell = item as Spell
 		if not s.cast_finished.is_connected(_on_spell_cast_finished):
 			s.cast_finished.connect(_on_spell_cast_finished.bind(kind), CONNECT_ONE_SHOT)
-		return s.try_cast(owner_entity, d)
+		return s.try_cast(owner_entity, aim_dir)
 
 	return false
 
@@ -111,45 +116,48 @@ func _on_spell_cast_finished(_success: bool, kind: int) -> void:
 	attack_finished.emit(kind)
 
 
-func _get_variant_from_item(item: Node, owner_entity: Node, dir: Vector2) -> AttackVariant:
-	var ctx := CombatContext.new()
+func _build_context(owner_entity: Node, dir: Vector2, item: Node) -> CombatContext:
+	var ctx: CombatContext = CombatContext.new()
 	ctx.owner = owner_entity
 	ctx.aim_dir = dir
 	ctx.equipment = equipment()
 	ctx.item = item
 	ctx.item_instance = _extract_item_instance(item)
-
 	ctx.stats = _resolve_component(owner_entity, &"Stats")
 	ctx.tags = _resolve_component(owner_entity, &"Tags")
 	ctx.faction = _resolve_component(owner_entity, &"Faction")
 	ctx.capabilities = _resolve_component(owner_entity, &"Capabilities")
+
+	return ctx
+
+
+func _get_variant_from_item(item: Node, ctx: CombatContext) -> AttackVariant:
+	if item == null:
+		return null
 
 	if item.has_method("get_attack_variant"):
 		var v: Variant = item.call("get_attack_variant", ctx)
 		if v is AttackVariant:
 			return v as AttackVariant
+
 	return null
 
 
-func _run_variant(kind: int, variant: AttackVariant, owner_entity: Node, dir: Vector2, item: Node) -> bool:
-	var ctx := CombatContext.new()
-	ctx.owner = owner_entity
-	ctx.aim_dir = dir
-	ctx.equipment = equipment()
-	ctx.item = item
-	ctx.item_instance = _extract_item_instance(item)
-
-	ctx.stats = _resolve_component(owner_entity, &"Stats")
-	ctx.tags = _resolve_component(owner_entity, &"Tags")
-	ctx.faction = _resolve_component(owner_entity, &"Faction")
-	ctx.capabilities = _resolve_component(owner_entity, &"Capabilities")
-
-	var exec := variant.create_executor(ctx)
+func _run_variant(kind: int, variant: AttackVariant, ctx: CombatContext) -> bool:
+	var exec: AttackExecutor = variant.create_executor(ctx)
 	if exec == null:
 		return false
+	var snap: AttackSnapshot = AttackResolver.resolve(ctx, variant)
+	_commit_item_cooldown(ctx.item, snap.cooldown_sec)
 
+	exec.snapshot = snap
 	_active_executor = exec
-	owner_entity.add_child(exec)
+
+	if ctx.owner == null:
+		_active_executor = null
+		return false
+
+	ctx.owner.add_child(exec)
 
 	exec.finished.connect(func(_success: bool) -> void:
 		_active_executor = null
@@ -160,13 +168,29 @@ func _run_variant(kind: int, variant: AttackVariant, owner_entity: Node, dir: Ve
 	return true
 
 
+func _commit_item_cooldown(item: Node, cooldown_sec: float) -> void:
+	if item == null:
+		return
+
+	if item is Weapon:
+		var weapon: Weapon = item as Weapon
+		weapon.commit_cooldown(cooldown_sec)
+		return
+
+	# Futureproof hook if you later add commit_cooldown() to spells/shields/etc.
+	if item.has_method("commit_cooldown"):
+		item.call("commit_cooldown", cooldown_sec)
+
+
 func _extract_item_instance(item: Node) -> ItemInstance:
 	if item == null:
 		return null
+
 	if item.has_method("get_item_instance"):
 		var v: Variant = item.call("get_item_instance")
 		if v is ItemInstance:
 			return v as ItemInstance
+
 	return null
 
 
@@ -177,7 +201,7 @@ func _resolve_component(owner_entity: Node, cls: StringName) -> Node:
 
 
 func _get_configuration_warnings() -> PackedStringArray:
-	var w := PackedStringArray()
+	var warnings: PackedStringArray = PackedStringArray()
 	if _resolve_equipment() == null:
-		w.append("Combat: Missing Equipment. Add an Equipment node as a direct child of the entity, or set equipment_path.")
-	return w
+		warnings.append("Combat: Missing Equipment. Add an Equipment node as a direct child of the entity, or set equipment_path.")
+	return warnings

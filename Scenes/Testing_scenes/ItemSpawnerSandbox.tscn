@@ -5,6 +5,8 @@
 [ext_resource type="Script" uid="uid://dpt1ah3dct4go" path="res://Scripts/World/Spawners/ItemSpawner.gd" id="3_x3clo"]
 [ext_resource type="Resource" uid="uid://dd7da2d8a8a74" path="res://Resources/Items/BaseTypes/Base_Shotgun.tres" id="5_kyx5t"]
 [ext_resource type="Resource" uid="uid://8ljp76qu0ced" path="res://Resources/Items/BaseTypes/Base_SMG.tres" id="5_x3clo"]
+[ext_resource type="Resource" uid="uid://dki8qndxyoqep" path="res://Resources/Items/BaseTypes/Base_Maul.tres" id="6_x3clo"]
+[ext_resource type="Resource" uid="uid://ch6uawoeugf1x" path="res://Resources/Items/BaseTypes/Base_Dagger.tres" id="7_sn2kg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
 size = Vector2(1169, 20)
@@ -65,9 +67,25 @@ base_type = ExtResource("5_x3clo")
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"
 
 [node name="ItemSpawner2" type="Node2D" parent="." unique_id=2119038145]
-position = Vector2(450, -148)
+position = Vector2(437, -154)
 script = ExtResource("3_x3clo")
 base_type = ExtResource("5_kyx5t")
+run_seed_override_enabled = true
+run_seed_override = 321321
+metadata/_custom_type_script = "uid://dpt1ah3dct4go"
+
+[node name="ItemSpawner3" type="Node2D" parent="." unique_id=1708997809]
+position = Vector2(988, -149)
+script = ExtResource("3_x3clo")
+base_type = ExtResource("6_x3clo")
+run_seed_override_enabled = true
+run_seed_override = 321321
+metadata/_custom_type_script = "uid://dpt1ah3dct4go"
+
+[node name="ItemSpawner4" type="Node2D" parent="." unique_id=508096006]
+position = Vector2(736, -152)
+script = ExtResource("3_x3clo")
+base_type = ExtResource("7_sn2kg")
 run_seed_override_enabled = true
 run_seed_override = 321321
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"

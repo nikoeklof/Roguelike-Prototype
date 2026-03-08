@@ -1,9 +1,0 @@
-[gd_scene format=3 uid="uid://te0h6oeebida"]
-
-[ext_resource type="Script" uid="uid://c2ce37mm7autc" path="res://Scripts/Components/Equipment/Items/Spells/HealSpell.gd" id="1_5whpd"]
-
-[node name="HealSpell" type="Node" unique_id=815258626]
-script = ExtResource("1_5whpd")
-spell_type = 1
-
-[node name="Timer" type="Timer" parent="." unique_id=683216987]

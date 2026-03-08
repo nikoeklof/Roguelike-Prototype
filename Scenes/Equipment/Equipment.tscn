@@ -2,11 +2,19 @@
 
 [ext_resource type="Script" uid="uid://dmvjyjl868y6o" path="res://Scripts/Components/Equipment/Equipment.gd" id="1_sie3v"]
 [ext_resource type="Script" uid="uid://c5g387qpnw365" path="res://Scripts/Components/Equipment/Slots/EquipmentSlot.gd" id="2_88lbc"]
-[ext_resource type="PackedScene" uid="uid://c8cgfaprfybnj" path="res://Scenes/Templates/EquipmentItems/MeleeWeapon_TestKnife.tscn" id="3_elcqj"]
-[ext_resource type="PackedScene" uid="uid://wmfb80ryka6h" path="res://Scenes/Templates/EquipmentItems/RangedWeapon_TestPistol.tscn" id="4_0blv5"]
-[ext_resource type="PackedScene" uid="uid://d27yklcx82qqb" path="res://Scenes/Templates/EquipmentItems/Spell_TestFireball.tscn" id="5_2chi6"]
 [ext_resource type="Script" uid="uid://c1ccl2e57cc0x" path="res://Scripts/Components/Equipment/Slots/ShieldSlot.gd" id="6_0blv5"]
-[ext_resource type="PackedScene" uid="uid://c1mbhyoas1a07" path="res://Scenes/Templates/EquipmentItems/shield_test_buckler.tscn" id="7_6yrri"]
+
+[sub_resource type="Resource" id="Resource_sie3v"]
+metadata/__load_path__ = "res://Scenes/Templates/EquipmentItems/MeleeWeapon_TestKnife.tscn"
+
+[sub_resource type="Resource" id="Resource_apj00"]
+metadata/__load_path__ = "res://Scenes/Templates/EquipmentItems/RangedWeapon_TestPistol.tscn"
+
+[sub_resource type="Resource" id="Resource_a1w0k"]
+metadata/__load_path__ = "res://Scenes/Templates/EquipmentItems/Spell_TestFireball.tscn"
+
+[sub_resource type="Resource" id="Resource_88lbc"]
+metadata/__load_path__ = "res://Scenes/Templates/EquipmentItems/shield_test_buckler.tscn"
 
 [node name="Equipment" type="Node" unique_id=526877775]
 script = ExtResource("1_sie3v")
@@ -14,22 +22,22 @@ script = ExtResource("1_sie3v")
 [node name="MeleeSlot" type="Node" parent="." unique_id=1103842256]
 script = ExtResource("2_88lbc")
 allow_multiple = null
-initial_item_scene = ExtResource("3_elcqj")
+initial_item_scene = SubResource("Resource_sie3v")
 
 [node name="RangedSlot" type="Node" parent="." unique_id=1681126984]
 script = ExtResource("2_88lbc")
 slot_kind = 1
 allow_multiple = null
-initial_item_scene = ExtResource("4_0blv5")
+initial_item_scene = SubResource("Resource_apj00")
 
 [node name="SpellSlot" type="Node" parent="." unique_id=1739323574]
 script = ExtResource("2_88lbc")
 slot_kind = 2
 allow_multiple = null
-initial_item_scene = ExtResource("5_2chi6")
+initial_item_scene = SubResource("Resource_a1w0k")
 
 [node name="ShieldSlot" type="Node" parent="." unique_id=1862735357]
 script = ExtResource("6_0blv5")
 slot_kind = 3
 allow_multiple = null
-initial_item_scene = ExtResource("7_6yrri")
+initial_item_scene = SubResource("Resource_88lbc")
