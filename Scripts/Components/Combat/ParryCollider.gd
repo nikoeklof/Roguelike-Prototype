@@ -13,21 +13,23 @@ func setup(owner_entity: Node, shape_size: Vector2, local_offset: Vector2, durat
 	duration_sec = duration
 	reflect = do_reflect
 
-	var cs := CollisionShape2D.new()
-	var rect := RectangleShape2D.new()
+	var cs: CollisionShape2D = CollisionShape2D.new()
+	var rect: RectangleShape2D = RectangleShape2D.new()
 	rect.size = shape_size
 	cs.shape = rect
 	cs.position = local_offset
 	add_child(cs)
 
-	var t := Timer.new()
+	var t: Timer = Timer.new()
 	t.one_shot = true
 	t.wait_time = maxf(0.01, duration_sec)
 	add_child(t)
-	t.timeout.connect(func():
-		queue_free()
-	)
+	t.timeout.connect(Callable(self, "_on_lifetime_timeout"), CONNECT_ONE_SHOT)
 	t.start()
+
+
+func _on_lifetime_timeout() -> void:
+	queue_free()
 
 
 func on_projectile_hit(p: Projectile) -> bool:
@@ -39,6 +41,5 @@ func on_projectile_hit(p: Projectile) -> bool:
 		p.set_projectile_owner(_owner)
 		return true
 
-	# absorb
 	p.queue_free()
 	return true

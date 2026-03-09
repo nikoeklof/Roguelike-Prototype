@@ -9,6 +9,7 @@ damage = 18.0
 cooldown_sec = 1.2
 windup_time = 0.2
 recovery_time = 0.2
+active_time = 0.2
 knockback = 2.5
 hitbox_offset = Vector2(0.8, 0)
 hitbox_size = Vector2(1.6, 1.2)

@@ -3,27 +3,22 @@ class_name PlaceholderMeleeWeapon
 
 @export var label: String = "PlaceholderMelee"
 
-# Legacy placeholder tuning
 @export_range(0.0, 10.0, 0.01) var cooldown_sec: float = 0.25
 
-# Damage + timings
 @export var damage: float = 1.0
 @export var windup_time: float = 0.0
 @export var active_time: float = 0.10
 @export var recovery_time: float = 0.10
 
-# Hitbox geometry (LOCAL to owner; hitbox node is rotated to aim dir)
 @export var hitbox_offset: Vector2 = Vector2(18, 0)
 @export var hitbox_size: Vector2 = Vector2(26, 18)
 
-# Optional extras
 @export var one_hit_per_target: bool = true
 @export var knockback: float = 0.0
 
-# Safety
 @export_range(0, 64, 1) var max_unique_hits: int = 16
 
-var _hitbox: Area2D
+var _hitbox: Area2D = null
 var _hit_ids: Dictionary = {}
 
 
@@ -35,7 +30,7 @@ func try_attack(dir: Vector2, owner_entity: Node) -> bool:
 
 	commit_cooldown(cooldown_sec)
 
-	var d := dir
+	var d: Vector2 = dir
 	if d.length() < 0.001:
 		d = Vector2.RIGHT
 	else:
@@ -46,7 +41,6 @@ func try_attack(dir: Vector2, owner_entity: Node) -> bool:
 
 
 func _run_attack(owner_entity: Node, dir: Vector2) -> void:
-	# IMPORTANT: run gameplay waits in PHYSICS time so Movie Maker/render FPS doesn't slow gameplay.
 	if windup_time > 0.0:
 		await get_tree().create_timer(windup_time, true, true).timeout
 
@@ -76,22 +70,26 @@ func _spawn_hitbox(owner_entity: Node, dir: Vector2) -> void:
 	_hitbox.position = Vector2.ZERO
 	_hitbox.rotation = dir.angle()
 
-	var shape := RectangleShape2D.new()
+	var shape: RectangleShape2D = RectangleShape2D.new()
 	shape.size = hitbox_size
 
-	var cs := CollisionShape2D.new()
+	var cs: CollisionShape2D = CollisionShape2D.new()
 	cs.shape = shape
 	cs.position = hitbox_offset
 	_hitbox.add_child(cs)
 
-	_hitbox.body_entered.connect(func(body: Node) -> void:
-		_try_damage(owner_entity, body, dir)
-	)
-	_hitbox.area_entered.connect(func(area: Area2D) -> void:
-		_try_damage(owner_entity, area, dir)
-	)
+	_hitbox.body_entered.connect(Callable(self, "_on_hitbox_body_entered").bind(owner_entity, dir))
+	_hitbox.area_entered.connect(Callable(self, "_on_hitbox_area_entered").bind(owner_entity, dir))
 
 	owner_entity.add_child(_hitbox)
+
+
+func _on_hitbox_body_entered(body: Node, owner_entity: Node, dir: Vector2) -> void:
+	_try_damage(owner_entity, body, dir)
+
+
+func _on_hitbox_area_entered(area: Area2D, owner_entity: Node, dir: Vector2) -> void:
+	_try_damage(owner_entity, area, dir)
 
 
 func _cleanup_hitbox() -> void:
@@ -132,13 +130,13 @@ func _try_damage(owner_entity: Node, other: Node, dir: Vector2) -> void:
 		return
 
 	if knockback > 0.0 and victim_root is CharacterBody2D:
-		var cb := victim_root as CharacterBody2D
+		var cb: CharacterBody2D = victim_root as CharacterBody2D
 		cb.velocity += dir.normalized() * knockback
 
 
 func _resolve_victim_root(n: Node) -> Node:
 	var cur: Node = n
-	for _i in 6:
+	for _i: int in range(6):
 		if cur == null:
 			break
 		if cur is Entity:
@@ -154,19 +152,30 @@ func _find_health(root: Node) -> Health:
 		return null
 
 	if root is Entity:
-		var h := (root as Entity).find_component(&"Health") as Health
+		var h: Health = (root as Entity).find_component(&"Health") as Health
 		if h != null:
 			return h
 
-	var direct := root.get_node_or_null("Health")
-	if direct is Health:
-		return direct as Health
+	return root.get_node_or_null("Health") as Health
 
-	for c in root.get_children():
-		if c is Health:
-			return c as Health
 
-	return null
+func _can_damage(owner_entity: Node, victim_root: Node) -> bool:
+	if owner_entity == null or victim_root == null:
+		return false
+
+	var owner_faction: Faction = _find_faction(owner_entity)
+	var victim_faction: Faction = _find_faction(victim_root)
+
+	if owner_faction == null or victim_faction == null:
+		return true
+
+	if owner_faction == victim_faction:
+		return false
+
+	if owner_faction.has_method(&"is_hostile_to"):
+		return bool(owner_faction.call(&"is_hostile_to", victim_root))
+
+	return true
 
 
 func _find_faction(root: Node) -> Faction:
@@ -174,27 +183,8 @@ func _find_faction(root: Node) -> Faction:
 		return null
 
 	if root is Entity:
-		var f := (root as Entity).find_component(&"Faction") as Faction
+		var f: Faction = (root as Entity).find_component(&"Faction") as Faction
 		if f != null:
 			return f
 
-	var direct := root.get_node_or_null("Faction")
-	if direct is Faction:
-		return direct as Faction
-
-	for c in root.get_children():
-		if c is Faction:
-			return c as Faction
-
-	return null
-
-
-func _can_damage(attacker_root: Node, victim_root: Node) -> bool:
-	var attacker_f := _find_faction(attacker_root)
-	if attacker_f == null:
-		return true
-
-	if attacker_f.has_method(&"can_damage"):
-		return bool(attacker_f.call(&"can_damage", victim_root))
-
-	return true
+	return root.get_node_or_null("Faction") as Faction

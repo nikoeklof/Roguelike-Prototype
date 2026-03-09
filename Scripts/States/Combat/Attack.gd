@@ -1,129 +1,158 @@
 extends State
+class_name Attack
 
-# Weapon/spell decides movement policy for the attack.
-# (This export remains only so existing scenes don't break; it's ignored.)
-@export var stop_movement := true
-@export var melee_damage: float = 1.0
-
-var _blocked_move := false
-
-
-func _get_control() -> ControlSource:
-	# Prefer resolver if present
-	var control := entity.find_component(&"ControlSource") as ControlSource
-	if control: return control
-
-	# Standard node name
-	control = entity.get_node_or_null("ControlSource") as ControlSource
-	if control: return control
-
-	# Legacy fallback
-	return entity.get_node_or_null("Control") as ControlSource
+var _combat: Combat = null
+var _controls: ControlSource = null
+var _mover: Mover = null
+var _fired_once: bool = false
+var _attack_kind: Combat.AttackKind = Combat.AttackKind.NONE
 
 
-func _get_mover() -> Mover:
-	var m := entity.find_component(&"Mover") as Mover
-	if m: return m
-	return entity.get_node_or_null("Mover") as Mover
+func enter(_msg: Dictionary = {}) -> void:
+	_combat = _get_combat()
+	_controls = _get_control()
+	_mover = _get_mover()
+	_fired_once = false
+	_attack_kind = Combat.AttackKind.NONE
 
-
-func enter() -> void:
-	var control := _get_control()
-	if control == null:
-		push_warning("Attack state requires ControlSource component.")
-		state_handler.change_state("Idle")
-		return
-
-	var combat := entity.get_node_or_null("Combat") as Combat
-	if combat == null:
-		push_warning("Attack state requires Combat node.")
-		state_handler.change_state("Idle")
-		return
-
-	var kind := control.attack_kind_pressed()
-	if kind == Combat.AttackKind.NONE:
-		state_handler.change_state("Idle")
-		return
-
-	# Movement policy comes from the weapon/spell for this kind.
-	var allow_move := combat.allows_movement_for(kind)
-
-	# Capabilities: lock switch/attack always. Lock move only if weapon/spell disallows movement.
-	var caps := entity.get_node_or_null("Capabilities") as Capabilities
-	if caps:
-		_blocked_move = not allow_move
-		if _blocked_move:
-			caps.block(Capabilities.CAN_MOVE, &"attack")
-		caps.block(Capabilities.CAN_SWITCH, &"attack")
-		caps.block(Capabilities.CAN_ATTACK, &"attack") # prevents re-entry spam
-
-	var fp := entity.get_node_or_null("FacingPointer") as FacingPointer
-	var fallback := fp.facing_vector if fp else Vector2.RIGHT
-	var dir := control.attack_dir(fallback)
-
-	# During attack, face the attack direction (eg. mouse aim)
-	if fp:
-		fp.set_manual_facing(dir)
-
-	# Connect BEFORE try_attack so instant-finish attacks can't be missed
-	var cb := Callable(self, "_on_attack_finished")
-	if not combat.attack_finished.is_connected(cb):
-		combat.attack_finished.connect(cb, CONNECT_ONE_SHOT)
-
-	if not combat.try_attack(kind, dir):
-		# Undo connection we made, since nothing started.
-		if combat.attack_finished.is_connected(cb):
-			combat.attack_finished.disconnect(cb)
-
-		if fp:
-			fp.clear_manual_facing()
-
-		_exit_unlocks()
-		state_handler.change_state("Idle")
-		return
+	_resolve_attack_kind()
+	_try_fire_now()
 
 
 func physics_update(delta: float) -> void:
-	# Always run mover so friction applies.
-	# If CAN_MOVE is blocked, Mover ignores input but preserves momentum and decelerates by friction.
-	var mover := _get_mover()
-	if mover:
-		mover.apply(entity, delta)
+	if _controls == null:
+		state_handler.change_state("Idle")
+		return
+
+	_apply_movement(delta)
+
+	if _combat == null:
+		state_handler.change_state("Idle")
+		return
+
+	if _attack_kind == Combat.AttackKind.NONE:
+		state_handler.change_state("Idle")
+		return
+
+	if not _is_attack_still_held_for_kind(_attack_kind):
+		var move_input: Vector2 = _controls.move_intent()
+		if move_input != Vector2.ZERO:
+			state_handler.change_state("Walk")
+		else:
+			state_handler.change_state("Idle")
+		return
+
+	var aim_dir: Vector2 = _controls.aim_dir(Vector2.RIGHT)
+	var automatic: bool = _fires_while_held_for_kind(_attack_kind)
+
+	if automatic:
+		_combat.try_attack(_attack_kind, aim_dir)
+	elif _fired_once:
+		var move_input: Vector2 = _controls.move_intent()
+		if move_input != Vector2.ZERO:
+			state_handler.change_state("Walk")
+		else:
+			state_handler.change_state("Idle")
 
 
 func exit() -> void:
-	var fp := entity.get_node_or_null("FacingPointer") as FacingPointer
-	if fp:
-		fp.clear_manual_facing()
-
-	var combat := entity.get_node_or_null("Combat") as Combat
-	if combat:
-		# Ensure we don't leave stale connections around if state changes early
-		var cb := Callable(self, "_on_attack_finished")
-		if combat.attack_finished.is_connected(cb):
-			combat.attack_finished.disconnect(cb)
-
-	_exit_unlocks()
-
-	# NOTE: combat.stop_all() was referenced in your project but may not exist yet.
-	# Leave it out here to avoid "method not found" until we implement the Combat cleanup contract.
-	# combat.stop_all()
+	_combat = null
+	_controls = null
+	_mover = null
+	_fired_once = false
+	_attack_kind = Combat.AttackKind.NONE
 
 
-func _exit_unlocks() -> void:
-	var caps := entity.get_node_or_null("Capabilities") as Capabilities
-	if caps:
-		if _blocked_move:
-			caps.unblock(Capabilities.CAN_MOVE, &"attack")
-		caps.unblock(Capabilities.CAN_SWITCH, &"attack")
-		caps.unblock(Capabilities.CAN_ATTACK, &"attack")
-	_blocked_move = false
+func _apply_movement(delta: float) -> void:
+	var body: CharacterBody2D = _get_body()
+	if body == null:
+		return
 
+	if _controls == null:
+		return
 
-func _on_attack_finished(_kind: int) -> void:
-	# Optional nicer feel: if still moving, go Walk
-	var control := _get_control()
-	if control and control.move_intent() != Vector2.ZERO:
-		state_handler.change_state("Walk")
+	var move_input: Vector2 = _controls.move_intent()
+
+	if move_input != Vector2.ZERO:
+		if _mover != null:
+			_mover.intent = move_input
+			_mover.apply(body, delta)
 	else:
-		state_handler.change_state("Idle")
+		body.velocity.x = move_toward(body.velocity.x, 0.0, 2000.0 * delta)
+		body.velocity.y = move_toward(body.velocity.y, 0.0, 2000.0 * delta)
+
+
+func _resolve_attack_kind() -> void:
+	if _controls == null:
+		_attack_kind = Combat.AttackKind.NONE
+		return
+
+	var pressed_kind: Combat.AttackKind = _controls.attack_kind_pressed()
+	if pressed_kind != Combat.AttackKind.NONE:
+		_attack_kind = pressed_kind
+		return
+
+	var peek_kind: Combat.AttackKind = _controls.attack_kind_peek()
+	if peek_kind != Combat.AttackKind.NONE:
+		_attack_kind = peek_kind
+		return
+
+	_attack_kind = Combat.AttackKind.NONE
+
+
+func _try_fire_now() -> void:
+	if _combat == null or _controls == null:
+		return
+
+	if _attack_kind == Combat.AttackKind.NONE:
+		return
+
+	var aim_dir: Vector2 = _controls.aim_dir(Vector2.RIGHT)
+	if _combat.try_attack(_attack_kind, aim_dir):
+		_fired_once = true
+
+
+func _is_attack_still_held_for_kind(kind: Combat.AttackKind) -> bool:
+	if _controls == null:
+		return false
+
+	if not _controls.attack_is_down():
+		return false
+
+	var held_kind: Combat.AttackKind = _controls.attack_kind_held()
+	if held_kind != Combat.AttackKind.NONE:
+		return held_kind == kind
+
+	return true
+
+
+func _fires_while_held_for_kind(kind: Combat.AttackKind) -> bool:
+	if _controls == null:
+		return false
+
+	return _controls.weapon_fires_while_held_for_kind(kind)
+
+
+func _get_control() -> ControlSource:
+	if entity == null:
+		return null
+
+	return entity.get_node_or_null("ControlSource") as ControlSource
+
+
+func _get_combat() -> Combat:
+	if entity == null:
+		return null
+
+	return entity.get_node_or_null("Combat") as Combat
+
+
+func _get_mover() -> Mover:
+	if entity == null:
+		return null
+
+	return entity.get_node_or_null("Mover") as Mover
+
+
+func _get_body() -> CharacterBody2D:
+	return entity as CharacterBody2D

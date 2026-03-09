@@ -19,6 +19,7 @@ func rarity() -> int:
 func ensure_initialized() -> void:
 	if def == null:
 		return
+
 	if stat_levels.is_empty():
 		stat_levels["damage"] = 0
 		stat_levels["cooldown_sec"] = 0
@@ -39,6 +40,11 @@ func ensure_initialized() -> void:
 
 		stat_levels["move_speed_mult"] = 0
 		stat_levels["damage_taken_mult"] = 0
+
+		# New runtime-editable ranged spread/origin stats
+		stat_levels["spread_degrees"] = 0
+		stat_levels["spread_pattern_degrees"] = 0
+		stat_levels["muzzle_offset"] = 0
 
 
 func add_attribute(attr: ItemAttribute) -> void:
@@ -68,48 +74,46 @@ func compute_stats(context: CombatContext) -> ItemStats:
 	if def == null:
 		return out
 
-	# Template base stats
-	# IMPORTANT: In tool mode, def can be a placeholder Resource.
-	# Placeholders expose exported properties but DO NOT have script methods,
-	# so do not call def.get_base_stats_safe(). Read exported property directly.
-	var base_stats: ItemStats = def.base_stats if def.base_stats != null else ItemStats.new()
-	var base: ItemStats
-	if base_stats != null:
-		var dup: Resource = base_stats.duplicate(true) # built-in, placeholder-safe
-		if dup is ItemStats:
-			base = dup as ItemStats
-		else:
-			base = ItemStats.new()
-	else:
-		base = ItemStats.new()
+	# Placeholder-safe base stats access.
+	var base_res: Resource = null
+	if def != null and "base_stats" in def:
+		base_res = def.base_stats
 
 	# Collect modifiers from attributes + instance upgrades.
 	var mods: Array[StatModifier] = _collect_stat_modifiers(context)
 
-	# Resolve each field deterministically.
-	out.damage = ModifierResolver.resolve_float(base.damage, _mods_for(mods, StatId.DAMAGE))
-	out.cooldown_sec = ModifierResolver.resolve_float(base.cooldown_sec, _mods_for(mods, StatId.COOLDOWN_SEC))
-	out.windup_time = ModifierResolver.resolve_float(base.windup_time, _mods_for(mods, StatId.WINDUP_TIME))
-	out.recovery_time = ModifierResolver.resolve_float(base.recovery_time, _mods_for(mods, StatId.RECOVERY_TIME))
+	# Resolve each field deterministically using safe exported-property reads.
+	out.damage = ModifierResolver.resolve_float(_stats_float(base_res, &"damage", 0.0), _mods_for(mods, StatId.DAMAGE))
+	out.cooldown_sec = ModifierResolver.resolve_float(_stats_float(base_res, &"cooldown_sec", 0.0), _mods_for(mods, StatId.COOLDOWN_SEC))
+	out.windup_time = ModifierResolver.resolve_float(_stats_float(base_res, &"windup_time", 0.0), _mods_for(mods, StatId.WINDUP_TIME))
+	out.recovery_time = ModifierResolver.resolve_float(_stats_float(base_res, &"recovery_time", 0.0), _mods_for(mods, StatId.RECOVERY_TIME))
 
-	out.projectile_count = ModifierResolver.resolve_int(base.projectile_count, _mods_for(mods, StatId.PROJECTILE_COUNT))
-	out.pierce = ModifierResolver.resolve_int(base.pierce, _mods_for(mods, StatId.PIERCE))
+	out.is_automatic = _stats_bool(base_res, &"is_automatic", false)
+	out.projectile_count = ModifierResolver.resolve_int(_stats_int(base_res, &"projectile_count", 1), _mods_for(mods, StatId.PROJECTILE_COUNT))
+	out.pierce = ModifierResolver.resolve_int(_stats_int(base_res, &"pierce", 0), _mods_for(mods, StatId.PIERCE))
 
-	out.move_speed_mult = ModifierResolver.resolve_float(base.move_speed_mult, _mods_for(mods, StatId.MOVE_SPEED_MULT))
-	out.damage_taken_mult = ModifierResolver.resolve_float(base.damage_taken_mult, _mods_for(mods, StatId.DAMAGE_TAKEN_MULT))
-	out.flat_damage_reduction = ModifierResolver.resolve_float(base.flat_damage_reduction, _mods_for(mods, StatId.FLAT_DAMAGE_REDUCTION))
+	out.move_speed_mult = ModifierResolver.resolve_float(_stats_float(base_res, &"move_speed_mult", 1.0), _mods_for(mods, StatId.MOVE_SPEED_MULT))
+	out.damage_taken_mult = ModifierResolver.resolve_float(_stats_float(base_res, &"damage_taken_mult", 1.0), _mods_for(mods, StatId.DAMAGE_TAKEN_MULT))
+	out.flat_damage_reduction = ModifierResolver.resolve_float(_stats_float(base_res, &"flat_damage_reduction", 0.0), _mods_for(mods, StatId.FLAT_DAMAGE_REDUCTION))
 
-	out.bonus_max_hp = ModifierResolver.resolve_float(base.bonus_max_hp, _mods_for(mods, StatId.BONUS_MAX_HP))
-	out.heal_on_equip = ModifierResolver.resolve_float(base.heal_on_equip, _mods_for(mods, StatId.HEAL_ON_EQUIP))
+	out.bonus_max_hp = ModifierResolver.resolve_float(_stats_float(base_res, &"bonus_max_hp", 0.0), _mods_for(mods, StatId.BONUS_MAX_HP))
+	out.heal_on_equip = ModifierResolver.resolve_float(_stats_float(base_res, &"heal_on_equip", 0.0), _mods_for(mods, StatId.HEAL_ON_EQUIP))
 
-	out.active_time = ModifierResolver.resolve_float(base.active_time, _mods_for(mods, StatId.ACTIVE_TIME))
-	out.knockback = ModifierResolver.resolve_float(base.knockback, _mods_for(mods, StatId.KNOCKBACK))
-	out.hitbox_offset = ModifierResolver.resolve_vec2(base.hitbox_offset, _mods_for(mods, StatId.HITBOX_OFFSET))
-	out.hitbox_size = ModifierResolver.resolve_vec2(base.hitbox_size, _mods_for(mods, StatId.HITBOX_SIZE))
+	out.active_time = ModifierResolver.resolve_float(_stats_float(base_res, &"active_time", 0.0), _mods_for(mods, StatId.ACTIVE_TIME))
+	out.knockback = ModifierResolver.resolve_float(_stats_float(base_res, &"knockback", 0.0), _mods_for(mods, StatId.KNOCKBACK))
+	out.hitbox_offset = ModifierResolver.resolve_vec2(_stats_vec2(base_res, &"hitbox_offset", Vector2.ZERO), _mods_for(mods, StatId.HITBOX_OFFSET))
+	out.hitbox_size = ModifierResolver.resolve_vec2(_stats_vec2(base_res, &"hitbox_size", Vector2.ZERO), _mods_for(mods, StatId.HITBOX_SIZE))
+
+	# New runtime-editable spread/origin values
+	out.spread_degrees = ModifierResolver.resolve_float(_stats_float(base_res, &"spread_degrees", 0.0), _mods_for(mods, StatId.SPREAD_DEGREES))
+	out.spread_pattern_degrees = ModifierResolver.resolve_float(_stats_float(base_res, &"spread_pattern_degrees", 0.0), _mods_for(mods, StatId.SPREAD_PATTERN_DEGREES))
+	out.muzzle_offset = ModifierResolver.resolve_vec2(_stats_vec2(base_res, &"muzzle_offset", Vector2.ZERO), _mods_for(mods, StatId.MUZZLE_OFFSET))
 
 	# Safety clamps
 	out.projectile_count = maxi(1, out.projectile_count)
 	out.pierce = maxi(0, out.pierce)
+	out.spread_degrees = maxf(0.0, out.spread_degrees)
+	out.spread_pattern_degrees = maxf(0.0, out.spread_pattern_degrees)
 
 	return out
 
@@ -131,73 +135,108 @@ func _collect_stat_modifiers(context: CombatContext) -> Array[StatModifier]:
 			continue
 
 		# Placeholder-safe: placeholders have no script methods.
-		# In tool mode, skip them instead of crashing.
 		if a.resource_path == "":
 			continue
 
 		if a.has_method("applies_to_domain"):
 			if not a.applies_to_domain(ItemAttributeBus.DOMAIN_STATS):
 				continue
-		# If no method, treat as not applicable
 		else:
 			continue
 
-		# Preferred pipeline
 		if a.has_method("contribute_modifiers"):
 			a.contribute_modifiers(context, self, ItemAttributeBus.DOMAIN_STATS, out)
 			continue
 
-		# Legacy fallback
 		if a.has_method("get_stat_additive"):
-			var add: ItemStats = a.get_stat_additive(context, self)
-			if add != null:
-				_legacy_itemstats_to_mods(add, a.id, out)
+			var add_res: Variant = a.get_stat_additive(context, self)
+			if add_res is Resource:
+				_legacy_itemstats_to_mods(add_res as Resource, a.id, out)
 
 	_apply_instance_upgrade_modifiers(out)
 	return out
 
 
-func _legacy_itemstats_to_mods(add: ItemStats, source_id: StringName, out: Array[StatModifier]) -> void:
+func _legacy_itemstats_to_mods(add: Resource, source_id: StringName, out: Array[StatModifier]) -> void:
+	if add == null:
+		return
+
 	# Additives
-	if add.damage != 0.0:
-		out.append(StatModifier.new(StatId.DAMAGE, StatModifier.Op.ADD, add.damage, 50, source_id))
-	if add.cooldown_sec != 0.0:
-		out.append(StatModifier.new(StatId.COOLDOWN_SEC, StatModifier.Op.ADD, add.cooldown_sec, 50, source_id))
-	if add.windup_time != 0.0:
-		out.append(StatModifier.new(StatId.WINDUP_TIME, StatModifier.Op.ADD, add.windup_time, 50, source_id))
-	if add.recovery_time != 0.0:
-		out.append(StatModifier.new(StatId.RECOVERY_TIME, StatModifier.Op.ADD, add.recovery_time, 50, source_id))
+	var damage_val: float = _stats_float(add, &"damage", 0.0)
+	if damage_val != 0.0:
+		out.append(StatModifier.new(StatId.DAMAGE, StatModifier.Op.ADD, damage_val, 50, source_id))
 
-	if add.projectile_count != 0:
-		out.append(StatModifier.new(StatId.PROJECTILE_COUNT, StatModifier.Op.ADD, add.projectile_count, 50, source_id))
-	if add.pierce != 0:
-		out.append(StatModifier.new(StatId.PIERCE, StatModifier.Op.ADD, add.pierce, 50, source_id))
+	var cooldown_val: float = _stats_float(add, &"cooldown_sec", 0.0)
+	if cooldown_val != 0.0:
+		out.append(StatModifier.new(StatId.COOLDOWN_SEC, StatModifier.Op.ADD, cooldown_val, 50, source_id))
 
-	if add.flat_damage_reduction != 0.0:
-		out.append(StatModifier.new(StatId.FLAT_DAMAGE_REDUCTION, StatModifier.Op.ADD, add.flat_damage_reduction, 50, source_id))
-	if add.bonus_max_hp != 0.0:
-		out.append(StatModifier.new(StatId.BONUS_MAX_HP, StatModifier.Op.ADD, add.bonus_max_hp, 50, source_id))
-	if add.heal_on_equip != 0.0:
-		out.append(StatModifier.new(StatId.HEAL_ON_EQUIP, StatModifier.Op.ADD, add.heal_on_equip, 50, source_id))
+	var windup_val: float = _stats_float(add, &"windup_time", 0.0)
+	if windup_val != 0.0:
+		out.append(StatModifier.new(StatId.WINDUP_TIME, StatModifier.Op.ADD, windup_val, 50, source_id))
 
-	if add.active_time != 0.0:
-		out.append(StatModifier.new(StatId.ACTIVE_TIME, StatModifier.Op.ADD, add.active_time, 50, source_id))
-	if add.knockback != 0.0:
-		out.append(StatModifier.new(StatId.KNOCKBACK, StatModifier.Op.ADD, add.knockback, 50, source_id))
-	if add.hitbox_offset != Vector2.ZERO:
-		out.append(StatModifier.new(StatId.HITBOX_OFFSET, StatModifier.Op.ADD, add.hitbox_offset, 50, source_id))
-	if add.hitbox_size != Vector2.ZERO:
-		out.append(StatModifier.new(StatId.HITBOX_SIZE, StatModifier.Op.ADD, add.hitbox_size, 50, source_id))
+	var recovery_val: float = _stats_float(add, &"recovery_time", 0.0)
+	if recovery_val != 0.0:
+		out.append(StatModifier.new(StatId.RECOVERY_TIME, StatModifier.Op.ADD, recovery_val, 50, source_id))
 
-	# Multipliers (legacy ItemStats stores them as absolute multipliers)
-	if add.move_speed_mult != 1.0:
-		out.append(StatModifier.new(StatId.MOVE_SPEED_MULT, StatModifier.Op.MUL, add.move_speed_mult - 1.0, 60, source_id))
-	if add.damage_taken_mult != 1.0:
-		out.append(StatModifier.new(StatId.DAMAGE_TAKEN_MULT, StatModifier.Op.MUL, add.damage_taken_mult - 1.0, 60, source_id))
+	var projectile_count_val: int = _stats_int(add, &"projectile_count", 0)
+	if projectile_count_val != 0:
+		out.append(StatModifier.new(StatId.PROJECTILE_COUNT, StatModifier.Op.ADD, projectile_count_val, 50, source_id))
+
+	var pierce_val: int = _stats_int(add, &"pierce", 0)
+	if pierce_val != 0:
+		out.append(StatModifier.new(StatId.PIERCE, StatModifier.Op.ADD, pierce_val, 50, source_id))
+
+	var flat_reduction_val: float = _stats_float(add, &"flat_damage_reduction", 0.0)
+	if flat_reduction_val != 0.0:
+		out.append(StatModifier.new(StatId.FLAT_DAMAGE_REDUCTION, StatModifier.Op.ADD, flat_reduction_val, 50, source_id))
+
+	var bonus_hp_val: float = _stats_float(add, &"bonus_max_hp", 0.0)
+	if bonus_hp_val != 0.0:
+		out.append(StatModifier.new(StatId.BONUS_MAX_HP, StatModifier.Op.ADD, bonus_hp_val, 50, source_id))
+
+	var heal_on_equip_val: float = _stats_float(add, &"heal_on_equip", 0.0)
+	if heal_on_equip_val != 0.0:
+		out.append(StatModifier.new(StatId.HEAL_ON_EQUIP, StatModifier.Op.ADD, heal_on_equip_val, 50, source_id))
+
+	var active_time_val: float = _stats_float(add, &"active_time", 0.0)
+	if active_time_val != 0.0:
+		out.append(StatModifier.new(StatId.ACTIVE_TIME, StatModifier.Op.ADD, active_time_val, 50, source_id))
+
+	var knockback_val: float = _stats_float(add, &"knockback", 0.0)
+	if knockback_val != 0.0:
+		out.append(StatModifier.new(StatId.KNOCKBACK, StatModifier.Op.ADD, knockback_val, 50, source_id))
+
+	var hitbox_offset_val: Vector2 = _stats_vec2(add, &"hitbox_offset", Vector2.ZERO)
+	if hitbox_offset_val != Vector2.ZERO:
+		out.append(StatModifier.new(StatId.HITBOX_OFFSET, StatModifier.Op.ADD, hitbox_offset_val, 50, source_id))
+
+	var hitbox_size_val: Vector2 = _stats_vec2(add, &"hitbox_size", Vector2.ZERO)
+	if hitbox_size_val != Vector2.ZERO:
+		out.append(StatModifier.new(StatId.HITBOX_SIZE, StatModifier.Op.ADD, hitbox_size_val, 50, source_id))
+
+	var spread_val: float = _stats_float(add, &"spread_degrees", 0.0)
+	if spread_val != 0.0:
+		out.append(StatModifier.new(StatId.SPREAD_DEGREES, StatModifier.Op.ADD, spread_val, 50, source_id))
+
+	var spread_pattern_val: float = _stats_float(add, &"spread_pattern_degrees", 0.0)
+	if spread_pattern_val != 0.0:
+		out.append(StatModifier.new(StatId.SPREAD_PATTERN_DEGREES, StatModifier.Op.ADD, spread_pattern_val, 50, source_id))
+
+	var muzzle_offset_val: Vector2 = _stats_vec2(add, &"muzzle_offset", Vector2.ZERO)
+	if muzzle_offset_val != Vector2.ZERO:
+		out.append(StatModifier.new(StatId.MUZZLE_OFFSET, StatModifier.Op.ADD, muzzle_offset_val, 50, source_id))
+
+	# Multipliers
+	var move_speed_mult_val: float = _stats_float(add, &"move_speed_mult", 1.0)
+	if move_speed_mult_val != 1.0:
+		out.append(StatModifier.new(StatId.MOVE_SPEED_MULT, StatModifier.Op.MUL, move_speed_mult_val - 1.0, 60, source_id))
+
+	var damage_taken_mult_val: float = _stats_float(add, &"damage_taken_mult", 1.0)
+	if damage_taken_mult_val != 1.0:
+		out.append(StatModifier.new(StatId.DAMAGE_TAKEN_MULT, StatModifier.Op.MUL, damage_taken_mult_val - 1.0, 60, source_id))
 
 
 func _apply_instance_upgrade_modifiers(out: Array[StatModifier]) -> void:
-	# Keep the exact same upgrade behavior as before, but expressed as modifiers.
 	var src: StringName = &"__upgrade"
 
 	var dmg_lvl: int = get_upgrade_level(String(StatId.DAMAGE))
@@ -219,3 +258,59 @@ func _apply_instance_upgrade_modifiers(out: Array[StatModifier]) -> void:
 	var proj_lvl: int = get_upgrade_level(String(StatId.PROJECTILE_COUNT))
 	if proj_lvl > 0:
 		out.append(StatModifier.new(StatId.PROJECTILE_COUNT, StatModifier.Op.ADD, proj_lvl, 10, src))
+
+	var pierce_lvl: int = get_upgrade_level(String(StatId.PIERCE))
+	if pierce_lvl > 0:
+		out.append(StatModifier.new(StatId.PIERCE, StatModifier.Op.ADD, pierce_lvl, 10, src))
+
+	var spread_lvl: int = get_upgrade_level(String(StatId.SPREAD_DEGREES))
+	if spread_lvl > 0:
+		out.append(StatModifier.new(StatId.SPREAD_DEGREES, StatModifier.Op.ADD, float(spread_lvl) * 0.5, 10, src))
+
+	var spread_pattern_lvl: int = get_upgrade_level(String(StatId.SPREAD_PATTERN_DEGREES))
+	if spread_pattern_lvl > 0:
+		out.append(StatModifier.new(StatId.SPREAD_PATTERN_DEGREES, StatModifier.Op.ADD, float(spread_pattern_lvl) * 1.0, 10, src))
+
+
+func _stats_has(res: Resource, prop: StringName) -> bool:
+	if res == null:
+		return false
+	for p in res.get_property_list():
+		if StringName(p.name) == prop:
+			return true
+	return false
+
+
+func _stats_float(res: Resource, prop: StringName, fallback: float) -> float:
+	if res == null:
+		return fallback
+	if not _stats_has(res, prop):
+		return fallback
+	return float(res.get(prop))
+
+
+func _stats_int(res: Resource, prop: StringName, fallback: int) -> int:
+	if res == null:
+		return fallback
+	if not _stats_has(res, prop):
+		return fallback
+	return int(res.get(prop))
+
+
+func _stats_bool(res: Resource, prop: StringName, fallback: bool) -> bool:
+	if res == null:
+		return fallback
+	if not _stats_has(res, prop):
+		return fallback
+	return bool(res.get(prop))
+
+
+func _stats_vec2(res: Resource, prop: StringName, fallback: Vector2) -> Vector2:
+	if res == null:
+		return fallback
+	if not _stats_has(res, prop):
+		return fallback
+	var value: Variant = res.get(prop)
+	if value is Vector2:
+		return value
+	return fallback

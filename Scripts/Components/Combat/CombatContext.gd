@@ -6,7 +6,8 @@ class_name CombatContext
 
 var owner: Node
 var aim_dir: Vector2
-
+# Small per-attack salt to vary spread between shots.
+var spread_roll: int = 0
 # The concrete equipment item node used for this attack (weapon/spell/etc).
 var item: Node
 # Optional runtime instance resource for the item (attribute/stat system).

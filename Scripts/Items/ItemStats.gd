@@ -8,8 +8,12 @@ class_name ItemStats
 @export var recovery_time: float = 0.0
 
 # --- Ranged stats ---
+@export var is_automatic: bool = false
 @export var projectile_count: int = 1
 @export var pierce: int = 0
+@export var spread_degrees: float = 0.0
+@export var spread_pattern_degrees: float = 0.0
+@export var muzzle_offset: Vector2 = Vector2.ZERO
 
 # --- Movement / defense ---
 @export var move_speed_mult: float = 1.0
@@ -40,9 +44,12 @@ func apply_additive(other: ItemStats) -> void:
 	windup_time += other.windup_time
 	recovery_time += other.recovery_time
 
-	# ints add
+	is_automatic = is_automatic or other.is_automatic
 	projectile_count += other.projectile_count
 	pierce += other.pierce
+	spread_degrees += other.spread_degrees
+	spread_pattern_degrees += other.spread_pattern_degrees
+	muzzle_offset += other.muzzle_offset
 
 	flat_damage_reduction += other.flat_damage_reduction
 	bonus_max_hp += other.bonus_max_hp
@@ -53,7 +60,6 @@ func apply_additive(other: ItemStats) -> void:
 	hitbox_offset += other.hitbox_offset
 	hitbox_size += other.hitbox_size
 
-	# multipliers multiply
 	move_speed_mult *= other.move_speed_mult
 	damage_taken_mult *= other.damage_taken_mult
 
@@ -68,7 +74,6 @@ static func add(a: ItemStats, b: ItemStats) -> ItemStats:
 
 
 static func mul(a: ItemStats, scalar: float) -> ItemStats:
-	# For additive stats only (multipliers pass through unchanged)
 	var out := ItemStats.new()
 	if a == null:
 		return out
@@ -78,9 +83,12 @@ static func mul(a: ItemStats, scalar: float) -> ItemStats:
 	out.windup_time = a.windup_time * scalar
 	out.recovery_time = a.recovery_time * scalar
 
-	# ints: scale then round
+	out.is_automatic = a.is_automatic
 	out.projectile_count = int(round(float(a.projectile_count) * scalar))
 	out.pierce = int(round(float(a.pierce) * scalar))
+	out.spread_degrees = a.spread_degrees * scalar
+	out.spread_pattern_degrees = a.spread_pattern_degrees * scalar
+	out.muzzle_offset = a.muzzle_offset * scalar
 
 	out.flat_damage_reduction = a.flat_damage_reduction * scalar
 	out.bonus_max_hp = a.bonus_max_hp * scalar

@@ -156,6 +156,7 @@ func _play_throw_from_to(interactor: Node, target_origin: Vector2) -> void:
 	t.set_trans(Tween.TRANS_QUAD)
 	t.set_ease(Tween.EASE_OUT)
 	t.tween_property(self, "global_position", end_pos, throw_duration)
+	t.finished.connect(Callable(self, "_on_throw_finished"), CONNECT_ONE_SHOT)
 
 	if _sprite != null:
 		_sprite.scale = Vector2.ONE
@@ -164,10 +165,10 @@ func _play_throw_from_to(interactor: Node, target_origin: Vector2) -> void:
 		t2.tween_property(_sprite, "scale", Vector2.ONE * throw_scale_pop, throw_duration * 0.5)
 		t2.tween_property(_sprite, "scale", Vector2.ONE, throw_duration * 0.5)
 
-	t.finished.connect(func() -> void:
-		monitorable = true
-		_is_animating_throw = false
-	)
+
+func _on_throw_finished() -> void:
+	monitorable = true
+	_is_animating_throw = false
 
 
 func _build_tooltip() -> void:

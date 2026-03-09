@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://bovg38x0nqxmj"]
 
 [ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_dndog"]
+[ext_resource type="Script" uid="uid://bmkfvpy6i2foi" path="res://Scenes/Items/RangedAttackProfile.gd" id="2_bqfws"]
 [ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="2_lwg0m"]
 
 [sub_resource type="Resource" id="Resource_lwg0m"]
@@ -9,9 +10,16 @@ damage = 8.0
 cooldown_sec = 0.45
 windup_time = 0.05
 recovery_time = 0.05
+is_automatic = true
+spread_degrees = 20.0
+spread_pattern_degrees = 15.0
 knockback = 0.8
 hitbox_size = Vector2(1, 1)
 metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[sub_resource type="Resource" id="Resource_ns355"]
+script = ExtResource("2_bqfws")
+metadata/_custom_type_script = "uid://bmkfvpy6i2foi"
 
 [resource]
 script = ExtResource("2_lwg0m")
@@ -19,4 +27,5 @@ id = &"pistol"
 display_name = "Pistol"
 category = 1
 base_stats = SubResource("Resource_lwg0m")
+ranged_attack_profile = SubResource("Resource_ns355")
 metadata/_custom_type_script = "uid://bhof2rvqrnl7f"

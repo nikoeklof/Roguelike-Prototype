@@ -1,207 +1,218 @@
-@tool
 extends Node
 class_name Combat
 
 signal attack_finished(kind: int)
 
-enum AttackKind { NONE, MELEE, RANGED, SPELL }
+enum AttackKind {
+	NONE,
+	MELEE,
+	RANGED,
+	SPELL,
+}
 
-@export_node_path("Equipment") var equipment_path: NodePath = ^"Equipment"
+@export var attack_executor_root_path: NodePath
 
-var _equipment: Equipment
-var _active_executor: AttackExecutor
+var _cooldowns: Dictionary = {}
+var _spread_roll_counter: int = 0
+var _running_executors: Array[AttackExecutor] = []
 
 
 func _ready() -> void:
-	_equipment = _resolve_equipment()
-	if Engine.is_editor_hint():
-		update_configuration_warnings()
+	set_physics_process(true)
 
 
-func _notification(what: int) -> void:
-	if Engine.is_editor_hint() and (what == NOTIFICATION_ENTER_TREE or what == NOTIFICATION_READY):
-		update_configuration_warnings()
+func _physics_process(delta: float) -> void:
+	if _cooldowns.is_empty():
+		return
+
+	var keys: Array = _cooldowns.keys()
+	for key in keys:
+		var remain: float = float(_cooldowns.get(key, 0.0)) - delta
+		if remain <= 0.0:
+			_cooldowns.erase(key)
+		else:
+			_cooldowns[key] = remain
 
 
-func _resolve_equipment() -> Equipment:
-	var e: Equipment = get_node_or_null(equipment_path) as Equipment
-	if e != null:
-		return e
-
-	var entity: Entity = get_parent() as Entity
-	if entity == null:
-		return null
-
-	return entity.get_component(&"Equipment") as Equipment
+func can_attack(item: Node) -> bool:
+	if item == null:
+		return false
+	return not _cooldowns.has(item)
 
 
-func equipment() -> Equipment:
-	if _equipment == null or not is_instance_valid(_equipment):
-		_equipment = _resolve_equipment()
-	return _equipment
+func can_attack_kind(kind: int) -> bool:
+	var owner: Node = _resolve_owner_entity()
+	if owner == null:
+		return false
+
+	var item: Node = _resolve_item_for_kind(owner, kind)
+	if item == null:
+		return false
+
+	return can_attack(item)
 
 
 func allows_movement_for(kind: int) -> bool:
-	var e: Equipment = equipment()
-	if e == null:
-		return true
-
-	var item: Node = e.get_item_for_kind(kind)
-	if item == null:
-		return true
-
-	if item is Weapon:
-		return (item as Weapon).allow_move_during_attack
-
-	if item is Spell:
-		return (item as Spell).allow_move_during_cast
-
-	return true
-
-
-func try_attack(kind: int, dir: Vector2) -> bool:
-	var e: Equipment = equipment()
-	if e == null:
+	var owner: Node = _resolve_owner_entity()
+	if owner == null:
 		return false
 
-	var owner_entity: Node = get_parent()
-	if owner_entity == null:
-		return false
-
-	if _active_executor != null and is_instance_valid(_active_executor):
-		return false
-
-	var item: Node = e.get_item_for_kind(kind)
+	var item: Node = _resolve_item_for_kind(owner, kind)
 	if item == null:
 		return false
 
-	var aim_dir: Vector2 = dir
-	if aim_dir.length() < 0.001:
-		aim_dir = Vector2.RIGHT
-	else:
-		aim_dir = aim_dir.normalized()
-
-	var ctx: CombatContext = _build_context(owner_entity, aim_dir, item)
-	var variant: AttackVariant = _get_variant_from_item(item, ctx)
-	if variant != null:
-		return _run_variant(kind, variant, ctx)
-
-	# Legacy fallback path
-	if item is Weapon:
-		var w: Weapon = item as Weapon
-		if not w.attack_finished.is_connected(_on_weapon_attack_finished):
-			w.attack_finished.connect(_on_weapon_attack_finished.bind(kind), CONNECT_ONE_SHOT)
-		return w.try_attack(aim_dir, owner_entity)
-
-	if item is Spell:
-		var s: Spell = item as Spell
-		if not s.cast_finished.is_connected(_on_spell_cast_finished):
-			s.cast_finished.connect(_on_spell_cast_finished.bind(kind), CONNECT_ONE_SHOT)
-		return s.try_cast(owner_entity, aim_dir)
+	if "allow_move_during_attack" in item:
+		return bool(item.get("allow_move_during_attack"))
 
 	return false
 
 
-func stop_all() -> void:
-	if _active_executor != null and is_instance_valid(_active_executor):
-		_active_executor.queue_free()
-	_active_executor = null
+func try_attack(kind: int, aim_dir: Vector2 = Vector2.RIGHT) -> bool:
+	if kind == AttackKind.NONE:
+		return false
 
+	var owner: Node = _resolve_owner_entity()
+	if owner == null:
+		return false
 
-func _on_weapon_attack_finished(kind: int) -> void:
-	attack_finished.emit(kind)
-
-
-func _on_spell_cast_finished(_success: bool, kind: int) -> void:
-	attack_finished.emit(kind)
-
-
-func _build_context(owner_entity: Node, dir: Vector2, item: Node) -> CombatContext:
-	var ctx: CombatContext = CombatContext.new()
-	ctx.owner = owner_entity
-	ctx.aim_dir = dir
-	ctx.equipment = equipment()
-	ctx.item = item
-	ctx.item_instance = _extract_item_instance(item)
-	ctx.stats = _resolve_component(owner_entity, &"Stats")
-	ctx.tags = _resolve_component(owner_entity, &"Tags")
-	ctx.faction = _resolve_component(owner_entity, &"Faction")
-	ctx.capabilities = _resolve_component(owner_entity, &"Capabilities")
-
-	return ctx
-
-
-func _get_variant_from_item(item: Node, ctx: CombatContext) -> AttackVariant:
+	var item: Node = _resolve_item_for_kind(owner, kind)
 	if item == null:
-		return null
-
-	if item.has_method("get_attack_variant"):
-		var v: Variant = item.call("get_attack_variant", ctx)
-		if v is AttackVariant:
-			return v as AttackVariant
-
-	return null
-
-
-func _run_variant(kind: int, variant: AttackVariant, ctx: CombatContext) -> bool:
-	var exec: AttackExecutor = variant.create_executor(ctx)
-	if exec == null:
 		return false
+
+	if not can_attack(item):
+		return false
+
+	if not item.has_method("get_attack_variant"):
+		return false
+
+	var ctx: CombatContext = CombatContext.new()
+	ctx.owner = owner
+	ctx.item = item
+
+	if aim_dir.length() > 0.001:
+		ctx.aim_dir = aim_dir.normalized()
+	else:
+		ctx.aim_dir = Vector2.RIGHT
+
+	if item.has_method("get_item_instance"):
+		ctx.item_instance = item.get_item_instance()
+
+	ctx.equipment = _resolve_equipment(owner)
+	ctx.stats = _resolve_component(owner, &"Stats")
+	ctx.tags = _resolve_component(owner, &"Tags")
+	ctx.faction = _resolve_component(owner, &"Faction")
+	ctx.capabilities = _resolve_component(owner, &"Capabilities")
+
+	# Small per-attack salt so spread changes each shot.
+	_spread_roll_counter = (_spread_roll_counter % 64) + 1
+	ctx.spread_roll = _spread_roll_counter
+
+	var variant: AttackVariant = item.get_attack_variant(ctx)
+	if variant == null:
+		return false
+
 	var snap: AttackSnapshot = AttackResolver.resolve(ctx, variant)
-	_commit_item_cooldown(ctx.item, snap.cooldown_sec)
+	_commit_cooldown(item, snap.cooldown_sec)
 
-	exec.snapshot = snap
-	_active_executor = exec
-
-	if ctx.owner == null:
-		_active_executor = null
+	var executor: AttackExecutor = variant.create_executor(ctx)
+	if executor == null:
 		return false
 
-	ctx.owner.add_child(exec)
+	var parent: Node = _resolve_executor_parent(owner)
+	parent.add_child(executor)
 
-	exec.finished.connect(func(_success: bool) -> void:
-		_active_executor = null
-		attack_finished.emit(kind)
-	, CONNECT_ONE_SHOT)
+	_running_executors.append(executor)
 
-	exec.start()
+	if not executor.finished.is_connected(_on_executor_finished.bind(kind, executor)):
+		executor.finished.connect(_on_executor_finished.bind(kind, executor), CONNECT_ONE_SHOT)
+
+	executor.start()
 	return true
 
 
-func _commit_item_cooldown(item: Node, cooldown_sec: float) -> void:
+func get_cooldown_remaining(item: Node) -> float:
+	if item == null:
+		return 0.0
+	return float(_cooldowns.get(item, 0.0))
+
+
+func clear_cooldown(item: Node) -> void:
 	if item == null:
 		return
-
-	if item is Weapon:
-		var weapon: Weapon = item as Weapon
-		weapon.commit_cooldown(cooldown_sec)
-		return
-
-	# Futureproof hook if you later add commit_cooldown() to spells/shields/etc.
-	if item.has_method("commit_cooldown"):
-		item.call("commit_cooldown", cooldown_sec)
+	_cooldowns.erase(item)
 
 
-func _extract_item_instance(item: Node) -> ItemInstance:
+func stop_all() -> void:
+	var to_stop: Array[AttackExecutor] = _running_executors.duplicate()
+	_running_executors.clear()
+
+	for executor in to_stop:
+		if executor != null and is_instance_valid(executor):
+			executor.queue_free()
+
+
+func _commit_cooldown(item: Node, cooldown_sec: float) -> void:
 	if item == null:
+		return
+	_cooldowns[item] = max(0.0, cooldown_sec)
+
+
+func _resolve_owner_entity() -> Node:
+	var p: Node = get_parent()
+	while p != null:
+		if p is Entity:
+			return p
+		if p is CharacterBody2D:
+			return p
+		p = p.get_parent()
+	return null
+
+
+func _resolve_equipment(owner: Node) -> Equipment:
+	if owner == null:
 		return null
 
-	if item.has_method("get_item_instance"):
-		var v: Variant = item.call("get_item_instance")
-		if v is ItemInstance:
-			return v as ItemInstance
+	if owner is Entity:
+		var eq_component: Node = (owner as Entity).get_component(&"Equipment")
+		if eq_component is Equipment:
+			return eq_component as Equipment
+
+	var eq_node: Node = owner.get_node_or_null("Equipment")
+	if eq_node is Equipment:
+		return eq_node as Equipment
 
 	return null
 
 
-func _resolve_component(owner_entity: Node, cls: StringName) -> Node:
-	if owner_entity is Entity:
-		return (owner_entity as Entity).find_component(cls)
-	return owner_entity.get_node_or_null(String(cls))
+func _resolve_item_for_kind(owner: Node, kind: int) -> Node:
+	var equipment: Equipment = _resolve_equipment(owner)
+	if equipment == null:
+		return null
+	return equipment.get_item_for_kind(kind)
 
 
-func _get_configuration_warnings() -> PackedStringArray:
-	var warnings: PackedStringArray = PackedStringArray()
-	if _resolve_equipment() == null:
-		warnings.append("Combat: Missing Equipment. Add an Equipment node as a direct child of the entity, or set equipment_path.")
-	return warnings
+func _resolve_component(owner: Node, class_name_value: StringName) -> Node:
+	if owner == null:
+		return null
+
+	if owner is Entity:
+		return (owner as Entity).get_component(class_name_value)
+
+	return owner.get_node_or_null(String(class_name_value))
+
+
+func _resolve_executor_parent(owner: Node) -> Node:
+	if attack_executor_root_path != NodePath():
+		var explicit: Node = get_node_or_null(attack_executor_root_path)
+		if explicit != null:
+			return explicit
+
+	if owner != null and owner.get_parent() != null:
+		return owner.get_parent()
+
+	return self
+
+
+func _on_executor_finished(_success: bool, kind: int, executor: AttackExecutor) -> void:
+	_running_executors.erase(executor)
+	attack_finished.emit(kind)

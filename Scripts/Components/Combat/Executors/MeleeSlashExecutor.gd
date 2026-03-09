@@ -106,20 +106,20 @@ func _update_hitbox_transform() -> void:
 		_hitbox.global_rotation = aim.angle()
 
 
-func _resolve_attack_origin(owner: Node) -> Node2D:
-	var ws: Node2D = owner.get_node_or_null("FacingPointer/AimRay/WeaponSocket") as Node2D
+func _resolve_attack_origin(owning_node: Node) -> Node2D:
+	var ws: Node2D = owning_node.get_node_or_null("FacingPointer/AimRay/WeaponSocket") as Node2D
 	if ws != null:
 		return ws
 
-	var ar: Node2D = owner.get_node_or_null("FacingPointer/AimRay") as Node2D
+	var ar: Node2D = owning_node.get_node_or_null("FacingPointer/AimRay") as Node2D
 	if ar != null:
 		return ar
 
-	var direct: Node2D = owner.get_node_or_null("WeaponSocket") as Node2D
+	var direct: Node2D = owning_node.get_node_or_null("WeaponSocket") as Node2D
 	if direct != null:
 		return direct
 
-	return owner as Node2D
+	return owning_node as Node2D
 
 
 func _try_hit(other: Node, one_hit_per_target: bool) -> void:

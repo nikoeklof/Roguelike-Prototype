@@ -1,26 +1,14 @@
 [gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://ch6uawoeugf1x"]
 
-[ext_resource type="Script" path="res://Scripts/Items/BaseItemType.gd" id="1"]
-[ext_resource type="Resource" path="res://Resources/Items/Weapons/Dagger.tres" id="2"]
-
+[ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="1"]
+[ext_resource type="Resource" uid="uid://chpxjgwd0dnl8" path="res://Resources/Items/Weapons/Dagger.tres" id="2"]
 [ext_resource type="Resource" path="res://Resources/Items/Pools/Pool_Melee_All.tres" id="3"]
+
 [resource]
 script = ExtResource("1")
-pool_def = ExtResource("3")
 id = &"base_dagger"
 item_def = ExtResource("2")
+pool_def = ExtResource("3")
 min_attribute_count = 1
 max_attribute_count = 3
-start_stat_levels = {}
-allowed_attributes = Array[Resource]([])
-attribute_weights = Array[float]([])
-use_auto_attribute_pool = true
-auto_attribute_root = "res://Resources/Items/Attributes"
-auto_include_global = true
 auto_weapon_token = "Dagger"
-use_ranged_mode_roll = true
-force_mode_attribute = false
-weight_projectile = 1.0
-weight_hitscan = 0.6
-weight_beam = 0.35
-locked_ranged_mode = -1

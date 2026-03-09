@@ -1,6 +1,8 @@
 extends AttackExecutor
 class_name RangedFireExecutor
 
+const DEFAULT_PROJECTILE_SCENE: PackedScene = preload("res://Scenes/Templates/EquipmentItems/Projectile_template.tscn")
+
 @export var debug_draw_shots: bool = true
 @export_range(0.01, 1.0, 0.01) var debug_hitscan_life_sec: float = 0.08
 @export_range(0.01, 2.0, 0.01) var debug_beam_life_pad_sec: float = 0.05
@@ -11,19 +13,13 @@ var _beam_line: Line2D = null
 
 
 func execute() -> void:
-	var ranged: RangedFireVariant = variant as RangedFireVariant
-	if ranged == null:
-		push_warning("RangedFireExecutor requires RangedFireVariant.")
-		finish(false)
-		return
-
 	var snap: AttackSnapshot = resolve_snapshot()
 	dispatch_attack_start()
 
 	if snap.windup_time > 0.0:
 		await wait_seconds(snap.windup_time)
 
-	_fire(ranged, snap)
+	_fire(snap)
 
 	if snap.recovery_time > 0.0:
 		await wait_seconds(snap.recovery_time)
@@ -31,7 +27,7 @@ func execute() -> void:
 	finish(true)
 
 
-func _fire(ranged: RangedFireVariant, snap: AttackSnapshot) -> void:
+func _fire(snap: AttackSnapshot) -> void:
 	if context == null or context.owner == null:
 		return
 	if not (context.owner is Node2D):
@@ -39,7 +35,6 @@ func _fire(ranged: RangedFireVariant, snap: AttackSnapshot) -> void:
 
 	var owner: Node2D = context.owner as Node2D
 	var muzzle: Node2D = _resolve_muzzle(owner)
-
 	var inst: ItemInstance = context.item_instance
 
 	var base_dir: Vector2 = context.aim_dir
@@ -50,13 +45,12 @@ func _fire(ranged: RangedFireVariant, snap: AttackSnapshot) -> void:
 
 	var projectile_count: int = maxi(1, snap.projectile_count)
 	for i: int in range(projectile_count):
-		var shot: RangedShotData = _build_base_shot(ranged, snap, muzzle, base_dir, i, projectile_count, inst)
+		var shot: RangedShotData = _build_base_shot(snap, muzzle, base_dir, i, projectile_count, inst)
 		_dispatch_modify_shot(shot, inst)
 		_execute_shot(shot, snap, inst)
 
 
 func _build_base_shot(
-	ranged: RangedFireVariant,
 	snap: AttackSnapshot,
 	muzzle: Node2D,
 	base_dir: Vector2,
@@ -66,33 +60,35 @@ func _build_base_shot(
 ) -> RangedShotData:
 	var shot: RangedShotData = RangedShotData.new()
 
-	shot.mode = ranged.default_mode
-	if snap.ranged_mode >= 0:
-		shot.mode = snap.ranged_mode
-
-	shot.origin = muzzle.global_position + ranged.muzzle_offset.rotated(muzzle.global_rotation)
-	shot.direction = _compute_shot_dir(ranged, base_dir, index, count, inst)
+	shot.mode = snap.ranged_mode
+	shot.origin = muzzle.global_position + snap.muzzle_offset.rotated(muzzle.global_rotation)
+	shot.direction = _compute_shot_dir(snap, base_dir, index, count, inst)
 
 	shot.damage = snap.damage
 	shot.pierce = snap.pierce
 	shot.shot_index = index
 	shot.shot_count = count
 
-	shot.projectile_scene = ranged.projectile_scene
-	shot.speed = ranged.projectile_speed
-	shot.gravity = ranged.projectile_gravity
-	shot.lifetime_sec = ranged.projectile_lifetime_sec
-	shot.inherit_owner_velocity = ranged.inherit_owner_velocity
+	shot.projectile_spec = snap.projectile_spec
+	shot.projectile_scene = snap.projectile_scene
+	shot.speed = snap.projectile_speed
+	shot.gravity = snap.projectile_gravity
+	shot.lifetime_sec = snap.projectile_lifetime_sec
+	shot.projectile_radius = snap.projectile_radius
+	shot.projectile_collision_mask = snap.projectile_collision_mask
+	shot.projectile_sprite_texture = snap.projectile_sprite_texture
+	shot.projectile_sprite_tint = snap.projectile_sprite_tint
+	shot.inherit_owner_velocity = snap.projectile_inherit_owner_velocity
 
-	shot.range = ranged.hitscan_range
+	shot.range = snap.hitscan_range
 	if shot.mode == RangedShotData.ShotMode.BEAM:
-		shot.range = ranged.beam_range
+		shot.range = snap.beam_range
 
-	shot.beam_duration_sec = ranged.beam_duration_sec
-	shot.beam_tick_sec = ranged.beam_tick_sec
+	shot.beam_duration_sec = snap.beam_duration_sec
+	shot.beam_tick_sec = snap.beam_tick_sec
 
-	if ranged.projectile_range > 0.0:
-		shot.range = ranged.projectile_range
+	if snap.projectile_range > 0.0:
+		shot.range = snap.projectile_range
 
 	return shot
 
@@ -106,7 +102,7 @@ func _dispatch_modify_shot(shot: RangedShotData, inst: ItemInstance) -> void:
 func _execute_shot(shot: RangedShotData, snap: AttackSnapshot, inst: ItemInstance) -> void:
 	match shot.mode:
 		RangedShotData.ShotMode.PROJECTILE:
-			_fire_projectile(shot, inst)
+			_fire_projectile(shot, snap, inst)
 		RangedShotData.ShotMode.HITSCAN:
 			_fire_hitscan(shot, snap)
 		RangedShotData.ShotMode.BEAM:
@@ -114,7 +110,7 @@ func _execute_shot(shot: RangedShotData, snap: AttackSnapshot, inst: ItemInstanc
 
 
 func _compute_shot_dir(
-	ranged: RangedFireVariant,
+	snap: AttackSnapshot,
 	base_dir: Vector2,
 	index: int,
 	count: int,
@@ -122,20 +118,26 @@ func _compute_shot_dir(
 ) -> Vector2:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	var seed_base: int = inst.seed if inst != null else 1337
-	rng.seed = int((seed_base * 1103515245 + 12345 + index * 1013) & 0x7fffffff)
+	var roll: int = maxi(1, snap.spread_roll)
 
-	if count > 1 and ranged.spread_pattern_degrees > 0.0:
-		var half_arc: float = deg_to_rad(ranged.spread_pattern_degrees) * 0.5
-		var t: float = 0.0 if count <= 1 else float(index) / float(count - 1)
-		var ang: float = lerp(-half_arc, half_arc, t)
-		return base_dir.rotated(ang).normalized()
+	rng.seed = int(
+		(seed_base * 1103515245 + 12345 + roll * 7919 + index * 1013) & 0x7fffffff
+	)
 
-	if ranged.spread_degrees <= 0.0:
-		return base_dir
+	var dir: Vector2 = base_dir
 
-	var half: float = ranged.spread_degrees * 0.5
-	var ang_rand: float = deg_to_rad(rng.randf_range(-half, half))
-	return base_dir.rotated(ang_rand).normalized()
+	if count > 1 and snap.spread_pattern_degrees > 0.0:
+		var half_arc: float = deg_to_rad(snap.spread_pattern_degrees) * 0.5
+		var t: float = 0.5 if count <= 1 else float(index) / float(count - 1)
+		var pattern_ang: float = lerp(-half_arc, half_arc, t)
+		dir = dir.rotated(pattern_ang)
+
+	if snap.spread_degrees > 0.0:
+		var half_rand: float = snap.spread_degrees * 0.5
+		var rand_ang: float = deg_to_rad(rng.randf_range(-half_rand, half_rand))
+		dir = dir.rotated(rand_ang)
+
+	return dir.normalized()
 
 
 func _resolve_muzzle(owner: Node) -> Node2D:
@@ -154,12 +156,14 @@ func _resolve_muzzle(owner: Node) -> Node2D:
 	return owner as Node2D
 
 
-func _fire_projectile(shot: RangedShotData, inst: ItemInstance) -> void:
-	if shot.projectile_scene == null:
-		push_warning("Ranged shot PROJECTILE has no projectile_scene.")
-		return
+func _fire_projectile(shot: RangedShotData, snap: AttackSnapshot, inst: ItemInstance) -> void:
+	var projectile_scene: PackedScene = shot.projectile_scene
+	if projectile_scene == null and shot.projectile_spec != null:
+		projectile_scene = shot.projectile_spec.scene
+	if projectile_scene == null:
+		projectile_scene = DEFAULT_PROJECTILE_SCENE
 
-	var node: Node = shot.projectile_scene.instantiate()
+	var node: Node = projectile_scene.instantiate()
 	var projectile: Projectile = node as Projectile
 	if projectile == null:
 		push_warning("projectile_scene is not a Projectile.")
@@ -167,21 +171,30 @@ func _fire_projectile(shot: RangedShotData, inst: ItemInstance) -> void:
 			node.queue_free()
 		return
 
-	projectile.global_position = shot.origin
-
 	var velocity: Vector2 = shot.direction.normalized() * shot.speed
 	if shot.inherit_owner_velocity > 0.0 and context.owner is CharacterBody2D:
 		var owner_body: CharacterBody2D = context.owner as CharacterBody2D
 		velocity += owner_body.velocity * clampf(shot.inherit_owner_velocity, 0.0, 1.0)
 
-	projectile.setup(
-		velocity,
-		shot.gravity,
-		shot.lifetime_sec,
-		int(round(shot.damage)),
-		shot.pierce,
-		context.owner
-	)
+	var launch: ProjectileLaunchData = ProjectileLaunchData.new()
+	launch.context = context
+	launch.snapshot = snap
+	launch.owner = context.owner
+	launch.origin = shot.origin
+	launch.direction = shot.direction.normalized()
+	launch.velocity = velocity
+	launch.gravity = shot.gravity
+	launch.lifetime_sec = shot.lifetime_sec
+	launch.damage = shot.damage
+	launch.pierce = shot.pierce
+	launch.radius = max(1.0, shot.projectile_radius)
+	launch.max_range = max(0.0, shot.range)
+	launch.collision_mask = shot.projectile_collision_mask
+	launch.sprite_texture = shot.projectile_sprite_texture
+	launch.sprite_tint = shot.projectile_sprite_tint
+
+	projectile.global_position = launch.origin
+	projectile.setup(launch)
 
 	if inst != null:
 		ItemAttributeBus.dispatch_projectile_spawn(context, projectile, inst)
@@ -204,7 +217,7 @@ func _fire_hitscan(shot: RangedShotData, snap: AttackSnapshot) -> void:
 
 	var to: Vector2 = shot.origin + shot.direction.normalized() * max(1.0, shot.range)
 	var query: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.create(shot.origin, to)
-	query.exclude = [owner.get_rid()]
+	query.exclude = _build_owner_exclude_list(owner)
 	query.collide_with_areas = true
 	query.collide_with_bodies = true
 
@@ -225,6 +238,9 @@ func _fire_hitscan(shot: RangedShotData, snap: AttackSnapshot) -> void:
 	if victim_root == null:
 		return
 
+	if victim_root == owner or owner.is_ancestor_of(victim_root):
+		return
+
 	AttackImpactResolver.apply_hit(
 		context,
 		snap,
@@ -238,21 +254,32 @@ func _fire_hitscan(shot: RangedShotData, snap: AttackSnapshot) -> void:
 func _start_beam(shot: RangedShotData, snap: AttackSnapshot) -> void:
 	_kill_beam()
 
+	if context == null or context.owner == null:
+		return
+
+	var owner_node: Node = context.owner as Node
+	if owner_node == null:
+		return
+
 	var tick_sec: float = max(shot.beam_tick_sec, 0.01)
 	var ticks: int = int(ceil(shot.beam_duration_sec / tick_sec))
 
-	_beam_tween = (context.owner as Node).create_tween()
+	_beam_tween = owner_node.create_tween()
 	_beam_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 
 	for _i: int in range(ticks):
-		_beam_tween.tween_callback(func() -> void:
-			_beam_tick(shot, snap)
-		)
+		_beam_tween.tween_callback(Callable(self, "_beam_tick_callback").bind(shot, snap))
 		_beam_tween.tween_interval(tick_sec)
 
-	_beam_tween.tween_callback(func() -> void:
-		_kill_beam()
-	)
+	_beam_tween.tween_callback(Callable(self, "_beam_finish_callback"))
+
+
+func _beam_tick_callback(shot: RangedShotData, snap: AttackSnapshot) -> void:
+	_beam_tick(shot, snap)
+
+
+func _beam_finish_callback() -> void:
+	_kill_beam()
 
 
 func _beam_tick(base_shot: RangedShotData, snap: AttackSnapshot) -> void:
@@ -276,7 +303,7 @@ func _beam_tick(base_shot: RangedShotData, snap: AttackSnapshot) -> void:
 
 	var space: PhysicsDirectSpaceState2D = owner.get_world_2d().direct_space_state
 	var query: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.create(origin, to)
-	query.exclude = [owner.get_rid()]
+	query.exclude = _build_owner_exclude_list(owner)
 	query.collide_with_areas = true
 	query.collide_with_bodies = true
 
@@ -295,6 +322,9 @@ func _beam_tick(base_shot: RangedShotData, snap: AttackSnapshot) -> void:
 
 	var victim_root: Node = CombatQuery.resolve_victim_root(collider_node)
 	if victim_root == null:
+		return
+
+	if victim_root == owner or owner.is_ancestor_of(victim_root):
 		return
 
 	AttackImpactResolver.apply_hit(
@@ -320,12 +350,10 @@ func _debug_make_line(parent: Node) -> Line2D:
 	line.z_index = 1024
 	line.z_as_relative = false
 	parent.add_child(line)
+	return line
 
 	var timer: SceneTreeTimer = get_tree().create_timer(0.15)
-	timer.timeout.connect(func() -> void:
-		if is_instance_valid(line):
-			line.queue_free()
-	)
+	timer.timeout.connect(Callable(self, "_queue_free_node_if_valid").bind(line), CONNECT_ONE_SHOT)
 
 	return line
 
@@ -350,10 +378,7 @@ func _debug_draw_transient_line(from: Vector2, to: Vector2, life_sec: float) -> 
 	var tween: Tween = line.create_tween()
 	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	tween.tween_interval(max(0.01, life_sec))
-	tween.tween_callback(func() -> void:
-		if is_instance_valid(line):
-			line.queue_free()
-	)
+	tween.tween_callback(Callable(line, "queue_free"))
 
 
 func _debug_set_beam_line(from: Vector2, to: Vector2) -> void:
@@ -387,7 +412,22 @@ func _debug_clear_beam_line(delay_sec: float) -> void:
 	var tween: Tween = line.create_tween()
 	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	tween.tween_interval(max(0.01, delay_sec))
-	tween.tween_callback(func() -> void:
-		if is_instance_valid(line):
-			line.queue_free()
-	)
+	tween.tween_callback(Callable(line, "queue_free"))
+
+#Ignore player hitboxes
+func _build_owner_exclude_list(owner: Node) -> Array[RID]:
+	var out: Array[RID] = []
+	_collect_collision_rids(owner, out)
+	return out
+
+
+func _collect_collision_rids(node: Node, out: Array[RID]) -> void:
+	if node == null:
+		return
+
+	if node is CollisionObject2D:
+		var co: CollisionObject2D = node as CollisionObject2D
+		out.append(co.get_rid())
+
+	for child: Node in node.get_children():
+		_collect_collision_rids(child, out)

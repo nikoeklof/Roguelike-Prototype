@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://5ygieiime7pe"]
+
+[node name="DummyTarget" type="CharacterBody2D" unique_id=1693578065]

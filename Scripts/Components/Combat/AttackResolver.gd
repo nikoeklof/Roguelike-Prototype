@@ -6,12 +6,16 @@ static func resolve(ctx: CombatContext, variant: AttackVariant) -> AttackSnapsho
 	var snap: AttackSnapshot = AttackSnapshot.new()
 	snap.context = ctx
 	snap.item_instance = ctx.item_instance
+	snap.spread_roll = ctx.spread_roll if ctx != null else 0
+
 	var stats: ItemStats = null
 	if ctx != null and ctx.item_instance != null:
 		stats = ctx.item_instance.compute_stats(ctx)
 	else:
 		stats = ItemStats.new()
+
 	snap.stats = stats
+
 	if stats != null:
 		snap.damage = float(stats.damage)
 		snap.cooldown_sec = float(stats.cooldown_sec)
@@ -23,8 +27,15 @@ static func resolve(ctx: CombatContext, variant: AttackVariant) -> AttackSnapsho
 		snap.hitbox_size = stats.hitbox_size
 		snap.projectile_count = maxi(1, stats.projectile_count)
 		snap.pierce = maxi(0, stats.pierce)
+
+		# New: stats own runtime spread values.
+		snap.spread_degrees = max(0.0, stats.spread_degrees)
+		snap.spread_pattern_degrees = max(0.0, stats.spread_pattern_degrees)
+		snap.muzzle_offset = stats.muzzle_offset
+
 	if ctx != null and ctx.item_instance != null:
 		snap.ranged_mode = int(ctx.item_instance.ranged_mode)
+
 	_apply_variant_defaults(snap, variant)
 	_apply_item_defaults(snap, ctx.item if ctx != null else null)
 	return snap
@@ -49,8 +60,48 @@ static func _apply_variant_defaults(snap: AttackSnapshot, variant: AttackVariant
 
 	if variant is RangedFireVariant:
 		var ranged: RangedFireVariant = variant as RangedFireVariant
+
 		if snap.ranged_mode < 0:
 			snap.ranged_mode = int(ranged.default_mode)
+
+		# Stats take priority. Variant/profile only fills defaults.
+		if snap.muzzle_offset == Vector2.ZERO:
+			snap.muzzle_offset = ranged.muzzle_offset
+
+		if snap.spread_degrees <= 0.0:
+			snap.spread_degrees = max(0.0, ranged.spread_degrees)
+
+		if snap.spread_pattern_degrees <= 0.0:
+			snap.spread_pattern_degrees = max(0.0, ranged.spread_pattern_degrees)
+
+		snap.hitscan_range = max(1.0, ranged.hitscan_range)
+		snap.beam_range = max(1.0, ranged.beam_range)
+		snap.beam_duration_sec = max(0.01, ranged.beam_duration_sec)
+		snap.beam_tick_sec = max(0.01, ranged.beam_tick_sec)
+
+		if ranged.projectile_spec != null:
+			snap.projectile_spec = ranged.projectile_spec
+			snap.projectile_scene = ranged.projectile_spec.scene
+			snap.projectile_speed = ranged.projectile_spec.speed
+			snap.projectile_gravity = ranged.projectile_spec.gravity
+			snap.projectile_lifetime_sec = ranged.projectile_spec.lifetime_sec
+			snap.projectile_radius = max(1.0, ranged.projectile_spec.radius)
+			snap.projectile_inherit_owner_velocity = clampf(ranged.projectile_spec.inherit_owner_velocity, 0.0, 1.0)
+			snap.projectile_range = max(0.0, ranged.projectile_spec.range)
+			snap.projectile_collision_mask = ranged.projectile_spec.collision_mask
+			snap.projectile_sprite_texture = ranged.projectile_spec.sprite_texture
+			snap.projectile_sprite_tint = ranged.projectile_spec.sprite_tint
+		else:
+			snap.projectile_scene = ranged.projectile_scene
+			snap.projectile_speed = ranged.projectile_speed
+			snap.projectile_gravity = ranged.projectile_gravity
+			snap.projectile_lifetime_sec = ranged.projectile_lifetime_sec
+			snap.projectile_radius = max(1.0, ranged.projectile_radius)
+			snap.projectile_inherit_owner_velocity = clampf(ranged.inherit_owner_velocity, 0.0, 1.0)
+			snap.projectile_range = max(0.0, ranged.projectile_range)
+			snap.projectile_collision_mask = ranged.projectile_collision_mask
+			snap.projectile_sprite_texture = ranged.projectile_sprite_texture
+			snap.projectile_sprite_tint = ranged.projectile_sprite_tint
 
 
 static func _apply_item_defaults(snap: AttackSnapshot, item: Node) -> void:
@@ -86,3 +137,19 @@ static func _apply_item_defaults(snap: AttackSnapshot, item: Node) -> void:
 
 		if snap.recovery_time <= 0.0:
 			snap.recovery_time = max(0.0, ranged.default_recovery)
+
+		if snap.projectile_spec == null and snap.projectile_scene == null:
+			if ranged.projectile_spec != null:
+				snap.projectile_spec = ranged.projectile_spec
+				snap.projectile_scene = ranged.projectile_spec.scene
+				snap.projectile_speed = ranged.projectile_spec.speed
+				snap.projectile_gravity = ranged.projectile_spec.gravity
+				snap.projectile_lifetime_sec = ranged.projectile_spec.lifetime_sec
+				snap.projectile_radius = max(1.0, ranged.projectile_spec.radius)
+				snap.projectile_inherit_owner_velocity = clampf(ranged.projectile_spec.inherit_owner_velocity, 0.0, 1.0)
+				snap.projectile_range = max(0.0, ranged.projectile_spec.range)
+				snap.projectile_collision_mask = ranged.projectile_spec.collision_mask
+				snap.projectile_sprite_texture = ranged.projectile_spec.sprite_texture
+				snap.projectile_sprite_tint = ranged.projectile_spec.sprite_tint
+			else:
+				snap.projectile_scene = ranged.projectile_scene

@@ -1,9 +1,6 @@
 extends RefCounted
 class_name StatId
 
-# StringName identifiers for all item stats.
-# Keep in sync with ItemStats fields and ItemInstance.stat_levels keys.
-
 const DAMAGE: StringName = &"damage"
 const COOLDOWN_SEC: StringName = &"cooldown_sec"
 const WINDUP_TIME: StringName = &"windup_time"
@@ -11,6 +8,9 @@ const RECOVERY_TIME: StringName = &"recovery_time"
 
 const PROJECTILE_COUNT: StringName = &"projectile_count"
 const PIERCE: StringName = &"pierce"
+const SPREAD_DEGREES: StringName = &"spread_degrees"
+const SPREAD_PATTERN_DEGREES: StringName = &"spread_pattern_degrees"
+const MUZZLE_OFFSET: StringName = &"muzzle_offset"
 
 const MOVE_SPEED_MULT: StringName = &"move_speed_mult"
 const DAMAGE_TAKEN_MULT: StringName = &"damage_taken_mult"
@@ -32,6 +32,9 @@ static func all() -> PackedStringArray:
 		String(RECOVERY_TIME),
 		String(PROJECTILE_COUNT),
 		String(PIERCE),
+		String(SPREAD_DEGREES),
+		String(SPREAD_PATTERN_DEGREES),
+		String(MUZZLE_OFFSET),
 		String(MOVE_SPEED_MULT),
 		String(DAMAGE_TAKEN_MULT),
 		String(FLAT_DAMAGE_REDUCTION),

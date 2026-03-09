@@ -5,6 +5,7 @@ class_name EnemySlowAuraAttribute
 @export_range(0.1, 0.99, 0.01) var slow_mult: float = 0.70
 @export_range(0.1, 20.0, 0.1) var duration_sec: float = 4.0
 
+
 func default_domains() -> PackedStringArray:
 	return PackedStringArray(["cast"])
 
@@ -15,10 +16,10 @@ func on_cast_apply(context: CombatContext, item_instance: ItemInstance) -> void:
 	if not (context.owner is Node2D):
 		return
 
-	var owner2d := context.owner as Node2D
+	var owner2d: Node2D = context.owner as Node2D
 	var origin: Vector2 = owner2d.global_position
 
-	var world := owner2d.get_world_2d()
+	var world: World2D = owner2d.get_world_2d()
 	if world == null:
 		return
 
@@ -26,10 +27,10 @@ func on_cast_apply(context: CombatContext, item_instance: ItemInstance) -> void:
 	if space == null:
 		return
 
-	var shape := CircleShape2D.new()
+	var shape: CircleShape2D = CircleShape2D.new()
 	shape.radius = radius
 
-	var q := PhysicsShapeQueryParameters2D.new()
+	var q: PhysicsShapeQueryParameters2D = PhysicsShapeQueryParameters2D.new()
 	q.shape = shape
 	q.transform = Transform2D(0.0, origin)
 	q.collide_with_areas = false
@@ -43,29 +44,25 @@ func on_cast_apply(context: CombatContext, item_instance: ItemInstance) -> void:
 		var c: Variant = h.get("collider")
 		if not (c is Node):
 			continue
+
 		var n: Node = c as Node
 		if n == context.owner:
 			continue
 
-		# Only affect hostiles (best-effort)
 		if context.faction != null and context.faction is Faction:
-			var f := context.faction as Faction
-			# If your Faction doesn't implement is_hostile_to, skip this check safely
+			var f: Faction = context.faction as Faction
 			if f.has_method(&"is_hostile_to"):
 				if not bool(f.call(&"is_hostile_to", n)):
 					continue
 
-		var target_stats := _find_stats(n)
+		var target_stats: Stats = _find_stats(n)
 		if target_stats == null:
 			continue
 
-		var key := _make_key(item_instance, n, "slow")
+		var key: StringName = _make_key(item_instance, n, "slow")
 		target_stats.set_move_speed_mult(key, slow_mult)
 
-		_start_clear_timer(n, duration_sec, func() -> void:
-			if is_instance_valid(target_stats):
-				target_stats.clear_move_speed_mult(key)
-		)
+		_start_clear_timer(n, duration_sec, target_stats, key)
 
 
 func _find_stats(root: Node) -> Stats:
@@ -75,19 +72,24 @@ func _find_stats(root: Node) -> Stats:
 
 
 func _make_key(item_instance: ItemInstance, target: Node, suffix: String) -> StringName:
-	var seed := 0
+	var seed: int = 0
 	if item_instance != null:
 		seed = item_instance.seed
 	return StringName("spell_%s_%d_%d" % [suffix, seed, target.get_instance_id()])
 
 
-func _start_clear_timer(host: Node, sec: float, cb: Callable) -> void:
-	var t := Timer.new()
+func _start_clear_timer(host: Node, sec: float, target_stats: Stats, key: StringName) -> void:
+	var t: Timer = Timer.new()
 	t.one_shot = true
 	t.wait_time = maxf(0.01, sec)
 	host.add_child(t)
-	t.timeout.connect(func() -> void:
-		cb.call()
-		t.queue_free()
-	)
+	t.timeout.connect(Callable(self, "_clear_slow_and_free_timer").bind(target_stats, key, t), CONNECT_ONE_SHOT)
 	t.start()
+
+
+func _clear_slow_and_free_timer(target_stats: Stats, key: StringName, timer: Timer) -> void:
+	if is_instance_valid(target_stats):
+		target_stats.clear_move_speed_mult(key)
+
+	if is_instance_valid(timer):
+		timer.queue_free()

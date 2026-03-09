@@ -1,30 +1,8 @@
 [gd_scene format=3 uid="uid://cpf1bt61qmk4p"]
 
 [ext_resource type="Script" uid="uid://ch1c15j4brwlw" path="res://Scripts/Components/Equipment/Items/RangedWeapon.gd" id="1_vbboy"]
-[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="2_bqvk6"]
-[ext_resource type="Script" uid="uid://cmuxtevt4ki8e" path="res://Scripts/Items/Attributes/Ranged/ExtraProjectilesAttribute.gd" id="3_ghht3"]
 [ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="3_ptlpj"]
-[ext_resource type="Script" uid="uid://dwix0u3btcnae" path="res://Scripts/Items/Attributes/Ranged/PenetrationAttribute.gd" id="4_c18yn"]
 [ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="4_ghht3"]
-[ext_resource type="Script" uid="uid://bmf0mseupkx2g" path="res://Scripts/Items/Attributes/Ranged/HitscanAttribute.gd" id="5_c18yn"]
-[ext_resource type="Script" uid="uid://xexiflbe5mdw" path="res://Scripts/Items/Attributes/BonusDamageOnHitAttribute.gd" id="6_owe3r"]
-
-[sub_resource type="Resource" id="Resource_go8vx"]
-script = ExtResource("3_ghht3")
-metadata/_custom_type_script = "uid://cmuxtevt4ki8e"
-
-[sub_resource type="Resource" id="Resource_vrw0g"]
-script = ExtResource("4_c18yn")
-metadata/_custom_type_script = "uid://dwix0u3btcnae"
-
-[sub_resource type="Resource" id="Resource_awynq"]
-script = ExtResource("5_c18yn")
-range = 500.0
-metadata/_custom_type_script = "uid://bmf0mseupkx2g"
-
-[sub_resource type="Resource" id="Resource_jjdfr"]
-script = ExtResource("6_owe3r")
-metadata/_custom_type_script = "uid://xexiflbe5mdw"
 
 [sub_resource type="Resource" id="Resource_c18yn"]
 script = ExtResource("3_ptlpj")
@@ -38,12 +16,16 @@ script = ExtResource("4_ghht3")
 display_name = "Shotgun_base"
 category = 1
 base_stats = SubResource("Resource_c18yn")
-allowed_attributes = Array[ExtResource("2_bqvk6")]([SubResource("Resource_go8vx"), SubResource("Resource_vrw0g"), SubResource("Resource_awynq"), SubResource("Resource_jjdfr")])
 metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_bqvk6"]
 
 [node name="wpn_ranged_shotgun_base" type="Node2D" unique_id=740612425]
 script = ExtResource("1_vbboy")
 item_def = SubResource("Resource_owe3r")
+projectile_sprite_texture = SubResource("CanvasTexture_bqvk6")
+spread_degrees = 4.0
+spread_pattern_degrees = 18.0
 allow_move_during_attack = true
 pickup_slot_kind = 1
 metadata/_custom_type_script = "uid://ch1c15j4brwlw"

@@ -358,6 +358,7 @@ script = ExtResource("3_o3ny4")
 
 [node name="Faction" type="Node" parent="." unique_id=2087846313]
 script = ExtResource("4_86k4x")
+faction = 1
 
 [node name="Capabilities" type="Node" parent="." unique_id=586970052]
 script = ExtResource("5_14ypb")
@@ -403,7 +404,6 @@ script = ExtResource("10_ovmla")
 
 [node name="Combat" type="Node" parent="." unique_id=1019696732]
 script = ExtResource("12_qdh38")
-equipment_path = NodePath("../Equipment")
 
 [node name="AnimDriver" type="Node" parent="." unique_id=106839113 node_paths=PackedStringArray("sprite", "anim_player")]
 script = ExtResource("13_x8u2g")
@@ -431,6 +431,7 @@ root_node = NodePath("")
 [node name="StateHandler" parent="." unique_id=1266186412 instance=ExtResource("18_p0go8")]
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=555033056]
+visible = false
 position = Vector2(0, -5)
 scale = Vector2(2, 2)
 collision_layer = 16
@@ -455,3 +456,4 @@ script = ExtResource("20_tm314")
 shape = SubResource("CircleShape2D_d71ut")
 
 [editable path="Equipment"]
+[editable path="StateHandler"]
