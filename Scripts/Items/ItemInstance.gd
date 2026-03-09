@@ -88,7 +88,6 @@ func compute_stats(context: CombatContext) -> ItemStats:
 	out.windup_time = ModifierResolver.resolve_float(_stats_float(base_res, &"windup_time", 0.0), _mods_for(mods, StatId.WINDUP_TIME))
 	out.recovery_time = ModifierResolver.resolve_float(_stats_float(base_res, &"recovery_time", 0.0), _mods_for(mods, StatId.RECOVERY_TIME))
 
-	out.is_automatic = _stats_bool(base_res, &"is_automatic", false)
 	out.projectile_count = ModifierResolver.resolve_int(_stats_int(base_res, &"projectile_count", 1), _mods_for(mods, StatId.PROJECTILE_COUNT))
 	out.pierce = ModifierResolver.resolve_int(_stats_int(base_res, &"pierce", 0), _mods_for(mods, StatId.PIERCE))
 
@@ -132,10 +131,6 @@ func _collect_stat_modifiers(context: CombatContext) -> Array[StatModifier]:
 	var attrs: Array[ItemAttribute] = ItemAttributeBus._sorted_attrs(self)
 	for a: ItemAttribute in attrs:
 		if a == null:
-			continue
-
-		# Placeholder-safe: placeholders have no script methods.
-		if a.resource_path == "":
 			continue
 
 		if a.has_method("applies_to_domain"):
@@ -295,14 +290,6 @@ func _stats_int(res: Resource, prop: StringName, fallback: int) -> int:
 	if not _stats_has(res, prop):
 		return fallback
 	return int(res.get(prop))
-
-
-func _stats_bool(res: Resource, prop: StringName, fallback: bool) -> bool:
-	if res == null:
-		return fallback
-	if not _stats_has(res, prop):
-		return fallback
-	return bool(res.get(prop))
 
 
 func _stats_vec2(res: Resource, prop: StringName, fallback: Vector2) -> Vector2:

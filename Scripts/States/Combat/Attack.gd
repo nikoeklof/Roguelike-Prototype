@@ -4,7 +4,6 @@ class_name Attack
 var _combat: Combat = null
 var _controls: ControlSource = null
 var _mover: Mover = null
-var _fired_once: bool = false
 var _attack_kind: Combat.AttackKind = Combat.AttackKind.NONE
 
 
@@ -12,7 +11,6 @@ func enter(_msg: Dictionary = {}) -> void:
 	_combat = _get_combat()
 	_controls = _get_control()
 	_mover = _get_mover()
-	_fired_once = false
 	_attack_kind = Combat.AttackKind.NONE
 
 	_resolve_attack_kind()
@@ -35,31 +33,17 @@ func physics_update(delta: float) -> void:
 		return
 
 	if not _is_attack_still_held_for_kind(_attack_kind):
-		var move_input: Vector2 = _controls.move_intent()
-		if move_input != Vector2.ZERO:
-			state_handler.change_state("Walk")
-		else:
-			state_handler.change_state("Idle")
+		_transition_after_attack_release()
 		return
 
 	var aim_dir: Vector2 = _controls.aim_dir(Vector2.RIGHT)
-	var automatic: bool = _fires_while_held_for_kind(_attack_kind)
-
-	if automatic:
-		_combat.try_attack(_attack_kind, aim_dir)
-	elif _fired_once:
-		var move_input: Vector2 = _controls.move_intent()
-		if move_input != Vector2.ZERO:
-			state_handler.change_state("Walk")
-		else:
-			state_handler.change_state("Idle")
+	_combat.try_attack(_attack_kind, aim_dir)
 
 
 func exit() -> void:
 	_combat = null
 	_controls = null
 	_mover = null
-	_fired_once = false
 	_attack_kind = Combat.AttackKind.NONE
 
 
@@ -108,8 +92,7 @@ func _try_fire_now() -> void:
 		return
 
 	var aim_dir: Vector2 = _controls.aim_dir(Vector2.RIGHT)
-	if _combat.try_attack(_attack_kind, aim_dir):
-		_fired_once = true
+	_combat.try_attack(_attack_kind, aim_dir)
 
 
 func _is_attack_still_held_for_kind(kind: Combat.AttackKind) -> bool:
@@ -126,11 +109,16 @@ func _is_attack_still_held_for_kind(kind: Combat.AttackKind) -> bool:
 	return true
 
 
-func _fires_while_held_for_kind(kind: Combat.AttackKind) -> bool:
+func _transition_after_attack_release() -> void:
 	if _controls == null:
-		return false
+		state_handler.change_state("Idle")
+		return
 
-	return _controls.weapon_fires_while_held_for_kind(kind)
+	var move_input: Vector2 = _controls.move_intent()
+	if move_input != Vector2.ZERO:
+		state_handler.change_state("Walk")
+	else:
+		state_handler.change_state("Idle")
 
 
 func _get_control() -> ControlSource:

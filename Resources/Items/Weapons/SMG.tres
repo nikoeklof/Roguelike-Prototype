@@ -12,7 +12,6 @@ damage = 4.0
 cooldown_sec = 0.12
 windup_time = 0.02
 recovery_time = 0.02
-is_automatic = true
 spread_degrees = 15.0
 spread_pattern_degrees = 15.0
 knockback = 0.3

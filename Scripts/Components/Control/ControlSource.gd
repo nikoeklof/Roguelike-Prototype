@@ -1,7 +1,6 @@
 extends Node
 class_name ControlSource
 
-
 func move_intent() -> Vector2:
 	return Vector2.ZERO
 
@@ -43,8 +42,8 @@ func wants_block() -> bool:
 
 
 func active_weapon_fires_while_held() -> bool:
-	return false
+	return true
 
 
 func weapon_fires_while_held_for_kind(_kind: Combat.AttackKind) -> bool:
-	return false
+	return true

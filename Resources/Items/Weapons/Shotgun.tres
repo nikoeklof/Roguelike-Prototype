@@ -10,6 +10,7 @@
 script = ExtResource("1_2wqdy")
 damage = 5.0
 cooldown_sec = 0.9
+is_automatic = true
 projectile_count = 5
 spread_degrees = 10.0
 spread_pattern_degrees = 18.0

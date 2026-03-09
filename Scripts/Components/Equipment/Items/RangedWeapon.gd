@@ -72,23 +72,7 @@ func get_ranged_profile() -> RangedAttackProfile:
 
 
 func fires_while_held() -> bool:
-	if _instance == null:
-		_ready()
-
-	if _instance == null:
-		return false
-
-	var ctx: CombatContext = CombatContext.new()
-	ctx.owner = get_parent()
-	ctx.item = self
-	ctx.item_instance = _instance
-	ctx.aim_dir = Vector2.RIGHT
-
-	var stats: ItemStats = _instance.compute_stats(ctx)
-	if stats == null:
-		return false
-
-	return stats.is_automatic
+	return true
 
 
 func get_attack_variant(ctx: CombatContext) -> AttackVariant:

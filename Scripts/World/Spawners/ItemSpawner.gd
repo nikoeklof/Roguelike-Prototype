@@ -266,13 +266,13 @@ func _roll_attributes(inst: ItemInstance, bt: BaseItemType, seed: int, count: in
 
 		# Duplicate safely
 		var dup_res: Resource = chosen.duplicate(true)
-		if dup_res is ItemAttribute:
-			var dup_attr: ItemAttribute = dup_res as ItemAttribute
-			# Reject placeholder duplicates just in case
-			if dup_attr.resource_path == "" and chosen.resource_path != "":
-				pass
-			else:
-				inst.attributes.append(dup_attr)
+		var dup_attr: ItemAttribute = dup_res as ItemAttribute
+		if dup_attr == null:
+			continue
+
+		# Keep real duplicated runtime attributes.
+		# Placeholder filtering already happened earlier on the source pool entry.
+		inst.attributes.append(dup_attr)
 
 		remaining_budget -= 1
 

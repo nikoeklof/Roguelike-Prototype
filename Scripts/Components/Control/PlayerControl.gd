@@ -1,19 +1,22 @@
 extends ControlSource
 class_name PlayerControl
 
-@export var left_action: StringName = &"Left"
+# Movement actions (match Project Settings → Input Map exactly)
+@export var left_action: StringName  = &"Left"
 @export var right_action: StringName = &"Right"
-@export var up_action: StringName = &"Up"
-@export var down_action: StringName = &"Down"
+@export var up_action: StringName    = &"Up"
+@export var down_action: StringName  = &"Down"
 
+# Combat
 @export var attack_action: StringName = &"Attack"
-@export var block_action: StringName = &"Shield"
+@export var block_action: StringName  = &"Shield"
 
-@export var slot_melee_action: StringName = &"SlotMelee"
+# Slot switching
+@export var slot_melee_action: StringName  = &"SlotMelee"
 @export var slot_ranged_action: StringName = &"SlotRanged"
-@export var slot_spell_action: StringName = &"SlotSpell"
-@export var next_slot_action: StringName = &"NextSlot"
-@export var prev_slot_action: StringName = &"PrevSlot"
+@export var slot_spell_action: StringName  = &"SlotSpell"
+@export var next_slot_action: StringName   = &"NextSlot"
+@export var prev_slot_action: StringName   = &"PrevSlot"
 
 
 func _physics_process(_delta: float) -> void:
@@ -32,7 +35,7 @@ func _physics_process(_delta: float) -> void:
 	elif Input.is_action_just_pressed(slot_spell_action):
 		eq.set_active_slot_spell("player_input")
 	elif Input.is_action_just_pressed(next_slot_action):
-		eq.cycle_active_slot(1, "player_input")
+		eq.cycle_active_slot(+1, "player_input")
 	elif Input.is_action_just_pressed(prev_slot_action):
 		eq.cycle_active_slot(-1, "player_input")
 
@@ -41,10 +44,8 @@ func move_intent() -> Vector2:
 	var x: float = Input.get_action_strength(right_action) - Input.get_action_strength(left_action)
 	var y: float = Input.get_action_strength(down_action) - Input.get_action_strength(up_action)
 	var v: Vector2 = Vector2(x, y)
-
 	if v.length() > 0.001:
 		return v.normalized()
-
 	return Vector2.ZERO
 
 
@@ -92,7 +93,6 @@ func aim_dir(fallback: Vector2) -> Vector2:
 	var dir: Vector2 = entity.get_global_mouse_position() - entity.global_position
 	if dir.length() < 0.001:
 		return fallback
-
 	return dir.normalized()
 
 
@@ -101,59 +101,25 @@ func wants_block() -> bool:
 
 
 func active_weapon_fires_while_held() -> bool:
-	var entity: CharacterBody2D = _entity_root()
-	if entity == null:
-		return false
-
-	var eq: Equipment = _equipment(entity)
-	if eq == null:
-		return false
-
-	var item: Node = eq.get_item_for_kind(eq.active_slot)
-	if item == null:
-		return false
-
-	if item.has_method("fires_while_held"):
-		return bool(item.fires_while_held())
-
-	return false
+	return true
 
 
-func weapon_fires_while_held_for_kind(kind: Combat.AttackKind) -> bool:
-	var entity: CharacterBody2D = _entity_root()
-	if entity == null:
-		return false
-
-	var eq: Equipment = _equipment(entity)
-	if eq == null:
-		return false
-
-	var item: Node = eq.get_item_for_kind(kind)
-	if item == null:
-		return false
-
-	if item.has_method("fires_while_held"):
-		return bool(item.fires_while_held())
-
-	return false
+func weapon_fires_while_held_for_kind(_kind: Combat.AttackKind) -> bool:
+	return true
 
 
 func _entity_root() -> CharacterBody2D:
-	var node: Node = self
-
-	while node != null and not (node is CharacterBody2D):
-		node = node.get_parent()
-
-	return node as CharacterBody2D
+	var n: Node = self
+	while n != null and not (n is CharacterBody2D):
+		n = n.get_parent()
+	return n as CharacterBody2D if n is CharacterBody2D else null
 
 
 func _equipment(entity: Node) -> Equipment:
-	var ent: Entity = entity as Entity
-	if ent != null:
-		var eq_component: Equipment = ent.get_component(&"Equipment") as Equipment
-		if eq_component != null:
-			return eq_component
-
+	if entity is Entity:
+		var eq: Equipment = (entity as Entity).get_component(&"Equipment") as Equipment
+		if eq != null:
+			return eq
 	return entity.get_node_or_null("Equipment") as Equipment
 
 
