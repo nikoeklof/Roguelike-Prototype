@@ -12,8 +12,8 @@ damage = 4.0
 cooldown_sec = 0.12
 windup_time = 0.02
 recovery_time = 0.02
-spread_degrees = 15.0
-spread_pattern_degrees = 15.0
+spread_degrees = 5.0
+spread_pattern_degrees = 3.0
 knockback = 0.3
 metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 

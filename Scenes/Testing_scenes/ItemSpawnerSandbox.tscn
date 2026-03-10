@@ -8,6 +8,7 @@
 [ext_resource type="Resource" uid="uid://du2xohmhqnykk" path="res://Resources/Items/BaseTypes/Base_Pistol.tres" id="6_sn2kg"]
 [ext_resource type="Resource" uid="uid://dki8qndxyoqep" path="res://Resources/Items/BaseTypes/Base_Maul.tres" id="6_x3clo"]
 [ext_resource type="Resource" uid="uid://ch6uawoeugf1x" path="res://Resources/Items/BaseTypes/Base_Dagger.tres" id="7_sn2kg"]
+[ext_resource type="PackedScene" uid="uid://b0o48nlgcurhq" path="res://Scenes/Templates/Entities/Dummy_Target.tscn" id="9_s54dy"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
 size = Vector2(1169, 29.33334)
@@ -66,7 +67,8 @@ player_root_path = NodePath("../Player")
 position = Vector2(172, -151)
 script = ExtResource("3_x3clo")
 base_type = ExtResource("5_x3clo")
-run_seed_override = 12368
+run_seed_override_enabled = true
+run_seed_override = 12347
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"
 
 [node name="ItemSpawner2" type="Node2D" parent="." unique_id=2119038145]
@@ -74,7 +76,7 @@ position = Vector2(437, -154)
 script = ExtResource("3_x3clo")
 base_type = ExtResource("5_kyx5t")
 run_seed_override_enabled = true
-run_seed_override = 12345
+run_seed_override = 12352
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"
 
 [node name="ItemSpawner5" type="Node2D" parent="." unique_id=1470112626]
@@ -100,3 +102,6 @@ base_type = ExtResource("7_sn2kg")
 run_seed_override_enabled = true
 run_seed_override = 321321
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"
+
+[node name="Dummy" parent="." unique_id=1065698850 instance=ExtResource("9_s54dy")]
+position = Vector2(137, -51)

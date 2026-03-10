@@ -8,6 +8,7 @@ var _t: float = 0.0
 
 
 func enter(_msg: Dictionary = {}) -> void:
+	
 	_t = 0.0
 
 	if stop_movement and entity != null:
@@ -16,6 +17,8 @@ func enter(_msg: Dictionary = {}) -> void:
 	var flash: HurtFlash = null
 	if entity != null:
 		flash = entity.get_node_or_null("HurtFlash") as HurtFlash
+
+		
 	if flash != null:
 		flash.play(duration_sec)
 

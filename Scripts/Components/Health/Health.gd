@@ -11,11 +11,13 @@ signal died()
 @export var start_full: bool = true
 
 # Small invuln helps prevent accidental multi-hit spam.
-# You can set this to 0 if you prefer doing it only via hitbox "already_hit" logic.
+# This now starts at the end of the current frame, so simultaneous hits
+# from the same attack burst can still all apply.
 @export_range(0.0, 5.0, 0.01) var invuln_sec_on_hit: float = 0.0
 
 var hp: float = 0.0
 var _invuln_t: float = 0.0
+var _pending_invuln: bool = false
 
 func _ready() -> void:
 	hp = max_hp if start_full else clampf(hp, 0.0, max_hp)
@@ -50,8 +52,11 @@ func take_damage(amount: float, source: Node = null) -> bool:
 	var applied := amount
 	hp = maxf(hp - applied, 0.0)
 
-	if invuln_sec_on_hit > 0.0:
-		_invuln_t = invuln_sec_on_hit
+	# Defer invulnerability activation so multiple hits that land in the same
+	# frame / burst can all apply before the grace period begins.
+	if invuln_sec_on_hit > 0.0 and not _pending_invuln:
+		_pending_invuln = true
+		call_deferred("_activate_pending_invuln")
 
 	damaged.emit(applied, source)
 	hp_changed.emit(hp, max_hp)
@@ -59,6 +64,16 @@ func take_damage(amount: float, source: Node = null) -> bool:
 	if hp <= 0.0:
 		died.emit()
 	return true
+
+func _activate_pending_invuln() -> void:
+	if not _pending_invuln:
+		return
+	if is_dead():
+		_pending_invuln = false
+		return
+
+	_pending_invuln = false
+	_invuln_t = invuln_sec_on_hit
 
 func heal(amount: float) -> float:
 	if amount <= 0.0 or is_dead():

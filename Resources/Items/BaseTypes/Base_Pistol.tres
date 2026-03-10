@@ -13,4 +13,4 @@ min_attribute_count = 1
 max_attribute_count = 3
 auto_weapon_token = "Pistol"
 force_mode_attribute = true
-locked_ranged_mode = 1
+locked_ranged_mode = 2

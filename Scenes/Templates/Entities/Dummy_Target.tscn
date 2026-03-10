@@ -1,161 +1,168 @@
-[gd_scene format=3 uid="uid://b0eb7ryv2foaw"]
+[gd_scene format=3 uid="uid://b0o48nlgcurhq"]
 
-[ext_resource type="Script" uid="uid://csm6mhenieg4s" path="res://Scripts/Core/Entity.gd" id="1_7r15b"]
-[ext_resource type="Script" uid="uid://u7ccj31pw8br" path="res://Scripts/Core/EntityComponents.gd" id="2_oirap"]
-[ext_resource type="Script" uid="uid://hj51efsuai6p" path="res://Scripts/Core/Tags.gd" id="3_o3ny4"]
-[ext_resource type="Script" uid="uid://begqmbwg43f1w" path="res://Scripts/Core/Faction.gd" id="4_86k4x"]
-[ext_resource type="Script" uid="uid://c5u60fiayl1mq" path="res://Scripts/Core/Capabilities.gd" id="5_14ypb"]
-[ext_resource type="Script" uid="uid://csmn70dc2j0bk" path="res://Scripts/Core/Stats.gd" id="6_j5qy7"]
-[ext_resource type="Script" uid="uid://02a1iudasv4d" path="res://Scripts/Components/Health/Health.gd" id="7_554au"]
-[ext_resource type="Script" uid="uid://b4oooi2hhnv7g" path="res://Scripts/Components/Facing/FacingPointer.gd" id="8_5sc0j"]
-[ext_resource type="Script" uid="uid://b68pw1s1pesps" path="res://Scripts/Components/Control/PlayerControl.gd" id="9_7r15b"]
-[ext_resource type="Script" uid="uid://5gt3lfx3d821" path="res://Scripts/Components/Facing/AimRay.gd" id="9_d71ut"]
-[ext_resource type="Script" uid="uid://br17e58m0jn6e" path="res://Scripts/Components/Movement/Mover.gd" id="10_ovmla"]
-[ext_resource type="PackedScene" uid="uid://dn4kc4ts0htd" path="res://Scenes/Equipment/Equipment.tscn" id="11_5nqxw"]
-[ext_resource type="Script" uid="uid://dwn0m7cfouyed" path="res://Scripts/Components/Combat/Combat.gd" id="12_qdh38"]
-[ext_resource type="Script" uid="uid://crj5c0y8pbwvf" path="res://Scripts/Animation/AnimDriver.gd" id="13_x8u2g"]
-[ext_resource type="Script" uid="uid://d38xstn1bs221" path="res://Scripts/Animation/AnimSet.gd" id="14_s8hwr"]
-[ext_resource type="PackedScene" uid="uid://b8s1g24kyrtsq" path="res://Scenes/StateHandler/StateHandler.tscn" id="18_p0go8"]
-[ext_resource type="Script" uid="uid://qp2c6a6vyih1" path="res://Scripts/States/VFX/EntityVisualController.gd" id="20_o0gml"]
-[ext_resource type="Script" uid="uid://8avggln5hcfi" path="res://Scripts/Interaction/Interactor.gd" id="20_tm314"]
-[ext_resource type="Shader" uid="uid://ckaf4vkfk1rxi" path="res://Art/Shaders/HurtFlash.gdshader" id="21_yc78x"]
-[ext_resource type="Texture2D" uid="uid://ef76oyy21t8e" path="res://Art/Characters/Player_Character_8_way.png" id="22_fnpwp"]
+[ext_resource type="Script" uid="uid://c6fjgsl8os05d" path="res://Scripts/Testing/DummyTarget.gd" id="1_g6jji"]
+[ext_resource type="Script" uid="uid://u7ccj31pw8br" path="res://Scripts/Core/EntityComponents.gd" id="2_hv8q6"]
+[ext_resource type="Script" uid="uid://hj51efsuai6p" path="res://Scripts/Core/Tags.gd" id="3_2igbo"]
+[ext_resource type="Script" uid="uid://begqmbwg43f1w" path="res://Scripts/Core/Faction.gd" id="4_l0p75"]
+[ext_resource type="Script" uid="uid://c5u60fiayl1mq" path="res://Scripts/Core/Capabilities.gd" id="5_3dyo0"]
+[ext_resource type="Script" uid="uid://csmn70dc2j0bk" path="res://Scripts/Core/Stats.gd" id="6_dxh17"]
+[ext_resource type="Script" uid="uid://02a1iudasv4d" path="res://Scripts/Components/Health/Health.gd" id="7_65mp3"]
+[ext_resource type="Script" uid="uid://b4oooi2hhnv7g" path="res://Scripts/Components/Facing/FacingPointer.gd" id="8_3ry4c"]
+[ext_resource type="Script" uid="uid://5gt3lfx3d821" path="res://Scripts/Components/Facing/AimRay.gd" id="9_6d3s1"]
+[ext_resource type="PackedScene" uid="uid://dn4kc4ts0htd" path="res://Scenes/Equipment/Equipment.tscn" id="11_1h0nu"]
+[ext_resource type="Script" uid="uid://br17e58m0jn6e" path="res://Scripts/Components/Movement/Mover.gd" id="12_gks1e"]
+[ext_resource type="Shader" uid="uid://bm132chix5xcb" path="res://Art/Shaders/Entity_Visual.gdshader" id="13_5atrd"]
+[ext_resource type="Script" uid="uid://crj5c0y8pbwvf" path="res://Scripts/Animation/AnimDriver.gd" id="14_y5kjn"]
+[ext_resource type="Script" uid="uid://d38xstn1bs221" path="res://Scripts/Animation/AnimSet.gd" id="15_kg2pb"]
+[ext_resource type="Script" uid="uid://c2xsrtyhdi7pf" path="res://Scripts/Testing/DummyCombatMetrics.gd" id="17_5atrd"]
+[ext_resource type="Texture2D" uid="uid://ef76oyy21t8e" path="res://Art/Characters/Player_Character_8_way.png" id="17_uqhsm"]
+[ext_resource type="Script" uid="uid://qp2c6a6vyih1" path="res://Scripts/States/VFX/EntityVisualController.gd" id="18_3e56a"]
+[ext_resource type="PackedScene" uid="uid://b8s1g24kyrtsq" path="res://Scenes/StateHandler/StateHandler.tscn" id="18_g3w3s"]
 
 [sub_resource type="Resource" id="Resource_rmh8v"]
-script = ExtResource("14_s8hwr")
+script = ExtResource("15_kg2pb")
 metadata/_custom_type_script = "uid://d38xstn1bs221"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_4vlro"]
-shader = ExtResource("21_yc78x")
-shader_parameter/flash_amount = 0.0
-shader_parameter/flash_color = Color(1, 1, 1, 1)
+shader = ExtResource("13_5atrd")
+shader_parameter/base_tint = Color(1, 0, 0.1897483, 1)
+shader_parameter/hurt_flash = 0.0
+shader_parameter/hurt_flash_color = Color(1, 1, 1, 1)
+shader_parameter/freeze_amount = 0.0
+shader_parameter/freeze_color = Color(0.45, 0.8, 1, 1)
+shader_parameter/poison_amount = 0.0
+shader_parameter/poison_color = Color(0.45, 1, 0.45, 1)
+shader_parameter/burn_amount = 0.0
+shader_parameter/burn_color = Color(1, 0.55, 0.2, 1)
+shader_parameter/shield_amount = 0.0
+shader_parameter/shield_color = Color(0.4, 0.8, 1, 1)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2mdsq"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(64, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_7ku52"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(80, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1uco5"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(48, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_advac"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(96, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0ay12"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(32, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_dmkjm"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(0, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gj6ny"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(112, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_kclgu"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(16, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_3xuig"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(64, 24, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_iiwly"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(64, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lkxb7"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(64, 72, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ahurx"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(80, 24, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lwtsf"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(80, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_eb0a2"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(80, 72, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_5h1yu"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(48, 24, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gdnoq"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(48, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_akect"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(48, 72, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gpmtw"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(96, 24, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_g3k5y"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(96, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lhabb"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(96, 72, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_n2uaa"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(32, 24, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_r7rnl"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(32, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_de8xi"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(32, 72, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_3thxf"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(0, 24, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_qy1sb"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(0, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_uj2c3"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(0, 72, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ai6t3"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(112, 24, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nxv42"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(112, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_dilb2"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(112, 72, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ol7g5"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(16, 24, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_1jwii"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(16, 48, 16, 24)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wpr4n"]
-atlas = ExtResource("22_fnpwp")
+atlas = ExtResource("17_uqhsm")
 region = Rect2(16, 72, 16, 24)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_7oruq"]
@@ -343,50 +350,52 @@ size = Vector2(11, 8)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tm314"]
 size = Vector2(11, 8)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_d71ut"]
-radius = 25.0
-
-[node name="Player" type="CharacterBody2D" unique_id=423000657]
+[node name="Dummy" type="CharacterBody2D" unique_id=423000657]
 collision_layer = 2
-script = ExtResource("1_7r15b")
-initial_faction = 1
+script = ExtResource("1_g6jji")
+respawn_delay_sec = 2.0
 
 [node name="EntityComponents" type="Node" parent="." unique_id=1553032419]
-script = ExtResource("2_oirap")
+script = ExtResource("2_hv8q6")
 
 [node name="Tags" type="Node" parent="." unique_id=396387135]
-script = ExtResource("3_o3ny4")
+script = ExtResource("3_2igbo")
 
 [node name="Faction" type="Node" parent="." unique_id=2087846313]
-script = ExtResource("4_86k4x")
-faction = 1
+script = ExtResource("4_l0p75")
+faction = 2
 
 [node name="Capabilities" type="Node" parent="." unique_id=586970052]
-script = ExtResource("5_14ypb")
+script = ExtResource("5_3dyo0")
+defaults = {
+&"can_attack": false,
+&"can_block": false,
+&"can_cast": false,
+&"can_move": false,
+&"can_switch": false
+}
 
 [node name="Stats" type="Node" parent="." unique_id=696806420]
-script = ExtResource("6_j5qy7")
+script = ExtResource("6_dxh17")
 
 [node name="Health" type="Node" parent="." unique_id=175137403]
-script = ExtResource("7_554au")
-max_hp = 100.0
+script = ExtResource("7_65mp3")
+max_hp = 500.0
+invuln_sec_on_hit = 0.05
 
 [node name="FacingPointer" type="Node2D" parent="." unique_id=1170378246]
-script = ExtResource("8_5sc0j")
+script = ExtResource("8_3ry4c")
 velocity_source = NodePath("..")
 debug_print_facing = true
 
 [node name="AimRay" type="RayCast2D" parent="FacingPointer" unique_id=541430737]
 collide_with_areas = true
-script = ExtResource("9_d71ut")
+script = ExtResource("9_6d3s1")
 ray_length = 125.0
 
 [node name="WeaponSocket" type="Node2D" parent="FacingPointer/AimRay" unique_id=914614911]
 
-[node name="ControlSource" type="Node" parent="." unique_id=456557996]
-script = ExtResource("9_7r15b")
-
-[node name="Equipment" parent="." unique_id=526877775 instance=ExtResource("11_5nqxw")]
+[node name="Equipment" parent="." unique_id=526877775 instance=ExtResource("11_1h0nu")]
 unique_name_in_owner = true
 
 [node name="MeleeSlot" parent="Equipment" index="0" unique_id=1103842256]
@@ -401,14 +410,8 @@ initial_item_scene = null
 [node name="ShieldSlot" parent="Equipment" index="3" unique_id=1862735357]
 initial_item_scene = null
 
-[node name="Mover" type="Node" parent="." unique_id=102850989]
-script = ExtResource("10_ovmla")
-
-[node name="Combat" type="Node" parent="." unique_id=1019696732]
-script = ExtResource("12_qdh38")
-
 [node name="AnimDriver" type="Node" parent="." unique_id=106839113 node_paths=PackedStringArray("sprite", "anim_player")]
-script = ExtResource("13_x8u2g")
+script = ExtResource("14_y5kjn")
 sprite = NodePath("../Visual/Sprite")
 anim_player = NodePath("../Visual/Sprite/AnimationPlayer")
 anim_set = SubResource("Resource_rmh8v")
@@ -423,17 +426,14 @@ scale = Vector2(2, 2)
 texture_filter = 1
 material = SubResource("ShaderMaterial_4vlro")
 sprite_frames = SubResource("SpriteFrames_7oruq")
-animation = &"idle_down"
+animation = &"walking_left"
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Visual/Sprite" unique_id=765617789]
 root_node = NodePath("")
 
-[node name="PlayerCamera" type="Camera2D" parent="." unique_id=1757673326]
-
-[node name="StateHandler" parent="." unique_id=1266186412 instance=ExtResource("18_p0go8")]
+[node name="StateHandler" parent="." unique_id=1266186412 instance=ExtResource("18_g3w3s")]
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=555033056]
-visible = false
 position = Vector2(0, -5)
 scale = Vector2(2, 2)
 collision_layer = 16
@@ -448,18 +448,18 @@ position = Vector2(-1, 7)
 scale = Vector2(2, 2)
 shape = SubResource("RectangleShape2D_tm314")
 
-[node name="InteractionArea" type="Area2D" parent="." unique_id=514886212]
-position = Vector2(-1, -1)
-scale = Vector2(2, 2)
-collision_layer = 0
-script = ExtResource("20_tm314")
+[node name="Mover" type="Node" parent="." unique_id=1644648841]
+script = ExtResource("12_gks1e")
+friction = 3000.0
+metadata/_custom_type_script = "uid://br17e58m0jn6e"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea" unique_id=1202237707]
-shape = SubResource("CircleShape2D_d71ut")
+[node name="Metrics" type="Node" parent="." unique_id=264427172]
+script = ExtResource("17_5atrd")
 
-[node name="VisualController" type="Node" parent="." unique_id=923009030]
-script = ExtResource("20_o0gml")
-default_tint = Color(0.12171086, 0.75197864, 7.70092e-07, 1)
+[node name="EntityVisualController" type="Node" parent="." unique_id=467352005]
+script = ExtResource("18_3e56a")
+sprite_path = NodePath("../Visual/Sprite")
+default_tint = Color(0.9411765, 0, 0.3764706, 1)
 
 [editable path="Equipment"]
 [editable path="StateHandler"]

@@ -26,6 +26,7 @@ func _notification(what: int) -> void:
 
 
 func _resolve() -> void:
+
 	_sprite = null
 
 	# 1) Explicit override (if set)
@@ -39,9 +40,9 @@ func _resolve() -> void:
 	if entity == null:
 		return
 
-	_sprite = entity.get_node_or_null("VisualRoot/animations") as CanvasItem
+	_sprite = entity.get_node_or_null("Visual/AnimationPlayer") as CanvasItem
 	if _sprite == null:
-		_sprite = entity.get_node_or_null("VisualRoot") as CanvasItem
+		_sprite = entity.get_node_or_null("Visual") as CanvasItem
 
 	# 3) Final fallback: find any CanvasItem under the entity (cached)
 	if _sprite == null:
