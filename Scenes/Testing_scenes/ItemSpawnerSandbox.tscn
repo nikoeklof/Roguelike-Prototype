@@ -107,12 +107,14 @@ metadata/_custom_type_script = "uid://dpt1ah3dct4go"
 position = Vector2(345, -373)
 script = ExtResource("3_x3clo")
 base_type = ExtResource("10_ypj4y")
+run_seed_override = 12347
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"
 
 [node name="ItemSpawner7" type="Node2D" parent="." unique_id=768821660]
 position = Vector2(52, -358)
 script = ExtResource("3_x3clo")
 base_type = ExtResource("10_k1kh3")
+run_seed_override = 12340
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"
 
 [node name="Dummy" parent="." unique_id=1065698850 instance=ExtResource("9_s54dy")]

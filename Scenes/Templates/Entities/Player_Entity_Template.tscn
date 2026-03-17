@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" uid="uid://b8s1g24kyrtsq" path="res://Scenes/StateHandler/StateHandler.tscn" id="18_p0go8"]
 [ext_resource type="Script" uid="uid://qp2c6a6vyih1" path="res://Scripts/States/VFX/EntityVisualController.gd" id="20_o0gml"]
 [ext_resource type="Script" uid="uid://8avggln5hcfi" path="res://Scripts/Interaction/Interactor.gd" id="20_tm314"]
+[ext_resource type="Script" uid="uid://dq8au21fkubdm" path="res://Scripts/Components/Combat/SpellCastingManager.gd" id="21_o0gml"]
 [ext_resource type="Shader" uid="uid://ckaf4vkfk1rxi" path="res://Art/Shaders/HurtFlash.gdshader" id="21_yc78x"]
 [ext_resource type="Texture2D" uid="uid://ef76oyy21t8e" path="res://Art/Characters/Player_Character_8_way.png" id="22_fnpwp"]
 
@@ -460,6 +461,10 @@ shape = SubResource("CircleShape2D_d71ut")
 [node name="VisualController" type="Node" parent="." unique_id=923009030]
 script = ExtResource("20_o0gml")
 default_tint = Color(0.12171086, 0.75197864, 7.70092e-07, 1)
+
+[node name="SpellCastingManager" type="Node" parent="." unique_id=1842546258]
+script = ExtResource("21_o0gml")
+equipment_path = NodePath("../Equipment")
 
 [editable path="Equipment"]
 [editable path="StateHandler"]
