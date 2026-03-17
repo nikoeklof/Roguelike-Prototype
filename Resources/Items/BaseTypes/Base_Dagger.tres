@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="1"]
 [ext_resource type="Resource" uid="uid://chpxjgwd0dnl8" path="res://Resources/Items/Weapons/Dagger.tres" id="2"]
-[ext_resource type="Resource" path="res://Resources/Items/Pools/Pool_Melee_All.tres" id="3"]
+[ext_resource type="Resource" uid="uid://bwwk2boawn1bh" path="res://Resources/Items/Pools/Pool_Melee_All.tres" id="3"]
 
 [resource]
 script = ExtResource("1")

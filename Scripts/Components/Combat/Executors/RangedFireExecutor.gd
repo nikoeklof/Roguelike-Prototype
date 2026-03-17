@@ -47,7 +47,7 @@ func _fire(snap: AttackSnapshot) -> void:
 	for i: int in range(projectile_count):
 		var shot: RangedShotData = _build_base_shot(snap, muzzle, base_dir, i, projectile_count, inst)
 		_dispatch_modify_shot(shot, inst)
-		_execute_shot(shot, snap, inst)
+		_execute_shot(shot, snap, context, inst)
 
 
 func _build_base_shot(
@@ -99,14 +99,19 @@ func _dispatch_modify_shot(shot: RangedShotData, inst: ItemInstance) -> void:
 	ItemAttributeBus.dispatch_modify_ranged_shot(context, shot, inst)
 
 
-func _execute_shot(shot: RangedShotData, snap: AttackSnapshot, inst: ItemInstance) -> void:
+func _execute_shot(
+	shot: RangedShotData,
+	snap: AttackSnapshot,
+	combat_context: CombatContext,
+	inst: ItemInstance
+) -> void:
 	match shot.mode:
 		RangedShotData.ShotMode.PROJECTILE:
 			_fire_projectile(shot, snap, inst)
 		RangedShotData.ShotMode.HITSCAN:
-			_fire_hitscan(shot, snap)
+			_fire_hitscan(shot, snap, combat_context)
 		RangedShotData.ShotMode.BEAM:
-			_start_beam(shot, snap)
+			_start_beam(shot, snap, combat_context)
 
 
 func _compute_shot_dir(
@@ -206,58 +211,128 @@ func _fire_projectile(shot: RangedShotData, snap: AttackSnapshot, inst: ItemInst
 		get_tree().current_scene.add_child(projectile)
 
 
-func _fire_hitscan(shot: RangedShotData, snap: AttackSnapshot) -> void:
-	if context == null or context.owner == null:
-		return
-	if not (context.owner is Node2D):
-		return
-
-	var owner: Node2D = context.owner as Node2D
+func _collect_ray_hits(
+	origin: Vector2,
+	to: Vector2,
+	owner: Node2D,
+	max_targets: int
+) -> Dictionary:
 	var space: PhysicsDirectSpaceState2D = owner.get_world_2d().direct_space_state
+	var exclude: Array[RID] = _build_owner_exclude_list(owner)
+	var victims: Array[Dictionary] = []
+	var final_pos: Vector2 = to
+	var seen_victims: Dictionary = {}
 
-	var to: Vector2 = shot.origin + shot.direction.normalized() * max(1.0, shot.range)
-	var query: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.create(shot.origin, to)
-	query.exclude = _build_owner_exclude_list(owner)
-	query.collide_with_areas = true
-	query.collide_with_bodies = true
+	for _i: int in range(max_targets + 16):
+		var query: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.create(origin, to)
+		query.exclude = exclude
+		query.collide_with_areas = true
+		query.collide_with_bodies = true
 
-	var hit: Dictionary = space.intersect_ray(query)
-	if hit.is_empty():
-		_debug_draw_transient_line(shot.origin, to, debug_hitscan_life_sec)
+		var hit: Dictionary = space.intersect_ray(query)
+		if hit.is_empty():
+			final_pos = to
+			break
+
+		var collider_obj: Object = hit.get("collider", null) as Object
+		var collider_node: Node = collider_obj as Node
+		var hit_pos: Vector2 = hit.get("position", to) as Vector2
+		var hit_rid: RID = hit.get("rid", RID()) as RID
+
+		final_pos = hit_pos
+
+		if collider_node == null:
+			break
+
+		var victim_root: Node = CombatQuery.resolve_victim_root(collider_node)
+
+		# Non-victim collider (wall/terrain/etc.) blocks the ray.
+		if victim_root == null:
+			break
+
+		# Ignore self-hits if they slipped through.
+		if victim_root == owner or owner.is_ancestor_of(victim_root):
+			_collect_collision_rids(victim_root, exclude)
+			continue
+
+		# If we've already hit this victim, exclude all of its colliders and keep going.
+		if seen_victims.has(victim_root):
+			_collect_collision_rids(victim_root, exclude)
+			continue
+
+		seen_victims[victim_root] = true
+
+		victims.append({
+			"victim_root": victim_root,
+			"collider_node": collider_node,
+			"position": hit_pos,
+			"rid": hit_rid,
+		})
+
+		# Exclude every collider belonging to this victim so the next raycast
+		# can continue past the whole target, not just one shape.
+		_collect_collision_rids(victim_root, exclude)
+
+		if victims.size() >= max_targets:
+			break
+
+	return {
+		"victims": victims,
+		"final_pos": final_pos,
+	}
+
+
+func _fire_hitscan(
+	shot: RangedShotData,
+	snap: AttackSnapshot,
+	combat_context: CombatContext
+) -> void:
+	if combat_context == null or combat_context.owner == null:
+		return
+	if not (combat_context.owner is Node2D):
 		return
 
-	var hit_pos: Vector2 = hit.get("position", to) as Vector2
-	_debug_draw_transient_line(shot.origin, hit_pos, debug_hitscan_life_sec)
+	var owner: Node2D = combat_context.owner as Node2D
+	var origin: Vector2 = shot.origin
+	var dir: Vector2 = shot.direction.normalized()
+	var range_value: float = max(1.0, shot.range)
+	var damage: float = shot.damage
+	var pierce: int = max(0, shot.pierce)
 
-	var collider_obj: Object = hit.get("collider")
-	var collider_node: Node = collider_obj as Node
-	if collider_node == null:
-		return
+	var to: Vector2 = origin + dir * range_value
+	var max_targets: int = max(1, pierce + 1)
 
-	var victim_root: Node = CombatQuery.resolve_victim_root(collider_node)
-	if victim_root == null:
-		return
+	var result: Dictionary = _collect_ray_hits(origin, to, owner, max_targets)
+	var victims: Array[Dictionary] = result.get("victims", []) as Array[Dictionary]
+	var final_pos: Vector2 = result.get("final_pos", to) as Vector2
 
-	if victim_root == owner or owner.is_ancestor_of(victim_root):
-		return
+	_debug_draw_transient_line(origin, final_pos, debug_hitscan_life_sec)
 
-	AttackImpactResolver.apply_hit(
-		context,
-		snap,
-		victim_root,
-		collider_node,
-		shot.direction,
-		shot.damage
-	)
+	for entry: Dictionary in victims:
+		var victim_root: Node = entry["victim_root"] as Node
+		var collider_node: Node = entry["collider_node"] as Node
+
+		AttackImpactResolver.apply_hit(
+			combat_context,
+			snap,
+			victim_root,
+			collider_node,
+			dir,
+			damage
+		)
 
 
-func _start_beam(shot: RangedShotData, snap: AttackSnapshot) -> void:
+func _start_beam(
+	shot: RangedShotData,
+	snap: AttackSnapshot,
+	combat_context: CombatContext
+) -> void:
 	_kill_beam()
 
-	if context == null or context.owner == null:
+	if combat_context == null or combat_context.owner == null:
 		return
 
-	var owner_node: Node = context.owner as Node
+	var owner_node: Node = combat_context.owner as Node
 	if owner_node == null:
 		return
 
@@ -268,73 +343,69 @@ func _start_beam(shot: RangedShotData, snap: AttackSnapshot) -> void:
 	_beam_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 
 	for _i: int in range(ticks):
-		_beam_tween.tween_callback(Callable(self, "_beam_tick_callback").bind(shot, snap))
+		_beam_tween.tween_callback(Callable(self, "_beam_tick_callback").bind(shot, snap, combat_context))
 		_beam_tween.tween_interval(tick_sec)
 
 	_beam_tween.tween_callback(Callable(self, "_beam_finish_callback"))
 
 
-func _beam_tick_callback(shot: RangedShotData, snap: AttackSnapshot) -> void:
-	_beam_tick(shot, snap)
+func _beam_tick_callback(
+	shot: RangedShotData,
+	snap: AttackSnapshot,
+	combat_context: CombatContext
+) -> void:
+	_beam_tick(shot, snap, combat_context)
 
 
 func _beam_finish_callback() -> void:
 	_kill_beam()
 
 
-func _beam_tick(base_shot: RangedShotData, snap: AttackSnapshot) -> void:
-	if context == null or context.owner == null:
+func _beam_tick(
+	base_shot: RangedShotData,
+	snap: AttackSnapshot,
+	combat_context: CombatContext
+) -> void:
+	if combat_context == null or combat_context.owner == null:
 		return
-	if not (context.owner is Node2D):
+	if not (combat_context.owner is Node2D):
 		return
 
-	var owner: Node2D = context.owner as Node2D
+	var owner: Node2D = combat_context.owner as Node2D
 	var muzzle: Node2D = _resolve_muzzle(owner)
 
 	var origin: Vector2 = muzzle.global_position
-	var dir: Vector2 = context.aim_dir
+	var dir: Vector2 = combat_context.aim_dir
 	if dir.length() < 0.001:
 		dir = Vector2.RIGHT
 	else:
 		dir = dir.normalized()
 
-	var range_val: float = max(1.0, base_shot.range)
-	var to: Vector2 = origin + dir * range_val
+	var range_value: float = max(1.0, base_shot.range)
+	var damage: float = base_shot.damage
+	var pierce: int = max(0, base_shot.pierce)
 
-	var space: PhysicsDirectSpaceState2D = owner.get_world_2d().direct_space_state
-	var query: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.create(origin, to)
-	query.exclude = _build_owner_exclude_list(owner)
-	query.collide_with_areas = true
-	query.collide_with_bodies = true
+	var to: Vector2 = origin + dir * range_value
+	var max_targets: int = max(1, pierce + 1)
 
-	var hit: Dictionary = space.intersect_ray(query)
-	if hit.is_empty():
-		_debug_set_beam_line(origin, to)
-		return
+	var result: Dictionary = _collect_ray_hits(origin, to, owner, max_targets)
+	var victims: Array[Dictionary] = result.get("victims", []) as Array[Dictionary]
+	var final_pos: Vector2 = result.get("final_pos", to) as Vector2
 
-	var hit_pos: Vector2 = hit.get("position", to) as Vector2
-	_debug_set_beam_line(origin, hit_pos)
+	_debug_set_beam_line(origin, final_pos)
 
-	var collider_obj: Object = hit.get("collider")
-	var collider_node: Node = collider_obj as Node
-	if collider_node == null:
-		return
+	for entry: Dictionary in victims:
+		var victim_root: Node = entry["victim_root"] as Node
+		var collider_node: Node = entry["collider_node"] as Node
 
-	var victim_root: Node = CombatQuery.resolve_victim_root(collider_node)
-	if victim_root == null:
-		return
-
-	if victim_root == owner or owner.is_ancestor_of(victim_root):
-		return
-
-	AttackImpactResolver.apply_hit(
-		context,
-		snap,
-		victim_root,
-		collider_node,
-		dir,
-		base_shot.damage
-	)
+		AttackImpactResolver.apply_hit(
+			combat_context,
+			snap,
+			victim_root,
+			collider_node,
+			dir,
+			damage
+		)
 
 
 func _kill_beam() -> void:
@@ -414,7 +485,8 @@ func _debug_clear_beam_line(delay_sec: float) -> void:
 	tween.tween_interval(max(0.01, delay_sec))
 	tween.tween_callback(Callable(line, "queue_free"))
 
-#Ignore player hitboxes
+
+# Ignore player hitboxes
 func _build_owner_exclude_list(owner: Node) -> Array[RID]:
 	var out: Array[RID] = []
 	_collect_collision_rids(owner, out)
