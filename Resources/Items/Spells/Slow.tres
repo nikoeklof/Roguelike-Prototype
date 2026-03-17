@@ -13,6 +13,7 @@ metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [resource]
 script = ExtResource("2_p7wta")
+spell_type = 1
 id = &"slow"
 display_name = "Slow"
 category = 2

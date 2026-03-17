@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://i7trnlyedgj"]
 
-[ext_resource type="Script" uid="uid://c4wbf0psgks1" path="res://Scripts/Components/Equipment/Items/Spell.gd" id="1_fecs1"]
+[ext_resource type="Script" uid="uid://upme1fcmf6wa" path="res://Scripts/Components/Equipment/Items/DebuffSpell_Base.gd" id="1_e668v"]
 
 [node name="SpellDebuffTemplate" type="Node" unique_id=851048650]
-script = ExtResource("1_fecs1")
-allow_move_during_cast = true
+script = ExtResource("1_e668v")

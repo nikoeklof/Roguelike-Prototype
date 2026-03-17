@@ -16,10 +16,11 @@ class_name ItemSpawner
 @export var run_seed_override_enabled: bool = false
 @export var run_seed_override: int = 0
 var _spawned: bool = false
-const MELEE_TEMPLATE := preload("res://Scenes/Templates/EquipmentItems/Melee_Weapon_Template.tscn")
-const RANGED_TEMPLATE := preload("res://Scenes/Templates/EquipmentItems/Ranged_Weapon_template.tscn")
-const SPELL_TEMPLATE := preload("res://Scenes/Templates/EquipmentItems/Spell_Fireball_template.tscn")
-const SHIELD_TEMPLATE := preload("res://Scenes/Templates/EquipmentItems/Shield_template.tscn")
+const MELEE_TEMPLATE : PackedScene = preload("res://Scenes/Templates/EquipmentItems/Melee_Weapon_Template.tscn")
+const RANGED_TEMPLATE : PackedScene = preload("res://Scenes/Templates/EquipmentItems/Ranged_Weapon_template.tscn")
+const SPELL_BUFF_TEMPLATE: PackedScene = preload("res://Scenes/Items/Spells/Spell_Buff_Template.tscn")
+const SPELL_DEBUFF_TEMPLATE : PackedScene = preload("res://Scenes/Items/Spells/Spell_Debuff_Template.tscn")
+const SHIELD_TEMPLATE : PackedScene = preload("res://Scenes/Templates/EquipmentItems/Shield_template.tscn")
 
 
 func _ready() -> void:
@@ -131,6 +132,7 @@ func _compute_auto_spawn_id() -> StringName:
 
 
 func _make_equipment_item(inst: ItemInstance) -> Node:
+
 	if inst == null or inst.def == null:
 		return null
 
@@ -143,7 +145,15 @@ func _make_equipment_item(inst: ItemInstance) -> Node:
 		ItemDef.Category.RANGED:
 			scene = RANGED_TEMPLATE
 		ItemDef.Category.SPELL:
-			scene = SPELL_TEMPLATE
+			var spell_def : SpellItemDef = inst.def as SpellItemDef;
+			if spell_def != null:
+				match spell_def.spell_type:
+					SpellItemDef.SpellType.BUFF:
+						scene = preload("res://Scenes/Items/Spells/Spell_Buff_Template.tscn")
+					SpellItemDef.SpellType.DEBUFF:
+						scene = preload("res://Scenes/Items/Spells/Spell_Debuff_Template.tscn")
+			else:
+				scene = preload("res://Scenes/Items/Spells/Spell_Buff_Template.tscn")  # Default to buff
 		ItemDef.Category.SHIELD:
 			scene = SHIELD_TEMPLATE
 		_:

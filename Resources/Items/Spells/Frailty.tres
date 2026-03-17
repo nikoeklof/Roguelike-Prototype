@@ -13,6 +13,7 @@ metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [resource]
 script = ExtResource("2_g4w64")
+spell_type = 1
 id = &"frailty"
 display_name = "Frailty"
 category = 2
