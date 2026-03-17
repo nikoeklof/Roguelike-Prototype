@@ -9,6 +9,8 @@
 [ext_resource type="Resource" uid="uid://dki8qndxyoqep" path="res://Resources/Items/BaseTypes/Base_Maul.tres" id="6_x3clo"]
 [ext_resource type="Resource" uid="uid://ch6uawoeugf1x" path="res://Resources/Items/BaseTypes/Base_Dagger.tres" id="7_sn2kg"]
 [ext_resource type="PackedScene" uid="uid://b0o48nlgcurhq" path="res://Scenes/Templates/Entities/Dummy_Target.tscn" id="9_s54dy"]
+[ext_resource type="Resource" uid="uid://bj0t03hq8mn" path="res://Resources/Items/BaseTypes/Base_Spell_Debuff.tres" id="10_k1kh3"]
+[ext_resource type="Resource" uid="uid://bj0t03hq8mm" path="res://Resources/Items/BaseTypes/Base_Spell_Buff.tres" id="10_ypj4y"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
 size = Vector2(1169, 29.33334)
@@ -99,6 +101,18 @@ position = Vector2(736, -152)
 script = ExtResource("3_x3clo")
 base_type = ExtResource("7_sn2kg")
 run_seed_override = 12346
+metadata/_custom_type_script = "uid://dpt1ah3dct4go"
+
+[node name="ItemSpawner6" type="Node2D" parent="." unique_id=2048293465]
+position = Vector2(345, -373)
+script = ExtResource("3_x3clo")
+base_type = ExtResource("10_ypj4y")
+metadata/_custom_type_script = "uid://dpt1ah3dct4go"
+
+[node name="ItemSpawner7" type="Node2D" parent="." unique_id=768821660]
+position = Vector2(52, -358)
+script = ExtResource("3_x3clo")
+base_type = ExtResource("10_k1kh3")
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"
 
 [node name="Dummy" parent="." unique_id=1065698850 instance=ExtResource("9_s54dy")]

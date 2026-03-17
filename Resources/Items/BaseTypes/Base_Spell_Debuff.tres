@@ -1,15 +1,28 @@
 [gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://bj0t03hq8mn"]
 
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="1"]
-[ext_resource type="Resource" uid="uid://c8pxlw6exokm" path="res://Resources/Items/Spells/Slow.tres" id="2"]
-[ext_resource type="Resource" uid="uid://c6kyrmppx6hml" path="res://Resources/Items/Pools/Pool_Shield_All.tres" id="3"]
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_ixux0"]
+[ext_resource type="Script" uid="uid://chvmgm0f6jstl" path="res://Scripts/Items/SpellItemDef.gd" id="2_y68fg"]
+[ext_resource type="Resource" uid="uid://c6kyrmppx6hml" path="res://Resources/Items/Pools/Pool_Spell_Debuff_All.tres" id="3"]
+
+[sub_resource type="Resource" id="Resource_l6pcr"]
+script = ExtResource("1_ixux0")
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[sub_resource type="Resource" id="Resource_x040p"]
+script = ExtResource("2_y68fg")
+id = &"debuff"
+display_name = "Debuff"
+category = 2
+base_stats = SubResource("Resource_l6pcr")
+metadata/_custom_type_script = "uid://chvmgm0f6jstl"
 
 [resource]
 script = ExtResource("1")
 id = &"base_spell_debuff"
-item_def = ExtResource("2")
+item_def = SubResource("Resource_x040p")
 pool_def = ExtResource("3")
-max_attribute_count = 1
+min_attribute_count = 1
 auto_weapon_token = "SpellDebuff"
 use_ranged_mode_roll = false
 metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"

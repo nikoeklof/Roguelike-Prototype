@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AttributePoolDef" format=3 uid="uid://dfonapnbe5fy5"]
+
+[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="1_harsy"]
+[ext_resource type="Script" uid="uid://bo58hs72paoxt" path="res://Scripts/Items/AttributePoolDef.gd" id="2_d28ti"]
+[ext_resource type="Script" uid="uid://cmosui52iqxev" path="res://Scripts/Items/Attributes/Spells/BattleTranceBuff.gd" id="3_fpsod"]
+[ext_resource type="Script" uid="uid://cg5lmkvo5xwyb" path="res://Scripts/Items/Attributes/Spells/StoneSkinBuff.gd" id="4_fw7rw"]
+
+[sub_resource type="Resource" id="Resource_5ud4g"]
+script = ExtResource("3_fpsod")
+id = &"battle_trance"
+display_name = "Battle Trance"
+metadata/_custom_type_script = "uid://cmosui52iqxev"
+
+[sub_resource type="Resource" id="Resource_x6fe2"]
+script = ExtResource("4_fw7rw")
+id = &"stone_skin"
+display_name = "Stone Skin"
+metadata/_custom_type_script = "uid://cg5lmkvo5xwyb"
+
+[resource]
+script = ExtResource("2_d28ti")
+spell_common = Array[ExtResource("1_harsy")]([SubResource("Resource_5ud4g"), SubResource("Resource_x6fe2")])
+metadata/_custom_type_script = "uid://bo58hs72paoxt"
