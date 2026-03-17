@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://bjnevtqhv3do2"]
+
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_0q8pt"]
+[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="2_fubdv"]
+
+[sub_resource type="Resource" id="Resource_36fqr"]
+script = ExtResource("1_0q8pt")
+cooldown_sec = 0.6
+hitbox_size = Vector2(1.5, 1.8)
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[resource]
+script = ExtResource("2_fubdv")
+id = &"tower_shield"
+display_name = "Tower Shield"
+category = 3
+base_stats = SubResource("Resource_36fqr")
+metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
