@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://dsw6lbih5c75m"]
+[gd_resource type="Resource" script_class="MeleeItemDef" format=3 uid="uid://dsw6lbih5c75m"]
 
 [ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_o0fqu"]
-[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="2_bqh06"]
+[ext_resource type="Script" uid="uid://v53hpunax3jt" path="res://Scripts/Items/MeleeItemDef.gd" id="2_o0fqu"]
 
 [sub_resource type="Resource" id="Resource_bqh06"]
 script = ExtResource("1_o0fqu")
@@ -15,7 +15,7 @@ hitbox_size = Vector2(1.2, 1)
 metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [resource]
-script = ExtResource("2_bqh06")
+script = ExtResource("2_o0fqu")
 id = &"sword"
 display_name = "Sword"
 base_stats = SubResource("Resource_bqh06")

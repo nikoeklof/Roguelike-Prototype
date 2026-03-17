@@ -1,9 +1,7 @@
-[gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://c1pus5kyxtei2"]
+[gd_resource type="Resource" script_class="RangedItemDef" format=3 uid="uid://c1pus5kyxtei2"]
 
 [ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_2wqdy"]
-[ext_resource type="PackedScene" uid="uid://cosg8jgc5pgfy" path="res://Scenes/Templates/EquipmentItems/Projectile_template.tscn" id="2_081j6"]
-[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="2_adgl4"]
-[ext_resource type="Script" uid="uid://qm1anfcwli5v" path="res://Scripts/Components/Combat/ProjectileSpec.gd" id="3_7vkac"]
+[ext_resource type="Script" uid="uid://bh78d171gbwqx" path="res://Scripts/Items/RangedItemDef.gd" id="3_adgl4"]
 [ext_resource type="Script" uid="uid://bmkfvpy6i2foi" path="res://Scenes/Items/RangedAttackProfile.gd" id="4_ws6nw"]
 
 [sub_resource type="Resource" id="Resource_adgl4"]
@@ -17,24 +15,15 @@ spread_pattern_degrees = 18.0
 knockback = 1.5
 metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
-[sub_resource type="Resource" id="Resource_heqsf"]
-script = ExtResource("3_7vkac")
-metadata/_custom_type_script = "uid://qm1anfcwli5v"
-
-[sub_resource type="Resource" id="Resource_jh1rh"]
+[sub_resource type="Resource" id="Resource_ainjy"]
 script = ExtResource("4_ws6nw")
-projectile_spec = SubResource("Resource_heqsf")
-spread_degrees = 4.0
-spread_pattern_degrees = 18.0
-hitscan_range = 500.0
-beam_range = 500.0
 metadata/_custom_type_script = "uid://bmkfvpy6i2foi"
 
 [resource]
-script = ExtResource("2_adgl4")
+script = ExtResource("3_adgl4")
+ranged_attack_profile = SubResource("Resource_ainjy")
 id = &"shotgun"
 display_name = "Shotgun"
 category = 1
 base_stats = SubResource("Resource_adgl4")
-ranged_attack_profile = SubResource("Resource_jh1rh")
 metadata/_custom_type_script = "uid://bhof2rvqrnl7f"

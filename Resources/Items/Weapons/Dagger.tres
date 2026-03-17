@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://chpxjgwd0dnl8"]
+[gd_resource type="Resource" script_class="MeleeItemDef" format=3 uid="uid://chpxjgwd0dnl8"]
 
 [ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="2_8rske"]
-[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="2_x2bnc"]
+[ext_resource type="Script" uid="uid://v53hpunax3jt" path="res://Scripts/Items/MeleeItemDef.gd" id="2_umjp4"]
 
 [sub_resource type="Resource" id="Resource_gg1vu"]
 script = ExtResource("2_8rske")
@@ -16,7 +16,7 @@ hitbox_size = Vector2(32, 16)
 metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [resource]
-script = ExtResource("2_x2bnc")
+script = ExtResource("2_umjp4")
 id = &"dagger"
 display_name = "Dagger"
 base_stats = SubResource("Resource_gg1vu")

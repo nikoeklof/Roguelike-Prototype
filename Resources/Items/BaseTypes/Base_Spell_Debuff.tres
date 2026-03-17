@@ -2,15 +2,14 @@
 
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="1"]
 [ext_resource type="Resource" uid="uid://c8pxlw6exokm" path="res://Resources/Items/Spells/Slow.tres" id="2"]
-[ext_resource type="Resource" uid="uid://c6kyrmppx6hml" path="res://Resources/Items/Pools/Pool_Spell_All.tres" id="3"]
+[ext_resource type="Resource" uid="uid://c6kyrmppx6hml" path="res://Resources/Items/Pools/Pool_Shield_All.tres" id="3"]
 
 [resource]
 script = ExtResource("1")
 id = &"base_spell_debuff"
 item_def = ExtResource("2")
 pool_def = ExtResource("3")
-min_attribute_count = 0
 max_attribute_count = 1
 auto_weapon_token = "SpellDebuff"
 use_ranged_mode_roll = false
-locked_ranged_mode = -1
+metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"

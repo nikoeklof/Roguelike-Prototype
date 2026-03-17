@@ -1,9 +1,7 @@
-[gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://cv0r3gb0d82xu"]
+[gd_resource type="Resource" script_class="RangedItemDef" format=3 uid="uid://cv0r3gb0d82xu"]
 
 [ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_8i4ug"]
-[ext_resource type="PackedScene" uid="uid://cosg8jgc5pgfy" path="res://Scenes/Templates/EquipmentItems/Projectile_template.tscn" id="2_8jhcp"]
-[ext_resource type="Script" uid="uid://bhof2rvqrnl7f" path="res://Scripts/Items/ItemDef.gd" id="2_b3vx2"]
-[ext_resource type="Script" uid="uid://qm1anfcwli5v" path="res://Scripts/Components/Combat/ProjectileSpec.gd" id="3_kx1sj"]
+[ext_resource type="Script" uid="uid://bh78d171gbwqx" path="res://Scripts/Items/RangedItemDef.gd" id="3_b3vx2"]
 [ext_resource type="Script" uid="uid://bmkfvpy6i2foi" path="res://Scenes/Items/RangedAttackProfile.gd" id="4_npcsr"]
 
 [sub_resource type="Resource" id="Resource_b3vx2"]
@@ -17,20 +15,15 @@ spread_pattern_degrees = 3.0
 knockback = 0.3
 metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
-[sub_resource type="Resource" id="Resource_vqkia"]
-script = ExtResource("3_kx1sj")
-metadata/_custom_type_script = "uid://qm1anfcwli5v"
-
-[sub_resource type="Resource" id="Resource_gvrmx"]
+[sub_resource type="Resource" id="Resource_f32wa"]
 script = ExtResource("4_npcsr")
-projectile_spec = SubResource("Resource_vqkia")
 metadata/_custom_type_script = "uid://bmkfvpy6i2foi"
 
 [resource]
-script = ExtResource("2_b3vx2")
+script = ExtResource("3_b3vx2")
+ranged_attack_profile = SubResource("Resource_f32wa")
 id = &"smg"
 display_name = "SMG"
 category = 1
 base_stats = SubResource("Resource_b3vx2")
-ranged_attack_profile = SubResource("Resource_gvrmx")
 metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
