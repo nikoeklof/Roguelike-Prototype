@@ -107,6 +107,7 @@ metadata/_custom_type_script = "uid://dpt1ah3dct4go"
 position = Vector2(345, -373)
 script = ExtResource("3_x3clo")
 base_type = ExtResource("10_ypj4y")
+run_seed_override_enabled = true
 run_seed_override = 12347
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"
 

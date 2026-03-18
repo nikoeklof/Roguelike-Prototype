@@ -7,12 +7,14 @@
 
 [sub_resource type="Resource" id="Resource_5ud4g"]
 script = ExtResource("3_fpsod")
+move_speed_mult = 3.0
 id = &"battle_trance"
 display_name = "Battle Trance"
 metadata/_custom_type_script = "uid://cmosui52iqxev"
 
 [sub_resource type="Resource" id="Resource_x6fe2"]
 script = ExtResource("4_fw7rw")
+move_speed_mult = 1.0
 id = &"stone_skin"
 display_name = "Stone Skin"
 metadata/_custom_type_script = "uid://cg5lmkvo5xwyb"

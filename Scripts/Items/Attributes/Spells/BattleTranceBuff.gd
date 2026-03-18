@@ -17,13 +17,13 @@ func on_cast_apply(context: CombatContext, item_instance: ItemInstance) -> void:
 	var stats: Stats = _find_stats(context.owner)
 	if stats == null:
 		return
-
+	print("Player movement speed multi: %s" % stats.move_speed_mult)
 	var key_speed: StringName = _make_key(item_instance, "battle_trance_speed")
 	var key_attack: StringName = _make_key(item_instance, "battle_trance_attack")
 	
 	stats.set_move_speed_mult(key_speed, move_speed_mult)
 	stats.set_attack_speed_mult(key_attack, attack_speed_mult)
-
+	
 	_start_clear_timer(context.owner, duration_sec, stats, [key_speed, key_attack])
 
 

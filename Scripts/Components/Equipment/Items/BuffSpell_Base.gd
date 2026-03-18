@@ -1,15 +1,23 @@
 extends Spell
 class_name BuffSpell
 
-# Buff spells apply effects to the caster only
-
-
-func _do_cast(_owner_entity: Node, _dir: Vector2) -> void:
-	# Buff spells apply immediately to self
-	if _instance == null:
+func _do_cast(owner_entity: Node, _dir: Vector2) -> void:
+	if _instance == null or owner_entity == null:
+		print("[BuffSpell] Cannot cast: instance=%s, owner=%s" % [_instance, owner_entity])
 		return
 
-	var ctx: CombatContext = _make_context(_owner_entity, _dir)
+	print("[BuffSpell] Casting buff spell '%s'" % name)
+	var ctx: CombatContext = _make_context(owner_entity, _dir)
+	print("[BuffSpell] Context: owner=%s, item_instance=%s" % [ctx.owner, ctx.item_instance])
 	
-	# Dispatch attributes to apply buffs
+	if _instance == null or _instance.def == null:
+		print("[BuffSpell] No item definition")
+		return
+	
+	print("[BuffSpell] Attributes: %d" % _instance.attributes.size())
+	
+	# Use ItemAttributeBus to dispatch cast_apply
+	# This should handle attribute instantiation internally
 	ItemAttributeBus.dispatch_cast_apply(ctx, _instance)
+	
+	print("[BuffSpell] Buff applied successfully")

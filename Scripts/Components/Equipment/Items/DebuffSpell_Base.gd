@@ -6,7 +6,7 @@ enum DebuffMode { PROJECTILE, AOE }
 # Debuff configuration
 @export var debuff_mode: DebuffMode = DebuffMode.PROJECTILE
 @export_range(50.0, 500.0, 10.0) var aoe_radius: float = 150.0
-@export var aoe_instant: bool = true  # true = instant, false = travel time before apply
+@export var aoe_instant: bool = true
 @export_range(0.1, 5.0, 0.1) var aoe_travel_time: float = 0.5
 
 @export var projectile_spec: ProjectileSpec
@@ -24,27 +24,34 @@ enum DebuffMode { PROJECTILE, AOE }
 
 func _do_cast(owner_entity: Node, dir: Vector2) -> void:
 	if _instance == null or owner_entity == null:
+		print("[DebuffSpell] Cannot cast: instance=%s, owner=%s" % [_instance, owner_entity])
 		return
 
+	print("[DebuffSpell] Casting debuff spell '%s', mode=%s" % [name, DebuffMode.keys()[debuff_mode]])
+	
 	var ctx: CombatContext = _make_context(owner_entity, dir)
 
 	match debuff_mode:
 		DebuffMode.PROJECTILE:
+			print("[DebuffSpell] Casting PROJECTILE debuff")
 			_cast_projectile_debuff(ctx, owner_entity, dir)
 		DebuffMode.AOE:
+			print("[DebuffSpell] Casting AOE debuff")
 			_cast_aoe_debuff(ctx, owner_entity)
 
 
 func _cast_projectile_debuff(ctx: CombatContext, owner_entity: Node, dir: Vector2) -> void:
 	var scene: PackedScene = projectile_scene
 	if scene == null:
-		push_warning("DebuffSpell: projectile_scene is null")
+		push_error("[DebuffSpell] projectile_scene is null!")
 		return
 
+	print("[DebuffSpell] Instantiating projectile scene: %s" % scene.resource_path)
+	
 	var node: Node = scene.instantiate()
 	var projectile: Projectile = node as Projectile
 	if projectile == null:
-		push_warning("DebuffSpell: projectile_scene is not a Projectile")
+		push_error("[DebuffSpell] projectile_scene '%s' is not a Projectile!" % scene.resource_path)
 		if is_instance_valid(node):
 			node.queue_free()
 		return
@@ -82,26 +89,35 @@ func _cast_projectile_debuff(ctx: CombatContext, owner_entity: Node, dir: Vector
 
 	# Add to scene
 	var parent: Node = owner_entity.get_parent() if owner_entity.get_parent() != null else get_tree().current_scene
+	print("[DebuffSpell] Adding projectile to parent: %s at position %s" % [parent.name, launch.origin])
 	parent.add_child(projectile)
+	print("[DebuffSpell] ✓ Projectile spawned successfully")
 
 
 func _on_projectile_hit(area: Area2D, ctx: CombatContext, item_instance: ItemInstance) -> void:
 	if area == null:
 		return
 
+	print("[DebuffSpell] Projectile hit: %s" % area.name)
+
 	# Check if this is an entity with a hurtbox
 	var parent: Node = area.get_parent()
 	while parent != null:
 		if parent is Entity:
-			# Apply debuff via attributes using CombatAttributeBus
+			print("[DebuffSpell] Applying debuff to entity: %s" % parent.name)
+			
+			# Apply debuff via attributes
 			var hit_event: HitEvent = HitEvent.new()
 			hit_event.victim = parent
 			hit_event.attacker = ctx.owner
 			hit_event.damage = 0.0
 			
-			# Create a CombatAttributeBus instance and dispatch
-			var attr_bus: CombatAttributeBus = CombatAttributeBus.new(ctx)
-			attr_bus.dispatch_on_hit(hit_event)
+			# Dispatch to all attributes
+			for attr: ItemAttribute in item_instance.attributes:
+				if attr == null:
+					continue
+				print("[DebuffSpell] Applying attribute: %s" % attr.get_class())
+				attr.on_hit(ctx, hit_event, item_instance)
 			
 			# Remove the projectile after applying debuff
 			if area.get_parent() is Projectile:
@@ -126,12 +142,11 @@ func _cast_aoe_debuff(ctx: CombatContext, owner_entity: Node) -> void:
 
 
 func _apply_aoe_debuff_instantly(ctx: CombatContext, origin: Vector2, owner_entity: Node) -> void:
-	# Draw debug circle for visualization
-	_draw_debug_aoe_circle(origin, aoe_radius)
+	print("[DebuffSpell] Applying AOE debuff at %s with radius %f" % [origin, aoe_radius])
 
 	# Get the world space for queries
 	if not owner_entity is Node2D:
-		push_warning("DebuffSpell: owner_entity must be Node2D for AoE")
+		push_warning("[DebuffSpell] owner_entity must be Node2D for AoE")
 		return
 
 	var owner_2d: Node2D = owner_entity as Node2D
@@ -149,26 +164,26 @@ func _apply_aoe_debuff_instantly(ctx: CombatContext, origin: Vector2, owner_enti
 
 	# Query for entities
 	var results: Array[Dictionary] = space.intersect_shape(query)
+	print("[DebuffSpell] AoE query found %d results" % results.size())
 	
 	for result: Dictionary in results:
 		var collider: Node2D = result.get("collider")
 		if collider == null:
 			continue
 
-		# Check if it's an enemy entity
+		# Check if it's an entity
 		var entity: Node = collider
 		if entity is Entity:
-			# Apply debuff
+			print("[DebuffSpell] Applying debuff to entity: %s" % entity.name)
+			
 			var hit_event: HitEvent = HitEvent.new()
 			hit_event.victim = entity
 			hit_event.attacker = ctx.owner
 			hit_event.damage = 0.0
 			
-			# Create a CombatAttributeBus instance and dispatch
-			var attr_bus: CombatAttributeBus = CombatAttributeBus.new(ctx)
-			attr_bus.dispatch_on_hit(hit_event)
-
-
-func _draw_debug_aoe_circle(center: Vector2, radius: float) -> void:
-	# Simple debug: print the AoE application
-	print("DebuffSpell AoE applied at %s with radius %f" % [center, radius])
+			# Dispatch to all attributes
+			for attr: ItemAttribute in ctx.item_instance.attributes:
+				if attr == null:
+					continue
+				print("[DebuffSpell] Applying attribute: %s" % attr.get_class())
+				attr.on_hit(ctx, hit_event, ctx.item_instance)
