@@ -10,6 +10,8 @@ signal changed()
 @export_range(0.0, 5.0, 0.01) var base_accel_mult: float = 1.0
 @export_range(0.0, 5.0, 0.01) var base_friction_mult: float = 1.0
 
+@export_range(0.0, 10.0, 0.01) var base_attack_speed_mult: float = 1.0
+
 @export_range(0.0, 10.0, 0.01) var base_damage_taken_mult: float = 1.0
 @export_range(0.0, 9999.0, 0.1) var base_flat_damage_reduction: float = 0.0
 
@@ -26,6 +28,8 @@ signal changed()
 var _move_speed_mult_mods: Dictionary = {}        # key -> mult
 var _accel_mult_mods: Dictionary = {}             # key -> mult
 var _friction_mult_mods: Dictionary = {}          # key -> mult
+
+var _attack_speed_mult_mods: Dictionary = {}      # key -> mult
 
 var _damage_taken_mult_mods: Dictionary = {}       # key -> mult
 var _flat_damage_reduction_mods: Dictionary = {}   # key -> flat
@@ -47,6 +51,9 @@ func accel_mult() -> float:
 
 func friction_mult() -> float:
 	return _mult(base_friction_mult, _friction_mult_mods)
+
+func attack_speed_mult() -> float:
+	return _mult(base_attack_speed_mult, _attack_speed_mult_mods)
 
 func damage_taken_mult() -> float:
 	return _mult(base_damage_taken_mult, _damage_taken_mult_mods)
@@ -90,6 +97,12 @@ func set_friction_mult(key: StringName, mult: float) -> void:
 
 func clear_friction_mult(key: StringName) -> void:
 	_clear(_friction_mult_mods, key)
+
+func set_attack_speed_mult(key: StringName, mult: float) -> void:
+	_set_mult(_attack_speed_mult_mods, key, mult)
+
+func clear_attack_speed_mult(key: StringName) -> void:
+	_clear(_attack_speed_mult_mods, key)
 
 func set_damage_taken_mult(key: StringName, mult: float) -> void:
 	_set_mult(_damage_taken_mult_mods, key, mult)
@@ -138,6 +151,7 @@ func _add(base: float, mods: Dictionary) -> float:
 	return v
 
 func _set_mult(mods: Dictionary, key: StringName, mult: float) -> void:
+	print("Setting multiplier to %s" % mult)
 	mods[key] = maxf(mult, 0.0)
 	changed.emit()
 

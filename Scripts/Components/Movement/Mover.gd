@@ -1,6 +1,7 @@
 extends Node
 class_name Mover
 
+# Base values now come from Stats component, not direct exports
 @export_range(0.0, 2000.0, 1.0) var move_speed := 250.0
 @export_range(0.0, 10000.0, 1.0) var acceleration := 800.0
 @export_range(0.0, 10000.0, 1.0) var friction := 900.0
@@ -30,7 +31,7 @@ func apply(entity: CharacterBody2D, delta: float) -> void:
 	else:
 		stats = entity.get_node_or_null("Stats") as Stats
 
-	if stats:
+	if stats != null:
 		speed_mult = stats.move_speed_mult()
 		accel_mult = stats.accel_mult()
 		friction_mult = stats.friction_mult()

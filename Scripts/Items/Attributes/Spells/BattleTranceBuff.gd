@@ -7,30 +7,54 @@ class_name BattleTranceBuff
 
 
 func default_domains() -> PackedStringArray:
-	return PackedStringArray(["cast"])
+	return PackedStringArray([&"cast"])
 
 
 func on_cast_apply(context: CombatContext, item_instance: ItemInstance) -> void:
+	print("[BattleTranceBuff] on_cast_apply called!")
 	if context == null or context.owner == null:
 		return
 
 	var stats: Stats = _find_stats(context.owner)
 	if stats == null:
+		print("[BattleTranceBuff] Stats component not found")
 		return
-	print("Player movement speed multi: %s" % stats.move_speed_mult)
+	
+	print("[BattleTranceBuff] Before buff - move_speed_mult: %s" % stats.move_speed_mult())
+	print("[BattleTranceBuff] Applying buffs - attack: %s, movement: %s, duration: %s" % [attack_speed_mult, move_speed_mult, duration_sec])
+	
 	var key_speed: StringName = _make_key(item_instance, "battle_trance_speed")
 	var key_attack: StringName = _make_key(item_instance, "battle_trance_attack")
+	
+	print("[BattleTranceBuff] Setting move_speed_mult with key '%s' to %s" % [key_speed, move_speed_mult])
+	print("[BattleTranceBuff] Setting attack_speed_mult with key '%s' to %s" % [key_attack, attack_speed_mult])
 	
 	stats.set_move_speed_mult(key_speed, move_speed_mult)
 	stats.set_attack_speed_mult(key_attack, attack_speed_mult)
 	
+	print("[BattleTranceBuff] After buff - move_speed_mult: %s" % stats.move_speed_mult())
+
 	_start_clear_timer(context.owner, duration_sec, stats, [key_speed, key_attack])
+	print("[BattleTranceBuff] Buffs applied successfully")
 
 
 func _find_stats(root: Node) -> Stats:
+	if root == null:
+		return null
+	
+	# Try direct node lookup first (Stats is a direct child)
+	var direct: Stats = root.get_node_or_null("Stats") as Stats
+	if direct != null:
+		return direct
+	
+	# Fallback to Entity component system
 	if root is Entity:
-		return (root as Entity).find_component(&"Stats") as Stats
-	return root.get_node_or_null("Stats") as Stats
+		var entity: Entity = root as Entity
+		var found: Stats = entity.find_component(&"Stats") as Stats
+		if found != null:
+			return found
+	
+	return null
 
 
 func _make_key(item_instance: ItemInstance, suffix: String) -> StringName:
@@ -50,7 +74,9 @@ func _start_clear_timer(host: Node, sec: float, stats: Stats, keys: Array) -> vo
 
 
 func _clear_buffs_and_free_timer(stats: Stats, keys: Array, timer: Timer) -> void:
+		
 	if is_instance_valid(stats):
+		print("[BattleTranceBuff] Clearing keys and modifiers")
 		for key: StringName in keys:
 			stats.clear_move_speed_mult(key)
 			stats.clear_attack_speed_mult(key)
