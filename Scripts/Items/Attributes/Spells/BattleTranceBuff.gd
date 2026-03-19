@@ -3,8 +3,9 @@ class_name BattleTranceBuff
 
 @export_range(1.01, 3.0, 0.01) var attack_speed_mult: float = 1.3
 @export_range(1.01, 3.0, 0.01) var move_speed_mult: float = 1.25
-@export_range(1.01, 3.0, 0.01) var accel_mult: float = 1.25  # ← ADD THIS
+@export_range(1.01, 3.0, 0.01) var accel_mult: float = 1.25
 @export_range(0.1, 20.0, 0.1) var duration_sec: float = 5.0
+@export_range(0.1, 20.0, 0.1) var spell_cooldown_sec: float = 10.0  # ← This spell's cooldown
 
 
 func default_domains() -> PackedStringArray:
@@ -21,33 +22,40 @@ func on_cast_apply(context: CombatContext, item_instance: ItemInstance) -> void:
 		print("[BattleTranceBuff] Stats component not found")
 		return
 	
+	# Check global spell cooldown
+	if not stats.is_spell_ready():
+		var remaining : float = stats.get_spell_cooldown_remaining()
+		print("[BattleTranceBuff] Global spell cooldown active - %.2fs remaining" % remaining)
+		return
+	
 	print("[BattleTranceBuff] Before buff - move_speed_mult: %s" % stats.move_speed_mult())
 	print("[BattleTranceBuff] Applying buffs - attack: %s, movement: %s, accel: %s, duration: %s" % [attack_speed_mult, move_speed_mult, accel_mult, duration_sec])
 	
 	var key_speed: StringName = _make_key(item_instance, "battle_trance_speed")
 	var key_attack: StringName = _make_key(item_instance, "battle_trance_attack")
-	var key_accel: StringName = _make_key(item_instance, "battle_trance_accel")  # ← ADD THIS
+	var key_accel: StringName = _make_key(item_instance, "battle_trance_accel")
 	
 	stats.set_move_speed_mult(key_speed, move_speed_mult)
-	stats.set_accel_mult(key_accel, accel_mult)  # ← ADD THIS
+	stats.set_accel_mult(key_accel, accel_mult)
 	stats.set_attack_speed_mult(key_attack, attack_speed_mult)
 	
 	print("[BattleTranceBuff] After buff - move_speed_mult: %s" % stats.move_speed_mult())
 
-	_start_clear_timer(context.owner, duration_sec, stats, [key_speed, key_attack, key_accel])  # ← ADD key_accel
-	print("[BattleTranceBuff] Buffs applied successfully")
+	# Apply THIS SPELL'S cooldown globally (persists even if switching spells!)
+	stats.apply_spell_cooldown(spell_cooldown_sec)
+	
+	_start_clear_timer(context.owner, duration_sec, stats, [key_speed, key_attack, key_accel])
+	print("[BattleTranceBuff] Buffs applied successfully - Global cooldown: %.1fs" % spell_cooldown_sec)
 
 
 func _find_stats(root: Node) -> Stats:
 	if root == null:
 		return null
 	
-	# Try direct node lookup first (Stats is a direct child)
 	var direct: Stats = root.get_node_or_null("Stats") as Stats
 	if direct != null:
 		return direct
 	
-	# Fallback to Entity component system
 	if root is Entity:
 		var entity: Entity = root as Entity
 		var found: Stats = entity.get_component(&"Stats") as Stats
@@ -77,7 +85,7 @@ func _clear_buffs_and_free_timer(stats: Stats, keys: Array, timer: Timer) -> voi
 	if is_instance_valid(stats):
 		for key: StringName in keys:
 			stats.clear_move_speed_mult(key)
-			stats.clear_accel_mult(key)  # ← ADD THIS
+			stats.clear_accel_mult(key)
 			stats.clear_attack_speed_mult(key)
 
 	if is_instance_valid(timer):

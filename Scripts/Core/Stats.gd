@@ -48,6 +48,9 @@ var _ranged_damage_mult_mods: Dictionary = {}      # key -> mult
 
 var _cooldown_reduction_mods: Dictionary = {}      # key -> add
 
+# Global spell cooldown (time-based)
+var _global_spell_cooldown_until: float = 0.0
+
 
 # =====================================
 # PUBLIC GETTERS - EFFECTIVE VALUES
@@ -101,6 +104,20 @@ func cooldown_reduction() -> float:
 # Convenience: apply CDR to a base cooldown
 func apply_cooldown(base_cd: float) -> float:
 	return maxf(0.0, base_cd * (1.0 - cooldown_reduction()))
+
+
+# =====================================
+# PUBLIC GETTERS - SPELL COOLDOWN
+# =====================================
+
+func get_spell_cooldown_remaining() -> float:
+	"""Returns seconds remaining on global spell cooldown. 0.0 if ready."""
+	var now := Time.get_ticks_msec() / 1000.0
+	return maxf(0.0, _global_spell_cooldown_until - now)
+
+func is_spell_ready() -> bool:
+	"""Check if a spell can be cast right now."""
+	return get_spell_cooldown_remaining() <= 0.0
 
 
 # =====================================
@@ -163,6 +180,17 @@ func set_cooldown_reduction(key: StringName, add: float) -> void:
 
 func clear_cooldown_reduction(key: StringName) -> void:
 	_clear(_cooldown_reduction_mods, key)
+
+
+# =====================================
+# SPELL COOLDOWN API
+# =====================================
+
+func apply_spell_cooldown(duration_sec: float) -> void:
+	"""Apply a global spell cooldown (blocks all spells for this duration)."""
+	var now := Time.get_ticks_msec() / 1000.0
+	_global_spell_cooldown_until = now + maxf(0.01, duration_sec)
+	changed.emit()
 
 
 # =====================================

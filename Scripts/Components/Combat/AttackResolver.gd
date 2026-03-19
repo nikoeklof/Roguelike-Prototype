@@ -168,6 +168,7 @@ static func _apply_item_defaults(snap: AttackSnapshot, item: Node) -> void:
 		if snap.recovery_time <= 0.0:
 			snap.recovery_time = max(0.0, ranged.default_recovery)
 
+		# Only apply projectile defaults if projectile_spec is defined
 		if snap.projectile_spec == null and snap.projectile_scene == null:
 			if ranged.projectile_spec != null:
 				snap.projectile_spec = ranged.projectile_spec
@@ -181,14 +182,6 @@ static func _apply_item_defaults(snap: AttackSnapshot, item: Node) -> void:
 				snap.projectile_collision_mask = ranged.projectile_spec.collision_mask
 				snap.projectile_sprite_texture = ranged.projectile_spec.sprite_texture
 				snap.projectile_sprite_tint = ranged.projectile_spec.sprite_tint
-			else:
+			# For hitscan weapons - projectile_scene exists but no projectile speed/etc properties
+			elif snap.projectile_scene == null and ranged.projectile_scene != null:
 				snap.projectile_scene = ranged.projectile_scene
-				snap.projectile_speed = ranged.projectile_speed
-				snap.projectile_gravity = ranged.projectile_gravity
-				snap.projectile_lifetime_sec = ranged.projectile_lifetime_sec
-				snap.projectile_radius = max(1.0, ranged.projectile_radius)
-				snap.projectile_inherit_owner_velocity = clampf(ranged.inherit_owner_velocity, 0.0, 1.0)
-				snap.projectile_range = max(0.0, ranged.projectile_range)
-				snap.projectile_collision_mask = ranged.projectile_collision_mask
-				snap.projectile_sprite_texture = ranged.projectile_sprite_texture
-				snap.projectile_sprite_tint = ranged.projectile_sprite_tint

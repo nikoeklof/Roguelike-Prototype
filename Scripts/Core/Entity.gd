@@ -23,7 +23,7 @@ func _ready() -> void:
 		Engine.max_physics_steps_per_frame = 32
 
 	# Faction
-	_faction = find_component(&"Faction") as Faction
+	_faction = _find_component(&"Faction") as Faction
 	if _faction:
 		_faction.faction = initial_faction
 		_faction.friendly_fire = initial_friendly_fire
@@ -39,7 +39,7 @@ func _ready() -> void:
 			push_error("Entity: Found '%s' but it has no init(entity, start_state)." % state_machine.name)
 
 	# Health
-	_health = find_component(&"Health") as Health
+	_health = _find_component(&"Health") as Health
 	if _health:
 		if not _health.damaged.is_connected(_on_damaged):
 			_health.damaged.connect(_on_damaged)
@@ -47,9 +47,37 @@ func _ready() -> void:
 			_health.died.connect(_on_died)
 
 
+func find_component(class_name_value: StringName) -> Node:
+	"""Find a component by class name."""
+	return _find_component(class_name_value)
+
+
+func get_component(class_name_value: StringName) -> Node:
+	"""Alias for find_component."""
+	return _find_component(class_name_value)
+
+
+func _find_component(class_name_value: StringName) -> Node:
+	"""Internal helper to find a component."""
+	if class_name_value == StringName():
+		return null
+	
+	# Try direct child node with matching name
+	var node: Node = get_node_or_null(String(class_name_value))
+	if node != null:
+		return node
+	
+	# Search all children for matching class
+	for child: Node in get_children():
+		if child.get_class() == class_name_value or child.is_class(String(class_name_value)):
+			return child
+	
+	return null
+
+
 func _resolve_state_machine() -> Node:
 	# 1) Resolver by class_name (best case)
-	var sm := find_component(&"StateHandler")
+	var sm := _find_component(&"StateHandler")
 	if sm != null:
 		return sm
 
@@ -82,12 +110,12 @@ func _find_node_with_script_ending(root: Node, filename: String) -> Node:
 
 func _physics_process(delta: float) -> void:
 	var local_delta := delta
-	var time := find_component(&"LocalTimeScale") as LocalTimeScale
+	var time := _find_component(&"LocalTimeScale") as LocalTimeScale
 	if time:
 		local_delta = time.get_scaled_delta(delta)
 	if state_machine != null and state_machine.has_method("physics_update"):
 		state_machine.call("physics_update", local_delta)
-	move_and_slide()
+	# NOTE: Do NOT call move_and_slide() here - Mover handles it!
 
 
 func _on_damaged(_amount: float, _source: Node) -> void:
@@ -97,15 +125,3 @@ func _on_damaged(_amount: float, _source: Node) -> void:
 
 func _on_died() -> void:
 	queue_free()
-
-
-func get_component(cls: StringName) -> Node:
-	return EntityComponents.resolve_child(self, cls)
-
-
-func find_component(cls: StringName) -> Node:
-	return EntityComponents.resolve_in_tree(self, cls)
-
-
-func _exit_tree() -> void:
-	EntityComponents.clear_cache(self)

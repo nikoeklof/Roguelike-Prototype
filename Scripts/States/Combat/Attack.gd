@@ -57,13 +57,10 @@ func _apply_movement(delta: float) -> void:
 
 	var move_input: Vector2 = _controls.move_intent()
 
-	if move_input != Vector2.ZERO:
-		if _mover != null:
-			_mover.intent = move_input
-			_mover.apply(body, delta)
-	else:
-		body.velocity.x = move_toward(body.velocity.x, 0.0, 2000.0 * delta)
-		body.velocity.y = move_toward(body.velocity.y, 0.0, 2000.0 * delta)
+	# Always use Mover - it handles both acceleration and friction
+	if _mover != null:
+		_mover.intent = move_input
+		_mover.apply(body, delta)
 
 
 func _resolve_attack_kind() -> void:

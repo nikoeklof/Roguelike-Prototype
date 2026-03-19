@@ -364,6 +364,7 @@ faction = 1
 
 [node name="Stats" type="Node" parent="." unique_id=696806420]
 script = ExtResource("6_j5qy7")
+base_friction = 1300.0
 
 [node name="Health" type="Node" parent="." unique_id=175137403]
 script = ExtResource("7_554au")

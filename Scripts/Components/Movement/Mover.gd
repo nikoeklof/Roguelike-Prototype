@@ -13,7 +13,7 @@ func apply(entity: CharacterBody2D, delta: float) -> void:
 	# Capability gate lives in the execution component (Mover).
 	# If movement is blocked, we do NOT allow new acceleration,
 	# but we preserve existing momentum and let friction slow us down.
-	var ent : Entity = entity as Entity
+	var ent := entity as Entity
 
 	var move_blocked := false
 	if ent != null:
@@ -53,11 +53,28 @@ func apply(entity: CharacterBody2D, delta: float) -> void:
 	var eff_intent := Vector2.ZERO if move_blocked else intent
 	var target := eff_intent * effective_move_speed
 
+	# Apply acceleration or friction
 	if eff_intent != Vector2.ZERO:
+		# Accelerate towards target
 		entity.velocity = entity.velocity.move_toward(target, effective_accel * delta)
 	else:
-		entity.velocity = entity.velocity.move_toward(Vector2.ZERO, effective_friction * delta)
+		# No input - apply normalized friction to slow down gradually
+		# Friction is applied proportionally to current speed so stopping time is consistent
+		var velocity_magnitude := entity.velocity.length()
+		if velocity_magnitude > 0.0:
+			# Normalized friction: multiply by speed ratio so it takes the same time regardless of actual speed
+			var friction_per_second := effective_friction / effective_move_speed
+			var new_magnitude := maxf(0.0, velocity_magnitude - (velocity_magnitude * friction_per_second * delta))
+			if new_magnitude > 0.0:
+				entity.velocity = entity.velocity.normalized() * new_magnitude
+			else:
+				entity.velocity = Vector2.ZERO
+		else:
+			entity.velocity = Vector2.ZERO
 
+	# Apply deadzone
 	if entity.velocity.length() < effective_deadzone:
 		entity.velocity = Vector2.ZERO
 	
+	# Actually move the entity
+	entity.move_and_slide()
