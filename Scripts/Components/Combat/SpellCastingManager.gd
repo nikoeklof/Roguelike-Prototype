@@ -1,17 +1,23 @@
 extends Node
 class_name SpellCastingManager
 
-@export var equipment_path: NodePath
-@export var cast_input_action: String = "ui_cast_spell"
+@export var equipment_path: NodePath = NodePath("")
+@export var cast_input_action: StringName = &"Cast"
 
-var _equipment: Equipment = null
 var _owner_entity: Node = null
+var _equipment: Equipment = null
 var _spell_slot: EquipmentSlot = null
 var _queued_spell_cast: bool = false
 
 
 func _ready() -> void:
+	print("[SpellCastingManager] _ready() called")
 	_owner_entity = _find_owner_entity()
+	
+	if _owner_entity == null:
+		push_error("[SpellCastingManager] FAILED: Owner entity not found!")
+		return
+
 	print("[SpellCastingManager] Owner entity: %s" % _owner_entity)
 	
 	# Resolve equipment from path or auto-find
@@ -90,100 +96,84 @@ func _try_cast_spell_now() -> bool:
 	if spell == null:
 		print("[SpellCastingManager] No spell equipped")
 		return false
+
+	# Check spell cooldown ONCE before attempting cast
+	var stats: Stats = null
+	if _owner_entity is Entity:
+		stats = (_owner_entity as Entity).find_component(&"Stats") as Stats
+	else:
+		stats = _owner_entity.get_node_or_null("Stats") as Stats
 	
-	if not spell.can_cast():
-		print("[SpellCastingManager] Spell on cooldown")
+	if stats != null and not stats.is_spell_ready():
+		var remaining := stats.get_spell_cooldown_remaining()
+		print("[SpellCastingManager] Spell on cooldown - %.2fs remaining" % remaining)
+		return false
+	
+	# Get item instance for the spell
+	var item_instance: ItemInstance = spell.get_item_instance() if spell.has_method("get_item_instance") else null
+	
+	# Try to cast via combat system
+	var combat: Combat = null
+	if _owner_entity is Entity:
+		combat = (_owner_entity as Entity).get_component(&"Combat") as Combat
+	else:
+		combat = _owner_entity.get_node_or_null("Combat") as Combat
+	
+	if combat == null:
+		print("[SpellCastingManager] No Combat component found")
 		return false
 
-	# Get aim direction from AimRay
-	var aim_dir: Vector2 = _get_aim_direction()
+	# Create context and attempt cast
+	var context: CombatContext = CombatContext.new()
+	context.owner = _owner_entity
+	context.item = spell
+	context.item_instance = item_instance
+	context.spread_roll = randi()
 
-	# Try to cast the spell
-	var success: bool = spell.try_cast(_owner_entity, aim_dir)
-	if success:
-		print("[SpellCastingManager] ✓ Spell '%s' cast successfully!" % spell.name)
-	else:
-		print("[SpellCastingManager] ✗ Spell cast failed")
+	combat.try_attack(Combat.AttackKind.SPELL, Vector2.RIGHT, context)
 	
-	return success
-
-
-func _try_cast_queued_spell() -> void:
-	if not _queued_spell_cast:
-		return
-
-	_queued_spell_cast = false
-	print("[SpellCastingManager] Attempting queued spell cast...")
-	_try_cast_spell_now()
-
-
-func _on_spell_slot_changed(new_item: Node, _old_item: Node) -> void:
-	"""Called whenever a spell is equipped or unequipped"""
-	var spell: Spell = new_item as Spell
-	if spell != null:
-		print("[SpellCastingManager] ✓ New spell equipped: %s" % spell.name)
-	else:
-		print("[SpellCastingManager] Spell slot cleared")
-
-
-func _get_aim_direction() -> Vector2:
-	if _owner_entity == null:
-		return Vector2.RIGHT
-
-	# Try to get direction from AimRay
-	var aim_ray: AimRay = _owner_entity.get_node_or_null("FacingPointer/AimRay") as AimRay
-	if aim_ray != null:
-		var aim_angle: float = aim_ray.global_rotation
-		return Vector2.RIGHT.rotated(aim_angle)
-
-	# Fallback to facing direction
-	var facing_pointer: FacingPointer = _owner_entity.get_node_or_null("FacingPointer") as FacingPointer
-	if facing_pointer != null and facing_pointer.facing_vector.length() > 0.001:
-		return facing_pointer.facing_vector.normalized()
-
-	return Vector2.RIGHT
+	# Apply spell cooldown on successful cast
+	if stats != null and spell.has_meta("cooldown_sec"):
+		var cooldown: float = float(spell.get_meta("cooldown_sec"))
+		stats.apply_spell_cooldown(cooldown)
+		print("[SpellCastingManager] Applied spell cooldown: %.2fs" % cooldown)
+	
+	print("[SpellCastingManager] Spell cast!")
+	return true
 
 
 func _hook_weapon_signals() -> void:
 	if _equipment == null:
-		print("[SpellCastingManager] Cannot hook weapon signals: equipment is null")
 		return
 
-	# Hook melee weapon
+	# Hook into weapon signals for queued spell casting
 	var melee_slot: EquipmentSlot = _equipment.get_node_or_null(_equipment.melee_slot_path) as EquipmentSlot
-	if melee_slot != null:
-		melee_slot.changed.connect(_on_melee_weapon_changed)
-		var weapon: Weapon = melee_slot.get_item() as Weapon
-		if weapon != null and weapon.has_signal("attack_finished"):
-			weapon.attack_finished.connect(_try_cast_queued_spell, CONNECT_ONE_SHOT)
-			print("[SpellCastingManager] ✓ Hooked melee weapon")
+	if melee_slot != null and melee_slot.has_signal("item_action_finished"):
+		if not melee_slot.item_action_finished.is_connected(_on_weapon_action_finished):
+			melee_slot.item_action_finished.connect(_on_weapon_action_finished)
 
-	# Hook ranged weapon
 	var ranged_slot: EquipmentSlot = _equipment.get_node_or_null(_equipment.ranged_slot_path) as EquipmentSlot
-	if ranged_slot != null:
-		ranged_slot.changed.connect(_on_ranged_weapon_changed)
-		var weapon: Weapon = ranged_slot.get_item() as Weapon
-		if weapon != null and weapon.has_signal("attack_finished"):
-			weapon.attack_finished.connect(_try_cast_queued_spell, CONNECT_ONE_SHOT)
-			print("[SpellCastingManager] ✓ Hooked ranged weapon")
+	if ranged_slot != null and ranged_slot.has_signal("item_action_finished"):
+		if not ranged_slot.item_action_finished.is_connected(_on_weapon_action_finished):
+			ranged_slot.item_action_finished.connect(_on_weapon_action_finished)
 
 
-func _on_melee_weapon_changed(new_item: Node, _old_item: Node) -> void:
-	var weapon: Weapon = new_item as Weapon
-	if weapon != null and weapon.has_signal("attack_finished"):
-		weapon.attack_finished.connect(_try_cast_queued_spell, CONNECT_ONE_SHOT)
+func _on_weapon_action_finished(_item: Node) -> void:
+	print("[SpellCastingManager] Weapon action finished")
+	if _queued_spell_cast:
+		_queued_spell_cast = false
+		if _try_cast_spell_now():
+			print("[SpellCastingManager] ✓ Queued spell cast")
 
 
-func _on_ranged_weapon_changed(new_item: Node, _old_item: Node) -> void:
-	var weapon: Weapon = new_item as Weapon
-	if weapon != null and weapon.has_signal("attack_finished"):
-		weapon.attack_finished.connect(_try_cast_queued_spell, CONNECT_ONE_SHOT)
+func _on_spell_slot_changed(_new_item: Node, _old_item: Node) -> void:
+	print("[SpellCastingManager] Spell slot changed - new spell: %s" % (_new_item.name if _new_item else "none"))
 
 
 func _find_owner_entity() -> Node:
-	var p: Node = get_parent()
-	while p != null:
-		if p is CharacterBody2D:
-			return p
-		p = p.get_parent()
+	var n: Node = self
+	while n != null:
+		if n is Entity or n is CharacterBody2D:
+			return n
+		n = n.get_parent()
 	return null

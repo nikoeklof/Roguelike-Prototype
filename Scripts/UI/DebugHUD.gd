@@ -161,6 +161,83 @@ func _on_stats_changed() -> void:
 	_update_stats_display()
 
 
+func _update_stats_display() -> void:
+	if _stats == null or seed_label == null:
+		return
+	
+	# Calculate effective movement values (assuming Mover base values)
+	var base_move_speed: float = 250.0  # Should match Mover.move_speed export
+	var effective_move_speed: float = base_move_speed * _stats.move_speed_mult()
+	
+	var stats_text: String = "Seed: 0"
+	if seed_label.text.begins_with("Seed:"):
+		var first_line: String = seed_label.text.split("\n")[0]
+		stats_text = first_line
+	
+	# Add movement and attack speed info
+	stats_text += "\n\nMovement Speed Mult: %.2fx" % _stats.move_speed_mult()
+	stats_text += "\nEffective Move Speed: %.1f" % effective_move_speed
+	stats_text += "\nAccel Mult: %.2fx" % _stats.accel_mult()
+	stats_text += "\nFriction Mult: %.2fx" % _stats.friction_mult()
+	stats_text += "\n\nAttack Speed Mult: %.2fx" % _stats.attack_speed_mult()
+	stats_text += "\nDamage Taken Mult: %.2fx" % _stats.damage_taken_mult()
+	stats_text += "\nFlat Damage Reduction: %.1f" % _stats.flat_damage_reduction()
+	
+	# Add spell cooldown info
+	var cooldown_remaining := _stats.get_spell_cooldown_remaining()
+	if cooldown_remaining > 0.0:
+		stats_text += "\n\nSpell Cooldown: %.2fs" % cooldown_remaining
+	else:
+		stats_text += "\n\nSpell Cooldown: Ready"
+	
+	# Add active buffs section (just names)
+	stats_text += _get_active_buffs_text()
+	
+	seed_label.text = stats_text
+
+
+func _get_active_buffs_text() -> String:
+	var buffs: Array[String] = []
+	
+	# Collect all active buff keys from all modifier dictionaries
+	for key: StringName in _stats._move_speed_mult_mods.keys():
+		buffs.append(str(key))
+	for key: StringName in _stats._accel_mult_mods.keys():
+		buffs.append(str(key))
+	for key: StringName in _stats._friction_mult_mods.keys():
+		buffs.append(str(key))
+	for key: StringName in _stats._attack_speed_mult_mods.keys():
+		buffs.append(str(key))
+	for key: StringName in _stats._damage_taken_mult_mods.keys():
+		buffs.append(str(key))
+	for key: StringName in _stats._flat_damage_reduction_mods.keys():
+		buffs.append(str(key))
+	for key: StringName in _stats._melee_damage_mult_mods.keys():
+		buffs.append(str(key))
+	for key: StringName in _stats._ranged_damage_mult_mods.keys():
+		buffs.append(str(key))
+	
+	if buffs.is_empty():
+		return "\n\nActive Buffs: (none)"
+	
+	# Remove duplicates using a dictionary
+	var unique_buffs: Dictionary = {}
+	for buff: String in buffs:
+		unique_buffs[buff] = true
+	
+	# Convert back to Array[String] and sort
+	var sorted_buffs: Array[String] = []
+	for buff_name: String in unique_buffs.keys():
+		sorted_buffs.append(buff_name)
+	sorted_buffs.sort()
+	
+	var text: String = "\n\nActive Buffs:"
+	for buff: String in sorted_buffs:
+		text += "\n  • %s" % buff
+	
+	return text
+
+
 # -------------------------
 # Inventory
 # -------------------------
@@ -238,116 +315,6 @@ func _on_item_selected(index: int) -> void:
 				var prop_name: String = str(p["name"])
 				var value: Variant = item.get(prop_name)
 				details.append_text("%s: %s\n" % [prop_name, str(value)])
-
-# -------------------------
-# Stats Display
-# -------------------------
-
-
-func _update_stats_display() -> void:
-	if _stats == null or seed_label == null:
-		return
-	
-	# Calculate effective movement values (assuming Mover base values)
-	var base_move_speed: float = 250.0  # Should match Mover.move_speed export
-	var effective_move_speed: float = base_move_speed * _stats.move_speed_mult()
-	
-	var stats_text: String = "Seed: 0"
-	if seed_label.text.begins_with("Seed:"):
-		var first_line: String = seed_label.text.split("\n")[0]
-		stats_text = first_line
-	
-	# Add movement and attack speed info
-	stats_text += "\n\nMovement Speed Mult: %.2fx" % _stats.move_speed_mult()
-	stats_text += "\nEffective Move Speed: %.1f" % effective_move_speed
-	stats_text += "\nAccel Mult: %.2fx" % _stats.accel_mult()
-	stats_text += "\nFriction Mult: %.2fx" % _stats.friction_mult()
-	stats_text += "\n\nAttack Speed Mult: %.2fx" % _stats.attack_speed_mult()
-	stats_text += "\nDamage Taken Mult: %.2fx" % _stats.damage_taken_mult()
-	stats_text += "\nFlat Damage Reduction: %.1f" % _stats.flat_damage_reduction()
-	
-	# Add spell cooldown info
-	var cooldown_remaining := _stats.get_spell_cooldown_remaining()
-	if cooldown_remaining > 0.0:
-		stats_text += "\n\nSpell Cooldown: %.2fs remaining" % cooldown_remaining
-	else:
-		stats_text += "\n\nSpell Cooldown: Ready"
-	
-	# Add active buffs section
-	stats_text += _get_active_buffs_text()
-	
-	seed_label.text = stats_text
-
-
-func _get_active_buffs_text() -> String:
-	var text: String = "\n\n[Active Buffs]"
-	
-	# Check each modifier dictionary for active buffs
-	var has_buffs := false
-	
-	# Movement modifiers
-	if not _stats._move_speed_mult_mods.is_empty():
-		has_buffs = true
-		text += "\n  Move Speed:"
-		for key: StringName in _stats._move_speed_mult_mods.keys():
-			var mult = _stats._move_speed_mult_mods[key]
-			text += "\n    - %s: %.2fx" % [key, mult]
-	
-	if not _stats._accel_mult_mods.is_empty():
-		has_buffs = true
-		text += "\n  Acceleration:"
-		for key: StringName in _stats._accel_mult_mods.keys():
-			var mult = _stats._accel_mult_mods[key]
-			text += "\n    - %s: %.2fx" % [key, mult]
-	
-	if not _stats._friction_mult_mods.is_empty():
-		has_buffs = true
-		text += "\n  Friction:"
-		for key: StringName in _stats._friction_mult_mods.keys():
-			var mult = _stats._friction_mult_mods[key]
-			text += "\n    - %s: %.2fx" % [key, mult]
-	
-	# Attack modifiers
-	if not _stats._attack_speed_mult_mods.is_empty():
-		has_buffs = true
-		text += "\n  Attack Speed:"
-		for key: StringName in _stats._attack_speed_mult_mods.keys():
-			var mult = _stats._attack_speed_mult_mods[key]
-			text += "\n    - %s: %.2fx" % [key, mult]
-	
-	# Damage modifiers
-	if not _stats._damage_taken_mult_mods.is_empty():
-		has_buffs = true
-		text += "\n  Damage Taken:"
-		for key: StringName in _stats._damage_taken_mult_mods.keys():
-			var mult = _stats._damage_taken_mult_mods[key]
-			text += "\n    - %s: %.2fx" % [key, mult]
-	
-	if not _stats._flat_damage_reduction_mods.is_empty():
-		has_buffs = true
-		text += "\n  Flat Reduction:"
-		for key: StringName in _stats._flat_damage_reduction_mods.keys():
-			var amount = _stats._flat_damage_reduction_mods[key]
-			text += "\n    - %s: %.1f" % [key, amount]
-	
-	if not _stats._melee_damage_mult_mods.is_empty():
-		has_buffs = true
-		text += "\n  Melee Damage:"
-		for key: StringName in _stats._melee_damage_mult_mods.keys():
-			var mult = _stats._melee_damage_mult_mods[key]
-			text += "\n    - %s: %.2fx" % [key, mult]
-	
-	if not _stats._ranged_damage_mult_mods.is_empty():
-		has_buffs = true
-		text += "\n  Ranged Damage:"
-		for key: StringName in _stats._ranged_damage_mult_mods.keys():
-			var mult = _stats._ranged_damage_mult_mods[key]
-			text += "\n    - %s: %.2fx" % [key, mult]
-	
-	if not has_buffs:
-		text += " (none)"
-	
-	return text
 
 
 # -------------------------

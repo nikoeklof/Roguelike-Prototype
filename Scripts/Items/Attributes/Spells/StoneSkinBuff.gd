@@ -7,7 +7,7 @@ class_name StoneSkinBuff
 
 
 func default_domains() -> PackedStringArray:
-	return PackedStringArray(["cast"])
+	return PackedStringArray([&"cast"])
 
 
 func on_cast_apply(context: CombatContext, item_instance: ItemInstance) -> void:
@@ -21,7 +21,7 @@ func on_cast_apply(context: CombatContext, item_instance: ItemInstance) -> void:
 	var key_reduction: StringName = _make_key(item_instance, "stone_skin_reduction")
 	var key_speed: StringName = _make_key(item_instance, "stone_skin_speed")
 	
-	stats.add_flat_damage_reduction(key_reduction, flat_damage_reduction)
+	stats.set_flat_damage_reduction(key_reduction, flat_damage_reduction)
 	stats.set_move_speed_mult(key_speed, move_speed_mult)
 
 	_start_clear_timer(context.owner, duration_sec, stats, key_reduction, key_speed)
@@ -51,8 +51,7 @@ func _start_clear_timer(host: Node, sec: float, stats: Stats, key_reduction: Str
 
 func _clear_buffs_and_free_timer(stats: Stats, key_reduction: StringName, key_speed: StringName, timer: Timer) -> void:
 	if is_instance_valid(stats):
-		stats.remove_flat_damage_reduction(key_reduction)
+		stats.clear_flat_damage_reduction(key_reduction)
 		stats.clear_move_speed_mult(key_speed)
-
 	if is_instance_valid(timer):
 		timer.queue_free()
