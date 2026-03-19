@@ -3,15 +3,25 @@ class_name Stats
 
 signal changed()
 
-# -----------------------------
-# Base values (authoring knobs)
-# -----------------------------
+# =====================================
+# BASE VALUES (authoring knobs)
+# =====================================
+
+# Movement base values
+@export_range(0.0, 2000.0, 1.0) var base_move_speed: float = 250.0
+@export_range(0.0, 10000.0, 1.0) var base_acceleration: float = 800.0
+@export_range(0.0, 10000.0, 1.0) var base_friction: float = 900.0
+@export_range(0.0, 50.0, 0.1) var base_deadzone: float = 5.0
+
+# Movement multipliers
 @export_range(0.0, 5.0, 0.01) var base_move_speed_mult: float = 1.0
 @export_range(0.0, 5.0, 0.01) var base_accel_mult: float = 1.0
 @export_range(0.0, 5.0, 0.01) var base_friction_mult: float = 1.0
 
+# Attack speed
 @export_range(0.0, 10.0, 0.01) var base_attack_speed_mult: float = 1.0
 
+# Damage-related
 @export_range(0.0, 10.0, 0.01) var base_damage_taken_mult: float = 1.0
 @export_range(0.0, 9999.0, 0.1) var base_flat_damage_reduction: float = 0.0
 
@@ -21,10 +31,9 @@ signal changed()
 @export_range(0.0, 0.9, 0.01) var base_cooldown_reduction: float = 0.0 # 0..0.9 recommended cap
 
 
-# -----------------------------------
-# Internal modifier storage (stacking)
-# Keys are StringName so callers can add/remove by a stable id.
-# -----------------------------------
+# =====================================
+# INTERNAL MODIFIER STORAGE (stacking)
+# =====================================
 var _move_speed_mult_mods: Dictionary = {}        # key -> mult
 var _accel_mult_mods: Dictionary = {}             # key -> mult
 var _friction_mult_mods: Dictionary = {}          # key -> mult
@@ -40,9 +49,24 @@ var _ranged_damage_mult_mods: Dictionary = {}      # key -> mult
 var _cooldown_reduction_mods: Dictionary = {}      # key -> add
 
 
-# -----------------------------
-# Public getters (resolved stats)
-# -----------------------------
+# =====================================
+# PUBLIC GETTERS - EFFECTIVE VALUES
+# =====================================
+
+# Movement - effective values with all modifiers applied
+func effective_move_speed() -> float:
+	return base_move_speed * move_speed_mult()
+
+func effective_acceleration() -> float:
+	return base_acceleration * accel_mult()
+
+func effective_friction() -> float:
+	return base_friction * friction_mult()
+
+func get_deadzone() -> float:
+	return base_deadzone
+
+# Movement multipliers (stacking modifiers)
 func move_speed_mult() -> float:
 	return _mult(base_move_speed_mult, _move_speed_mult_mods)
 
@@ -52,9 +76,11 @@ func accel_mult() -> float:
 func friction_mult() -> float:
 	return _mult(base_friction_mult, _friction_mult_mods)
 
+# Attack speed multiplier
 func attack_speed_mult() -> float:
 	return _mult(base_attack_speed_mult, _attack_speed_mult_mods)
 
+# Damage-related getters
 func damage_taken_mult() -> float:
 	return _mult(base_damage_taken_mult, _damage_taken_mult_mods)
 
@@ -77,9 +103,11 @@ func apply_cooldown(base_cd: float) -> float:
 	return maxf(0.0, base_cd * (1.0 - cooldown_reduction()))
 
 
-# -----------------------------
-# Modifier API (set/clear)
-# -----------------------------
+# =====================================
+# MODIFIER API (set/clear)
+# =====================================
+
+# Movement modifiers
 func set_move_speed_mult(key: StringName, mult: float) -> void:
 	_set_mult(_move_speed_mult_mods, key, mult)
 
@@ -98,12 +126,14 @@ func set_friction_mult(key: StringName, mult: float) -> void:
 func clear_friction_mult(key: StringName) -> void:
 	_clear(_friction_mult_mods, key)
 
+# Attack speed modifier
 func set_attack_speed_mult(key: StringName, mult: float) -> void:
 	_set_mult(_attack_speed_mult_mods, key, mult)
 
 func clear_attack_speed_mult(key: StringName) -> void:
 	_clear(_attack_speed_mult_mods, key)
 
+# Damage modifiers
 func set_damage_taken_mult(key: StringName, mult: float) -> void:
 	_set_mult(_damage_taken_mult_mods, key, mult)
 
@@ -135,9 +165,10 @@ func clear_cooldown_reduction(key: StringName) -> void:
 	_clear(_cooldown_reduction_mods, key)
 
 
-# -----------------------------
-# Helpers
-# -----------------------------
+# =====================================
+# HELPERS
+# =====================================
+
 func _mult(base: float, mods: Dictionary) -> float:
 	var v := base
 	for k in mods.keys():
@@ -151,7 +182,6 @@ func _add(base: float, mods: Dictionary) -> float:
 	return v
 
 func _set_mult(mods: Dictionary, key: StringName, mult: float) -> void:
-	print("Setting multiplier to %s" % mult)
 	mods[key] = maxf(mult, 0.0)
 	changed.emit()
 

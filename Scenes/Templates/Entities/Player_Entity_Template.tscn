@@ -362,9 +362,6 @@ script = ExtResource("3_o3ny4")
 script = ExtResource("4_86k4x")
 faction = 1
 
-[node name="Capabilities" type="Node" parent="." unique_id=586970052]
-script = ExtResource("5_14ypb")
-
 [node name="Stats" type="Node" parent="." unique_id=696806420]
 script = ExtResource("6_j5qy7")
 
@@ -465,6 +462,9 @@ default_tint = Color(0.12171086, 0.75197864, 7.70092e-07, 1)
 [node name="SpellCastingManager" type="Node" parent="." unique_id=1842546258]
 script = ExtResource("21_o0gml")
 equipment_path = NodePath("../Equipment")
+
+[node name="Capabilities" type="Node" parent="." unique_id=687748092]
+script = ExtResource("5_14ypb")
 
 [editable path="Equipment"]
 [editable path="StateHandler"]

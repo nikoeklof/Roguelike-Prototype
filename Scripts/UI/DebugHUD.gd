@@ -13,6 +13,7 @@ class_name DebugHUD
 var _floor_spawner: Node = null
 var _player: Node2D = null
 var _equipment: Equipment = null
+var _stats: Stats = null
 
 
 func _ready() -> void:
@@ -80,6 +81,16 @@ func _bind_player() -> void:
 		push_warning("DebugHUD: Player has no Equipment (or wrong type).")
 		return
 
+	# Also bind to Stats
+	_stats = _player.get_node_or_null("Stats") as Stats
+	if _stats == null:
+		push_warning("DebugHUD: Player has no Stats component.")
+		return
+
+	# Listen to Stats changes
+	if not _stats.changed.is_connected(_on_stats_changed):
+		_stats.changed.connect(_on_stats_changed)
+
 	if not _equipment.active_slot_changed.is_connected(_on_equipment_changed):
 		_equipment.active_slot_changed.connect(_on_equipment_changed)
 
@@ -87,6 +98,9 @@ func _bind_player() -> void:
 	_connect_slot_changed(_equipment.ranged_slot_path)
 	_connect_slot_changed(_equipment.spell_slot_path)
 	_connect_slot_changed(_equipment.shield_slot_path)
+	
+	# Initial display
+	_update_stats_display()
 
 
 func _connect_slot_changed(path: NodePath) -> void:
@@ -129,7 +143,47 @@ func _on_floor_plan_generated(plan: FloorGenerator.FloorPlan) -> void:
 	if minimap != null:
 		minimap.set_floor_plan(plan)
 	if seed_label != null:
-		seed_label.text = "Seed: %d" % int(plan.seed)
+		var seed_text: String = "Seed: %d" % int(plan.seed)
+		if seed_label.text.contains("\n"):
+			# Preserve stats info, just update seed
+			var lines: PackedStringArray = seed_label.text.split("\n")
+			lines[0] = seed_text
+			seed_label.text = "\n".join(lines)
+		else:
+			seed_label.text = seed_text
+
+
+# -------------------------
+# Stats Display
+# -------------------------
+
+func _on_stats_changed() -> void:
+	_update_stats_display()
+
+
+func _update_stats_display() -> void:
+	if _stats == null or seed_label == null:
+		return
+	
+	# Calculate effective movement values (assuming Mover base values)
+	var base_move_speed: float = 250.0  # Should match Mover.move_speed export
+	var effective_move_speed: float = base_move_speed * _stats.move_speed_mult()
+	
+	var stats_text: String = "Seed: 0"
+	if seed_label.text.begins_with("Seed:"):
+		var first_line: String = seed_label.text.split("\n")[0]
+		stats_text = first_line
+	
+	# Add movement and attack speed info
+	stats_text += "\n\nMovement Speed Mult: %.2fx" % _stats.move_speed_mult()
+	stats_text += "\nEffective Move Speed: %.1f" % effective_move_speed
+	stats_text += "\nAccel Mult: %.2fx" % _stats.accel_mult()
+	stats_text += "\nFriction Mult: %.2fx" % _stats.friction_mult()
+	stats_text += "\n\nAttack Speed Mult: %.2fx" % _stats.attack_speed_mult()
+	stats_text += "\nDamage Taken Mult: %.2fx" % _stats.damage_taken_mult()
+	stats_text += "\nFlat Damage Reduction: %.1f" % _stats.flat_damage_reduction()
+	
+	seed_label.text = stats_text
 
 
 # -------------------------

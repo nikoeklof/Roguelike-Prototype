@@ -38,7 +38,37 @@ static func resolve(ctx: CombatContext, variant: AttackVariant) -> AttackSnapsho
 
 	_apply_variant_defaults(snap, variant)
 	_apply_item_defaults(snap, ctx.item if ctx != null else null)
+	
+	# Apply attack speed multiplier from entity stats
+	if ctx != null and ctx.owner != null:
+		var entity_stats: Stats = _find_entity_stats(ctx.owner)
+		if entity_stats != null:
+			var attack_speed_mult: float = entity_stats.attack_speed_mult()
+			if attack_speed_mult != 1.0:
+				snap.cooldown_sec /= attack_speed_mult
+				snap.windup_time /= attack_speed_mult
+				snap.recovery_time /= attack_speed_mult
+	
 	return snap
+
+
+static func _find_entity_stats(owner: Node) -> Stats:
+	if owner == null:
+		return null
+	
+	# Try direct node lookup first
+	var direct: Stats = owner.get_node_or_null("Stats") as Stats
+	if direct != null:
+		return direct
+	
+	# Fallback to Entity component system
+	if owner is Entity:
+		var entity: Entity = owner as Entity
+		var found: Stats = entity.get_component(&"Stats") as Stats
+		if found != null:
+			return found
+	
+	return null
 
 
 static func _apply_variant_defaults(snap: AttackSnapshot, variant: AttackVariant) -> void:
@@ -153,3 +183,12 @@ static func _apply_item_defaults(snap: AttackSnapshot, item: Node) -> void:
 				snap.projectile_sprite_tint = ranged.projectile_spec.sprite_tint
 			else:
 				snap.projectile_scene = ranged.projectile_scene
+				snap.projectile_speed = ranged.projectile_speed
+				snap.projectile_gravity = ranged.projectile_gravity
+				snap.projectile_lifetime_sec = ranged.projectile_lifetime_sec
+				snap.projectile_radius = max(1.0, ranged.projectile_radius)
+				snap.projectile_inherit_owner_velocity = clampf(ranged.inherit_owner_velocity, 0.0, 1.0)
+				snap.projectile_range = max(0.0, ranged.projectile_range)
+				snap.projectile_collision_mask = ranged.projectile_collision_mask
+				snap.projectile_sprite_texture = ranged.projectile_sprite_texture
+				snap.projectile_sprite_tint = ranged.projectile_sprite_tint

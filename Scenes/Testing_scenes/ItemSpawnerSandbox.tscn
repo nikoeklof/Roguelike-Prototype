@@ -56,9 +56,6 @@ position = Vector2(37, -492.5)
 scale = Vector2(0.375, 0.375)
 shape = SubResource("RectangleShape2D_3dogw")
 
-[node name="Player" parent="." unique_id=423000657 instance=ExtResource("1_kyx5t")]
-position = Vector2(66, 114)
-
 [node name="DebugHud" parent="." unique_id=1698329193 instance=ExtResource("2_tiaw2")]
 scale = Vector2(0.8, 0.8)
 transform = Transform2D(0.8, 0, 0, 0.8, 0, 0)
@@ -120,3 +117,5 @@ metadata/_custom_type_script = "uid://dpt1ah3dct4go"
 
 [node name="Dummy" parent="." unique_id=1065698850 instance=ExtResource("9_s54dy")]
 position = Vector2(137, -51)
+
+[node name="Player" parent="." unique_id=423000657 instance=ExtResource("1_kyx5t")]

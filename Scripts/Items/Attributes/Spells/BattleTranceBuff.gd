@@ -3,6 +3,7 @@ class_name BattleTranceBuff
 
 @export_range(1.01, 3.0, 0.01) var attack_speed_mult: float = 1.3
 @export_range(1.01, 3.0, 0.01) var move_speed_mult: float = 1.25
+@export_range(1.01, 3.0, 0.01) var accel_mult: float = 1.25  # ← ADD THIS
 @export_range(0.1, 20.0, 0.1) var duration_sec: float = 5.0
 
 
@@ -21,20 +22,19 @@ func on_cast_apply(context: CombatContext, item_instance: ItemInstance) -> void:
 		return
 	
 	print("[BattleTranceBuff] Before buff - move_speed_mult: %s" % stats.move_speed_mult())
-	print("[BattleTranceBuff] Applying buffs - attack: %s, movement: %s, duration: %s" % [attack_speed_mult, move_speed_mult, duration_sec])
+	print("[BattleTranceBuff] Applying buffs - attack: %s, movement: %s, accel: %s, duration: %s" % [attack_speed_mult, move_speed_mult, accel_mult, duration_sec])
 	
 	var key_speed: StringName = _make_key(item_instance, "battle_trance_speed")
 	var key_attack: StringName = _make_key(item_instance, "battle_trance_attack")
-	
-	print("[BattleTranceBuff] Setting move_speed_mult with key '%s' to %s" % [key_speed, move_speed_mult])
-	print("[BattleTranceBuff] Setting attack_speed_mult with key '%s' to %s" % [key_attack, attack_speed_mult])
+	var key_accel: StringName = _make_key(item_instance, "battle_trance_accel")  # ← ADD THIS
 	
 	stats.set_move_speed_mult(key_speed, move_speed_mult)
+	stats.set_accel_mult(key_accel, accel_mult)  # ← ADD THIS
 	stats.set_attack_speed_mult(key_attack, attack_speed_mult)
 	
 	print("[BattleTranceBuff] After buff - move_speed_mult: %s" % stats.move_speed_mult())
 
-	_start_clear_timer(context.owner, duration_sec, stats, [key_speed, key_attack])
+	_start_clear_timer(context.owner, duration_sec, stats, [key_speed, key_attack, key_accel])  # ← ADD key_accel
 	print("[BattleTranceBuff] Buffs applied successfully")
 
 
@@ -50,7 +50,7 @@ func _find_stats(root: Node) -> Stats:
 	# Fallback to Entity component system
 	if root is Entity:
 		var entity: Entity = root as Entity
-		var found: Stats = entity.find_component(&"Stats") as Stats
+		var found: Stats = entity.get_component(&"Stats") as Stats
 		if found != null:
 			return found
 	
@@ -74,11 +74,10 @@ func _start_clear_timer(host: Node, sec: float, stats: Stats, keys: Array) -> vo
 
 
 func _clear_buffs_and_free_timer(stats: Stats, keys: Array, timer: Timer) -> void:
-		
 	if is_instance_valid(stats):
-		print("[BattleTranceBuff] Clearing keys and modifiers")
 		for key: StringName in keys:
 			stats.clear_move_speed_mult(key)
+			stats.clear_accel_mult(key)  # ← ADD THIS
 			stats.clear_attack_speed_mult(key)
 
 	if is_instance_valid(timer):
