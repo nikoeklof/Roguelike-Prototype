@@ -37,25 +37,21 @@ func _ready() -> void:
 	print("[SpellCastingManager] ✓ Equipment found: %s" % _equipment.name)
 	print("[SpellCastingManager] Spell slot path from Equipment: %s" % _equipment.spell_slot_path)
 	
-	# Get the spell slot - use Equipment's internal _slot() method via get_node_or_null
-	# The spell_slot_path is relative to Equipment, so we need to call on Equipment
+	# Get the spell slot
 	_spell_slot = _equipment.get_node_or_null(_equipment.spell_slot_path) as EquipmentSlot
 	
 	if _spell_slot == null:
 		print("[SpellCastingManager] ⚠ Warning: Spell slot not found at path '%s' - this is OK if no spell is equipped yet" % _equipment.spell_slot_path)
-		# Don't return - we'll retry when spell is picked up
 	else:
 		print("[SpellCastingManager] ✓ Spell slot found: %s" % _spell_slot.name)
-		# IMPORTANT: Listen for changes to the spell slot
 		if not _spell_slot.changed.is_connected(_on_spell_slot_changed):
 			_spell_slot.changed.connect(_on_spell_slot_changed)
 	
-	# Hook weapon signals for queueing
 	_hook_weapon_signals()
 
 
 func _process(_delta: float) -> void:
-	if Input.is_action_just_pressed(cast_input_action):
+	if Input.is_action_just_pressed("ui_cast_spell"):
 		print("[SpellCastingManager] Cast input pressed!")
 		_on_cast_input_pressed()
 
@@ -80,73 +76,70 @@ func _try_cast_spell_now() -> bool:
 	if _equipment == null or _owner_entity == null:
 		return false
 
-	# Ensure spell slot is found (in case it was picked up after startup)
+	# Ensure spell slot is found
 	if _spell_slot == null:
 		_spell_slot = _equipment.get_node_or_null(_equipment.spell_slot_path) as EquipmentSlot
 		if _spell_slot == null:
-			print("[SpellCastingManager] Cannot cast: spell slot still not found")
+			print("[SpellCastingManager] Cannot cast: spell slot not found")
 			return false
-		# Connect to changes now
 		if not _spell_slot.changed.is_connected(_on_spell_slot_changed):
 			_spell_slot.changed.connect(_on_spell_slot_changed)
 
-	# Get equipped spell from the spell slot
+	# Get equipped spell
 	var spell: Spell = _spell_slot.get_item() as Spell
 	
 	if spell == null:
 		print("[SpellCastingManager] No spell equipped")
 		return false
 
-	# Check spell cooldown ONCE before attempting cast
+	# Get Stats for cooldown check
 	var stats: Stats = null
 	if _owner_entity is Entity:
 		stats = (_owner_entity as Entity).find_component(&"Stats") as Stats
 	else:
 		stats = _owner_entity.get_node_or_null("Stats") as Stats
 	
+	# Check global spell cooldown
 	if stats != null and not stats.is_spell_ready():
 		var remaining := stats.get_spell_cooldown_remaining()
 		print("[SpellCastingManager] Spell on cooldown - %.2fs remaining" % remaining)
 		return false
 	
-	# Get item instance for the spell
-	var item_instance: ItemInstance = spell.get_item_instance() if spell.has_method("get_item_instance") else null
+	# Use Spell's try_cast method directly
+	var success: bool = spell.try_cast(_owner_entity, Vector2.RIGHT)
 	
-	# Try to cast via combat system
-	var combat: Combat = null
-	if _owner_entity is Entity:
-		combat = (_owner_entity as Entity).get_component(&"Combat") as Combat
-	else:
-		combat = _owner_entity.get_node_or_null("Combat") as Combat
+	if success and stats != null:
+		# Get the cooldown from the spell's item instance
+		var cooldown_sec: float = 0.0
+		if spell.has_method("get_item_instance"):
+			var item_instance: ItemInstance = spell.get_item_instance()
+			if item_instance != null:
+				var ctx: CombatContext = CombatContext.new()
+				ctx.owner = _owner_entity
+				ctx.item = spell
+				ctx.item_instance = item_instance
+				
+				if _owner_entity is Entity:
+					ctx.stats = (_owner_entity as Entity).find_component(&"Stats")
+				else:
+					ctx.stats = _owner_entity.get_node_or_null("Stats")
+				
+				var item_stats: ItemStats = item_instance.compute_stats(ctx)
+				if item_stats != null:
+					cooldown_sec = item_stats.cooldown_sec
+		
+		# Apply global spell cooldown
+		stats.apply_spell_cooldown(cooldown_sec)
+		print("[SpellCastingManager] Applied spell cooldown: %.2fs" % cooldown_sec)
 	
-	if combat == null:
-		print("[SpellCastingManager] No Combat component found")
-		return false
-
-	# Create context and attempt cast
-	var context: CombatContext = CombatContext.new()
-	context.owner = _owner_entity
-	context.item = spell
-	context.item_instance = item_instance
-	context.spread_roll = randi()
-
-	combat.try_attack(Combat.AttackKind.SPELL, Vector2.RIGHT, context)
-	
-	# Apply spell cooldown on successful cast
-	if stats != null and spell.has_meta("cooldown_sec"):
-		var cooldown: float = float(spell.get_meta("cooldown_sec"))
-		stats.apply_spell_cooldown(cooldown)
-		print("[SpellCastingManager] Applied spell cooldown: %.2fs" % cooldown)
-	
-	print("[SpellCastingManager] Spell cast!")
-	return true
+	print("[SpellCastingManager] Spell cast: %s" % success)
+	return success
 
 
 func _hook_weapon_signals() -> void:
 	if _equipment == null:
 		return
 
-	# Hook into weapon signals for queued spell casting
 	var melee_slot: EquipmentSlot = _equipment.get_node_or_null(_equipment.melee_slot_path) as EquipmentSlot
 	if melee_slot != null and melee_slot.has_signal("item_action_finished"):
 		if not melee_slot.item_action_finished.is_connected(_on_weapon_action_finished):

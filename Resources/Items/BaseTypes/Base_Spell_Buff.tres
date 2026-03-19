@@ -7,6 +7,7 @@
 
 [sub_resource type="Resource" id="Resource_dk3tx"]
 script = ExtResource("1_ln066")
+cooldown_sec = 10.0
 metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [sub_resource type="Resource" id="Resource_xifq8"]

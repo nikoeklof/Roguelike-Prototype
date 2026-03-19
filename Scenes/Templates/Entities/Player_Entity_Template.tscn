@@ -463,7 +463,6 @@ default_tint = Color(0.12171086, 0.75197864, 7.70092e-07, 1)
 [node name="SpellCastingManager" type="Node" parent="." unique_id=1842546258]
 script = ExtResource("21_o0gml")
 equipment_path = NodePath("../Equipment")
-cast_input_action = null
 
 [node name="Capabilities" type="Node" parent="." unique_id=687748092]
 script = ExtResource("5_14ypb")

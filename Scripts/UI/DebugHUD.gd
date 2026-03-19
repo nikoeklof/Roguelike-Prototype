@@ -4,6 +4,7 @@ class_name DebugHUD
 @export var floor_spawner_path: NodePath
 @export var player_root_path: NodePath
 @export var toggle_action: StringName = &"ui_debug_toggle"
+@export_range(0.01, 0.5, 0.01) var update_tick_rate: float = 0.1
 
 @onready var minimap: MinimapControl = %Minimap
 @onready var seed_label: Label = %SeedLabel
@@ -15,24 +16,36 @@ var _player: Node2D = null
 var _equipment: Equipment = null
 var _stats: Stats = null
 
+var _update_timer: float = 0.0
+var _last_move_speed: float = 0.0
+var _last_cooldown: float = -1.0
+var _last_buffs: String = ""
+
+# Track buff durations
+var _buff_timers: Dictionary = {}  # key -> end_time
+
 
 func _ready() -> void:
 	_bind_floor_spawner()
 	_bind_player()
 	_wire_ui()
 
-	# Pull after one frame to avoid ready-order issues
 	call_deferred("_pull_existing_floor_plan")
 	call_deferred("_refresh_inventory")
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if minimap == null:
 		return
 	if _player == null:
 		return
 
 	minimap.set_player_cell(_world_to_cell(_player.global_position))
+	
+	_update_timer += delta
+	if _update_timer >= update_tick_rate:
+		_update_timer = 0.0
+		_update_realtime_values()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -81,13 +94,11 @@ func _bind_player() -> void:
 		push_warning("DebugHUD: Player has no Equipment (or wrong type).")
 		return
 
-	# Also bind to Stats
 	_stats = _player.get_node_or_null("Stats") as Stats
 	if _stats == null:
 		push_warning("DebugHUD: Player has no Stats component.")
 		return
 
-	# Listen to Stats changes
 	if not _stats.changed.is_connected(_on_stats_changed):
 		_stats.changed.connect(_on_stats_changed)
 
@@ -99,7 +110,6 @@ func _bind_player() -> void:
 	_connect_slot_changed(_equipment.spell_slot_path)
 	_connect_slot_changed(_equipment.shield_slot_path)
 	
-	# Initial display
 	_update_stats_display()
 
 
@@ -126,7 +136,7 @@ func _wire_ui() -> void:
 
 
 # -------------------------
-# Floor plan (signal + pull)
+# Floor plan
 # -------------------------
 
 func _pull_existing_floor_plan() -> void:
@@ -145,7 +155,6 @@ func _on_floor_plan_generated(plan: FloorGenerator.FloorPlan) -> void:
 	if seed_label != null:
 		var seed_text: String = "Seed: %d" % int(plan.seed)
 		if seed_label.text.contains("\n"):
-			# Preserve stats info, just update seed
 			var lines: PackedStringArray = seed_label.text.split("\n")
 			lines[0] = seed_text
 			seed_label.text = "\n".join(lines)
@@ -161,12 +170,55 @@ func _on_stats_changed() -> void:
 	_update_stats_display()
 
 
-func _update_stats_display() -> void:
+func _update_realtime_values() -> void:
+	"""Update only the values that change frequently"""
 	if _stats == null or seed_label == null:
 		return
 	
-	# Calculate effective movement values (assuming Mover base values)
-	var base_move_speed: float = 250.0  # Should match Mover.move_speed export
+	var base_move_speed: float = 250.0
+	var current_move_speed: float = base_move_speed * _stats.move_speed_mult()
+	var cooldown_remaining: float = _stats.get_spell_cooldown_remaining()
+	var buffs_text: String = _get_active_buffs_text()
+	
+	# Only update if something actually changed
+	if current_move_speed == _last_move_speed and cooldown_remaining == _last_cooldown and buffs_text == _last_buffs:
+		return
+	
+	_last_move_speed = current_move_speed
+	_last_cooldown = cooldown_remaining
+	_last_buffs = buffs_text
+	
+	# Rebuild ONLY the stats text, keep seed
+	var text: String = ""
+	if seed_label.text.begins_with("Seed:"):
+		var first_line: String = seed_label.text.split("\n")[0]
+		text = first_line
+	else:
+		text = "Seed: 0"
+	
+	text += "\n\nMovement Speed Mult: %.2fx" % _stats.move_speed_mult()
+	text += "\nEffective Move Speed: %.1f" % current_move_speed
+	text += "\nAccel Mult: %.2fx" % _stats.accel_mult()
+	text += "\nFriction Mult: %.2fx" % _stats.friction_mult()
+	text += "\n\nAttack Speed Mult: %.2fx" % _stats.attack_speed_mult()
+	text += "\nDamage Taken Mult: %.2fx" % _stats.damage_taken_mult()
+	text += "\nFlat Damage Reduction: %.1f" % _stats.flat_damage_reduction()
+	text += "\n\nSpell Cooldown: "
+	if cooldown_remaining > 0.0:
+		text += "%.2fs" % cooldown_remaining
+	else:
+		text += "Ready"
+	text += buffs_text
+	
+	seed_label.text = text
+
+
+func _update_stats_display() -> void:
+	"""Full update when stats change"""
+	if _stats == null or seed_label == null:
+		return
+	
+	var base_move_speed: float = 250.0
 	var effective_move_speed: float = base_move_speed * _stats.move_speed_mult()
 	
 	var stats_text: String = "Seed: 0"
@@ -174,7 +226,6 @@ func _update_stats_display() -> void:
 		var first_line: String = seed_label.text.split("\n")[0]
 		stats_text = first_line
 	
-	# Add movement and attack speed info
 	stats_text += "\n\nMovement Speed Mult: %.2fx" % _stats.move_speed_mult()
 	stats_text += "\nEffective Move Speed: %.1f" % effective_move_speed
 	stats_text += "\nAccel Mult: %.2fx" % _stats.accel_mult()
@@ -183,39 +234,34 @@ func _update_stats_display() -> void:
 	stats_text += "\nDamage Taken Mult: %.2fx" % _stats.damage_taken_mult()
 	stats_text += "\nFlat Damage Reduction: %.1f" % _stats.flat_damage_reduction()
 	
-	# Add spell cooldown info
 	var cooldown_remaining := _stats.get_spell_cooldown_remaining()
+	stats_text += "\n\nSpell Cooldown: "
 	if cooldown_remaining > 0.0:
-		stats_text += "\n\nSpell Cooldown: %.2fs" % cooldown_remaining
+		stats_text += "%.2fs" % cooldown_remaining
 	else:
-		stats_text += "\n\nSpell Cooldown: Ready"
+		stats_text += "Ready"
 	
-	# Add active buffs section (just names)
 	stats_text += _get_active_buffs_text()
 	
 	seed_label.text = stats_text
+	_last_move_speed = base_move_speed * _stats.move_speed_mult()
+	_last_cooldown = cooldown_remaining
+	_last_buffs = _get_active_buffs_text()
 
 
 func _get_active_buffs_text() -> String:
 	var buffs: Array[String] = []
+	var now: float = Time.get_ticks_msec() / 1000.0
 	
-	# Collect all active buff keys from all modifier dictionaries
-	for key: StringName in _stats._move_speed_mult_mods.keys():
-		buffs.append(str(key))
-	for key: StringName in _stats._accel_mult_mods.keys():
-		buffs.append(str(key))
-	for key: StringName in _stats._friction_mult_mods.keys():
-		buffs.append(str(key))
-	for key: StringName in _stats._attack_speed_mult_mods.keys():
-		buffs.append(str(key))
-	for key: StringName in _stats._damage_taken_mult_mods.keys():
-		buffs.append(str(key))
-	for key: StringName in _stats._flat_damage_reduction_mods.keys():
-		buffs.append(str(key))
-	for key: StringName in _stats._melee_damage_mult_mods.keys():
-		buffs.append(str(key))
-	for key: StringName in _stats._ranged_damage_mult_mods.keys():
-		buffs.append(str(key))
+	# Collect all active buff keys with their remaining durations
+	_collect_buffs_with_duration(buffs, _stats._move_speed_mult_mods, now)
+	_collect_buffs_with_duration(buffs, _stats._accel_mult_mods, now)
+	_collect_buffs_with_duration(buffs, _stats._friction_mult_mods, now)
+	_collect_buffs_with_duration(buffs, _stats._attack_speed_mult_mods, now)
+	_collect_buffs_with_duration(buffs, _stats._damage_taken_mult_mods, now)
+	_collect_buffs_with_duration(buffs, _stats._flat_damage_reduction_mods, now)
+	_collect_buffs_with_duration(buffs, _stats._melee_damage_mult_mods, now)
+	_collect_buffs_with_duration(buffs, _stats._ranged_damage_mult_mods, now)
 	
 	if buffs.is_empty():
 		return "\n\nActive Buffs: (none)"
@@ -233,9 +279,35 @@ func _get_active_buffs_text() -> String:
 	
 	var text: String = "\n\nActive Buffs:"
 	for buff: String in sorted_buffs:
-		text += "\n  • %s" % buff
+		# Extract buff name and get remaining duration
+		var remaining: float = _buff_timers.get(buff, 0.0) - now
+		if remaining > 0.0:
+			text += "\n  • %s (%.1fs)" % [buff, remaining]
+		else:
+			text += "\n  • %s" % buff
 	
 	return text
+
+
+func _collect_buffs_with_duration(buffs: Array[String], mods: Dictionary, now: float) -> void:
+	for key: StringName in mods.keys():
+		var buff_name: String = str(key)
+		buffs.append(buff_name)
+		
+		# If this is a new buff, estimate its duration based on buff type
+		if not _buff_timers.has(buff_name):
+			# Default duration estimates based on buff key patterns
+			var duration: float = 5.0  # Default
+			if "battle_trance" in buff_name:
+				duration = 5.0
+			elif "stone_skin" in buff_name:
+				duration = 6.0
+			# Add more patterns as needed
+			_buff_timers[buff_name] = now + duration
+		
+		# Remove expired timers
+		if _buff_timers[buff_name] <= now:
+			_buff_timers.erase(buff_name)
 
 
 # -------------------------
