@@ -1,13 +1,8 @@
-extends ItemAttribute
+extends DebuffSpellAttribute
 class_name FrailtyDebuff
 
 @export_range(1.01, 3.0, 0.01) var damage_taken_mult: float = 1.4
 @export_range(0.1, 20.0, 0.1) var duration_sec: float = 4.0
-
-
-func default_domains() -> PackedStringArray:
-	return PackedStringArray(["hit"])
-
 
 func on_hit(context: CombatContext, hit: HitEvent, item_instance: ItemInstance) -> void:
 	if hit == null or hit.victim == null:

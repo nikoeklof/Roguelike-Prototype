@@ -1,13 +1,8 @@
-extends ItemAttribute
+extends DebuffSpellAttribute
 class_name SlowDebuff
 
 @export_range(0.1, 0.9, 0.05) var move_speed_mult: float = 0.5
 @export_range(0.1, 20.0, 0.1) var duration_sec: float = 3.0
-
-
-func default_domains() -> PackedStringArray:
-	return PackedStringArray(["hit"])
-
 
 func on_hit(context: CombatContext, hit: HitEvent, item_instance: ItemInstance) -> void:
 	if hit == null or hit.victim == null:

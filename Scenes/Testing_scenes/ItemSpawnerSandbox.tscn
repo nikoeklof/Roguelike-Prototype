@@ -116,5 +116,6 @@ metadata/_custom_type_script = "uid://dpt1ah3dct4go"
 
 [node name="Dummy" parent="." unique_id=1065698850 instance=ExtResource("9_s54dy")]
 position = Vector2(137, -51)
+initial_faction = 2
 
 [node name="Player" parent="." unique_id=423000657 instance=ExtResource("1_kyx5t")]

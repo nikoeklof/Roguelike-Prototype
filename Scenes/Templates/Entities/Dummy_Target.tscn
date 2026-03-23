@@ -25,17 +25,12 @@ metadata/_custom_type_script = "uid://d38xstn1bs221"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_4vlro"]
 shader = ExtResource("13_5atrd")
-shader_parameter/base_tint = Color(1, 0, 0.1897483, 1)
+shader_parameter/base_tint = Vector4(1, 1, 1, 1)
 shader_parameter/hurt_flash = 0.0
-shader_parameter/hurt_flash_color = Color(1, 1, 1, 1)
-shader_parameter/freeze_amount = 0.0
-shader_parameter/freeze_color = Color(0.45, 0.8, 1, 1)
-shader_parameter/poison_amount = 0.0
-shader_parameter/poison_color = Color(0.45, 1, 0.45, 1)
-shader_parameter/burn_amount = 0.0
-shader_parameter/burn_color = Color(1, 0.55, 0.2, 1)
-shader_parameter/shield_amount = 0.0
-shader_parameter/shield_color = Color(0.4, 0.8, 1, 1)
+shader_parameter/debuff_intensity = 0.0
+shader_parameter/debuff_color = Vector4(0, 0.6, 0.2, 1)
+shader_parameter/debuff_pulse_speed = 2.0
+shader_parameter/debuff_glow = 0.5
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2mdsq"]
 atlas = ExtResource("17_uqhsm")

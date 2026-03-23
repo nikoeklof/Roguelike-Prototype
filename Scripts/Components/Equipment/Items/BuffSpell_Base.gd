@@ -19,18 +19,27 @@ func _do_cast(owner_entity: Node, _dir: Vector2) -> void:
 	
 	# Deep inspection of attributes
 	print("[BuffSpell] Attributes array size: %d" % _instance.attributes.size())
-	print("[BuffSpell] Attributes: %s" % _instance.attributes)
 	
 	for i in range(_instance.attributes.size()):
 		var attr = _instance.attributes[i]
-		print("[BuffSpell] Attribute[%d]: %s (class: %s)" % [i, attr, attr.get_class() if attr else "null"])
 		
 		if attr != null and attr is ItemAttribute:
-			print("[BuffSpell]   - Is ItemAttribute: YES")
-			print("[BuffSpell]   - Domains: %s" % PackedStringArray(attr.default_domains()))
+			# Get the attribute label
+			var label: String = ""
+			if "display_name" in attr and attr.display_name != "":
+				label = attr.display_name
+			elif "id" in attr and attr.id != &"":
+				label = str(attr.id)
+			else:
+				label = attr.get_class()
+			
+			print("[BuffSpell] Attribute[%d]: %s" % [i, label])
+			
+			var domains: PackedStringArray = attr.default_domains()
+			print("[BuffSpell]   - Domains: %s" % str(domains))
 			print("[BuffSpell]   - Applies to 'cast'? %s" % attr.applies_to_domain(&"cast"))
 		else:
-			print("[BuffSpell]   - Is ItemAttribute: NO")
+			print("[BuffSpell] Attribute[%d]: NULL or invalid" % i)
 	
 	print("[BuffSpell] Dispatching via ItemAttributeBus...")
 	ItemAttributeBus.dispatch_cast_apply(ctx, _instance)

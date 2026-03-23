@@ -15,11 +15,11 @@
 [ext_resource type="Script" uid="uid://dwn0m7cfouyed" path="res://Scripts/Components/Combat/Combat.gd" id="12_qdh38"]
 [ext_resource type="Script" uid="uid://crj5c0y8pbwvf" path="res://Scripts/Animation/AnimDriver.gd" id="13_x8u2g"]
 [ext_resource type="Script" uid="uid://d38xstn1bs221" path="res://Scripts/Animation/AnimSet.gd" id="14_s8hwr"]
+[ext_resource type="Shader" uid="uid://bm132chix5xcb" path="res://Art/Shaders/Entity_Visual.gdshader" id="15_o0gml"]
 [ext_resource type="PackedScene" uid="uid://b8s1g24kyrtsq" path="res://Scenes/StateHandler/StateHandler.tscn" id="18_p0go8"]
 [ext_resource type="Script" uid="uid://qp2c6a6vyih1" path="res://Scripts/States/VFX/EntityVisualController.gd" id="20_o0gml"]
 [ext_resource type="Script" uid="uid://8avggln5hcfi" path="res://Scripts/Interaction/Interactor.gd" id="20_tm314"]
 [ext_resource type="Script" uid="uid://dq8au21fkubdm" path="res://Scripts/Components/Combat/SpellCastingManager.gd" id="21_o0gml"]
-[ext_resource type="Shader" uid="uid://ckaf4vkfk1rxi" path="res://Art/Shaders/HurtFlash.gdshader" id="21_yc78x"]
 [ext_resource type="Texture2D" uid="uid://ef76oyy21t8e" path="res://Art/Characters/Player_Character_8_way.png" id="22_fnpwp"]
 
 [sub_resource type="Resource" id="Resource_rmh8v"]
@@ -27,9 +27,13 @@ script = ExtResource("14_s8hwr")
 metadata/_custom_type_script = "uid://d38xstn1bs221"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_4vlro"]
-shader = ExtResource("21_yc78x")
-shader_parameter/flash_amount = 0.0
-shader_parameter/flash_color = Color(1, 1, 1, 1)
+shader = ExtResource("15_o0gml")
+shader_parameter/base_tint = Vector4(1, 1, 1, 1)
+shader_parameter/hurt_flash = 0.0
+shader_parameter/debuff_intensity = 0.0
+shader_parameter/debuff_color = Vector4(0, 0.2, 1, 1)
+shader_parameter/debuff_pulse_speed = 3.00000011875
+shader_parameter/debuff_glow = 1.0000000475
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2mdsq"]
 atlas = ExtResource("22_fnpwp")
@@ -458,7 +462,6 @@ shape = SubResource("CircleShape2D_d71ut")
 
 [node name="VisualController" type="Node" parent="." unique_id=923009030]
 script = ExtResource("20_o0gml")
-default_tint = Color(0.12171086, 0.75197864, 7.70092e-07, 1)
 
 [node name="SpellCastingManager" type="Node" parent="." unique_id=1842546258]
 script = ExtResource("21_o0gml")

@@ -1,4 +1,4 @@
-extends CharacterBody2D
+extends Entity
 
 @export var reset_on_death := true
 @export var respawn_delay_sec := 0.0
@@ -7,6 +7,8 @@ extends CharacterBody2D
 @onready var health = $Health
 
 func _ready():
+	super._ready()
+	
 	if stay_invulnerable:
 		health.max_hp = 999999
 		health.hp = health.max_hp

@@ -1,13 +1,6 @@
 [gd_scene format=3 uid="uid://i7trnlyedgj"]
 
 [ext_resource type="Script" uid="uid://upme1fcmf6wa" path="res://Scripts/Components/Equipment/Items/DebuffSpell_Base.gd" id="1_e668v"]
-[ext_resource type="PackedScene" uid="uid://cosg8jgc5pgfy" path="res://Scenes/Templates/EquipmentItems/Projectile_template.tscn" id="2_a0atc"]
-[ext_resource type="Script" uid="uid://qm1anfcwli5v" path="res://Scripts/Components/Combat/ProjectileSpec.gd" id="3_cppej"]
-
-[sub_resource type="Resource" id="Resource_emo40"]
-script = ExtResource("3_cppej")
-metadata/_custom_type_script = "uid://qm1anfcwli5v"
 
 [node name="SpellDebuffTemplate" type="Node" unique_id=851048650]
 script = ExtResource("1_e668v")
-projectile_spec = SubResource("Resource_emo40")

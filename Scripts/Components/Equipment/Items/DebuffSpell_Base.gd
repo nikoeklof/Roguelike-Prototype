@@ -1,47 +1,66 @@
 extends Spell
 class_name DebuffSpell
 
-enum DebuffMode { PROJECTILE, AOE }
 
-# Debuff configuration
-@export var debuff_mode: DebuffMode = DebuffMode.PROJECTILE
-@export_range(50.0, 500.0, 10.0) var aoe_radius: float = 150.0
-@export var aoe_instant: bool = true
-@export_range(0.1, 5.0, 0.1) var aoe_travel_time: float = 0.5
-
-@export var projectile_spec: ProjectileSpec
-@export var projectile_scene: PackedScene = preload("res://Scenes/Templates/EquipmentItems/Projectile_template.tscn")
-@export_range(0.0, 5000.0, 1.0) var projectile_speed: float = 450.0
-@export_range(-5000.0, 5000.0, 1.0) var projectile_gravity: float = 0.0
-@export_range(0.05, 30.0, 0.05) var projectile_lifetime_sec: float = 2.0
-@export_range(1.0, 256.0, 1.0) var projectile_radius: float = 6.0
-@export_range(0.0, 1.0, 0.01) var inherit_owner_velocity: float = 0.0
-@export_range(0.0, 5000.0, 1.0) var projectile_range: float = 0.0
-@export var projectile_collision_mask: int = 0x7FFFFFFF
-@export var projectile_sprite_texture: Texture2D
-@export var projectile_sprite_tint: Color = Color.WHITE
-
-
-func _do_cast(owner_entity: Node, dir: Vector2) -> void:
+func _do_cast(owner_entity: Node, _dir: Vector2) -> void:
 	if _instance == null or owner_entity == null:
 		print("[DebuffSpell] Cannot cast: instance=%s, owner=%s" % [_instance, owner_entity])
 		return
 
-	print("[DebuffSpell] Casting debuff spell '%s', mode=%s" % [name, DebuffMode.keys()[debuff_mode]])
+	# GET ACTUAL AIM DIRECTION FROM AIMRAY ROTATION
+	var actual_dir: Vector2 = _dir
+	print("[DebuffSpell] DEBUG - Initial _dir: %s" % _dir)
 	
-	var ctx: CombatContext = _make_context(owner_entity, dir)
+	if owner_entity is Entity:
+		var facing_pointer: FacingPointer = (owner_entity as Entity).find_component(&"FacingPointer") as FacingPointer
+		print("[DebuffSpell] DEBUG - Found FacingPointer: %s" % (facing_pointer != null))
+		if facing_pointer != null:
+			var aim_ray: AimRay = facing_pointer.get_node_or_null("AimRay") as AimRay
+			print("[DebuffSpell] DEBUG - Found AimRay: %s" % (aim_ray != null))
+			if aim_ray != null:
+				# Convert rotation back to direction vector
+				actual_dir = Vector2.RIGHT.rotated(aim_ray.global_rotation)
+				print("[DebuffSpell] DEBUG - AimRay rotation: %s, direction: %s" % [aim_ray.global_rotation, actual_dir])
+	else:
+		var facing_pointer: FacingPointer = owner_entity.get_node_or_null("FacingPointer") as FacingPointer
+		print("[DebuffSpell] DEBUG - Found FacingPointer (fallback): %s" % (facing_pointer != null))
+		if facing_pointer != null:
+			var aim_ray: AimRay = facing_pointer.get_node_or_null("AimRay") as AimRay
+			print("[DebuffSpell] DEBUG - Found AimRay (fallback): %s" % (aim_ray != null))
+			if aim_ray != null:
+				# Convert rotation back to direction vector
+				actual_dir = Vector2.RIGHT.rotated(aim_ray.global_rotation)
+				print("[DebuffSpell] DEBUG - AimRay rotation (fallback): %s, direction: %s" % [aim_ray.global_rotation, actual_dir])
 
-	match debuff_mode:
-		DebuffMode.PROJECTILE:
-			print("[DebuffSpell] Casting PROJECTILE debuff")
-			_cast_projectile_debuff(ctx, owner_entity, dir)
-		DebuffMode.AOE:
+	# GET DELIVERY MODE FROM SPELLITEMDEF
+	var delivery_mode: int = SpellItemDef.DeliveryMode.PROJECTILE
+	if _instance != null and _instance.def != null and _instance.def is SpellItemDef:
+		var spell_def: SpellItemDef = _instance.def as SpellItemDef
+		delivery_mode = spell_def.delivery_mode
+
+	print("[DebuffSpell] Casting debuff spell '%s', mode=%s, direction=%s" % [name, SpellItemDef.DeliveryMode.keys()[delivery_mode], actual_dir])
+	
+	var ctx: CombatContext = _make_context(owner_entity, actual_dir)
+
+	match delivery_mode:
+		SpellItemDef.DeliveryMode.PROJECTILE:
+			print("[DebuffSpell] Casting PROJECTILE debuff with direction: %s" % actual_dir)
+			_cast_projectile_debuff(ctx, owner_entity, actual_dir)
+		SpellItemDef.DeliveryMode.AOE:
 			print("[DebuffSpell] Casting AOE debuff")
 			_cast_aoe_debuff(ctx, owner_entity)
 
 
 func _cast_projectile_debuff(ctx: CombatContext, owner_entity: Node, dir: Vector2) -> void:
-	var scene: PackedScene = projectile_scene
+	print("[DebuffSpell] _cast_projectile_debuff called with dir: %s" % dir)
+	
+	var config: Dictionary = {}
+	if _instance != null and _instance.def != null and _instance.def is SpellItemDef:
+		var spell_def: SpellItemDef = _instance.def as SpellItemDef
+		config = spell_def.get_projectile_config()
+	
+	var scene: PackedScene = config.get("scene", preload("res://Scenes/Templates/EquipmentItems/Projectile_template.tscn"))
+	
 	if scene == null:
 		push_error("[DebuffSpell] projectile_scene is null!")
 		return
@@ -56,29 +75,32 @@ func _cast_projectile_debuff(ctx: CombatContext, owner_entity: Node, dir: Vector
 			node.queue_free()
 		return
 
-	# Create launch data
+	# Create launch data from spell def config
 	var launch: ProjectileLaunchData = ProjectileLaunchData.new()
 	launch.context = ctx
 	launch.snapshot = null
 	launch.owner = owner_entity
 	launch.origin = owner_entity.global_position if owner_entity is Node2D else Vector2.ZERO
 	launch.direction = dir.normalized() if dir.length() > 0.001 else Vector2.RIGHT
-	launch.velocity = launch.direction * projectile_speed
+	launch.velocity = launch.direction * config.get("speed", 450.0)
+	
+	print("[DebuffSpell] DEBUG - Launch direction: %s, velocity: %s" % [launch.direction, launch.velocity])
 	
 	# Inherit owner velocity if configured
-	if inherit_owner_velocity > 0.0 and owner_entity is CharacterBody2D:
+	var inherit_vel: float = config.get("inherit_velocity", 0.0)
+	if inherit_vel > 0.0 and owner_entity is CharacterBody2D:
 		var owner_body: CharacterBody2D = owner_entity as CharacterBody2D
-		launch.velocity += owner_body.velocity * clampf(inherit_owner_velocity, 0.0, 1.0)
+		launch.velocity += owner_body.velocity * clampf(inherit_vel, 0.0, 1.0)
 
-	launch.gravity = projectile_gravity
-	launch.lifetime_sec = projectile_lifetime_sec
+	launch.gravity = config.get("gravity", 0.0)
+	launch.lifetime_sec = config.get("lifetime", 2.0)
 	launch.damage = 0.0  # Debuff projectiles deal NO damage
 	launch.pierce = 0
-	launch.radius = max(1.0, projectile_radius)
-	launch.max_range = max(0.0, projectile_range)
-	launch.collision_mask = projectile_collision_mask
-	launch.sprite_texture = projectile_sprite_texture
-	launch.sprite_tint = projectile_sprite_tint
+	launch.radius = max(1.0, config.get("radius", 6.0))
+	launch.max_range = max(0.0, config.get("range", 0.0))
+	launch.collision_mask = config.get("collision_mask", 0x7FFFFFFF)
+	launch.sprite_texture = config.get("texture")
+	launch.sprite_tint = config.get("tint", Color.WHITE)
 
 	projectile.global_position = launch.origin
 	projectile.setup(launch)
@@ -100,24 +122,32 @@ func _on_projectile_hit(area: Area2D, ctx: CombatContext, item_instance: ItemIns
 
 	print("[DebuffSpell] Projectile hit: %s" % area.name)
 
-	# Check if this is an entity with a hurtbox
+	# Check if this is an entity with a valid faction
 	var parent: Node = area.get_parent()
 	while parent != null:
 		if parent is Entity:
-			print("[DebuffSpell] Applying debuff to entity: %s" % parent.name)
+			# Get faction of target
+			var target_faction: Faction = _get_faction(parent)
+			var caster_faction: Faction = _get_faction(ctx.owner)
 			
-			# Apply debuff via attributes
-			var hit_event: HitEvent = HitEvent.new()
-			hit_event.victim = parent
-			hit_event.attacker = ctx.owner
-			hit_event.damage = 0.0
+			# Only apply debuff to hostile entities (not self, not allies)
+			if target_faction == null or caster_faction == null:
+				print("[DebuffSpell] Target or caster has no faction, skipping")
+				break
 			
-			# Dispatch to all attributes
+			# Skip self and allies
+			if target_faction.faction == caster_faction.faction:
+				print("[DebuffSpell] Target is same faction or self, skipping debuff")
+				break
+			
+			print("[DebuffSpell] ✓ Applying debuff to: %s (faction: %s)" % [parent.name, Faction.Id.keys()[target_faction.faction]])
+			
+			# Dispatch to all debuff attributes
 			for attr: ItemAttribute in item_instance.attributes:
-				if attr == null:
+				if attr == null or not attr is DebuffSpellAttribute:
 					continue
-				print("[DebuffSpell] Applying attribute: %s" % attr.get_class())
-				attr.on_hit(ctx, hit_event, item_instance)
+				var debuff_attr: DebuffSpellAttribute = attr as DebuffSpellAttribute
+				debuff_attr.apply_debuff_to_target(parent, ctx, item_instance)
 			
 			# Remove the projectile after applying debuff
 			if area.get_parent() is Projectile:
@@ -127,24 +157,35 @@ func _on_projectile_hit(area: Area2D, ctx: CombatContext, item_instance: ItemIns
 
 
 func _cast_aoe_debuff(ctx: CombatContext, owner_entity: Node) -> void:
+	# Get AOE config from SpellItemDef
+	var aoe_radius: float = 150.0
+	var aoe_instant: bool = true
+	var aoe_travel_time: float = 0.5
+	
+	if _instance != null and _instance.def != null and _instance.def is SpellItemDef:
+		var spell_def: SpellItemDef = _instance.def as SpellItemDef
+		var config: Dictionary = spell_def.get_aoe_config()
+		aoe_radius = config.get("radius", 150.0)
+		aoe_instant = config.get("instant", true)
+		aoe_travel_time = config.get("travel_time", 0.5)
+	
 	var caster_pos: Vector2 = owner_entity.global_position if owner_entity is Node2D else Vector2.ZERO
 
 	if aoe_instant:
-		_apply_aoe_debuff_instantly(ctx, caster_pos, owner_entity)
+		_apply_aoe_debuff_instantly(ctx, caster_pos, owner_entity, aoe_radius)
 	else:
 		# Create a timer for travel time, then apply
 		var t: Timer = Timer.new()
 		t.one_shot = true
 		t.wait_time = aoe_travel_time
 		owner_entity.add_child(t)
-		t.timeout.connect(Callable(self, "_apply_aoe_debuff_instantly").bindv([ctx, caster_pos, owner_entity]), CONNECT_ONE_SHOT)
+		t.timeout.connect(Callable(self, "_apply_aoe_debuff_instantly").bindv([ctx, caster_pos, owner_entity, aoe_radius]), CONNECT_ONE_SHOT)
 		t.start()
 
 
-func _apply_aoe_debuff_instantly(ctx: CombatContext, origin: Vector2, owner_entity: Node) -> void:
+func _apply_aoe_debuff_instantly(ctx: CombatContext, origin: Vector2, owner_entity: Node, aoe_radius: float) -> void:
 	print("[DebuffSpell] Applying AOE debuff at %s with radius %f" % [origin, aoe_radius])
 
-	# Get the world space for queries
 	if not owner_entity is Node2D:
 		push_warning("[DebuffSpell] owner_entity must be Node2D for AoE")
 		return
@@ -166,24 +207,73 @@ func _apply_aoe_debuff_instantly(ctx: CombatContext, origin: Vector2, owner_enti
 	var results: Array[Dictionary] = space.intersect_shape(query)
 	print("[DebuffSpell] AoE query found %d results" % results.size())
 	
+	var caster_faction: Faction = _get_faction(ctx.owner)
+	var targets_hit: Array[String] = []
+	var processed_entities: Dictionary = {}
+	
 	for result: Dictionary in results:
 		var collider: Node2D = result.get("collider")
 		if collider == null:
 			continue
 
-		# Check if it's an entity
+		# SKIP CASTER'S COLLIDERS
+		var collider_parent: Node = collider.get_parent()
+		if collider_parent == ctx.owner or collider == ctx.owner:
+			continue
+
+		# Walk up hierarchy to find the Entity
 		var entity: Node = collider
-		if entity is Entity:
-			print("[DebuffSpell] Applying debuff to entity: %s" % entity.name)
-			
-			var hit_event: HitEvent = HitEvent.new()
-			hit_event.victim = entity
-			hit_event.attacker = ctx.owner
-			hit_event.damage = 0.0
-			
-			# Dispatch to all attributes
-			for attr: ItemAttribute in ctx.item_instance.attributes:
-				if attr == null:
-					continue
-				print("[DebuffSpell] Applying attribute: %s" % attr.get_class())
-				attr.on_hit(ctx, hit_event, ctx.item_instance)
+		var found_entity: Entity = null
+		
+		while entity != null:
+			if entity is Entity:
+				found_entity = entity as Entity
+				break
+			entity = entity.get_parent()
+		
+		if found_entity == null:
+			continue
+		
+		# PREVENT DUPLICATE PROCESSING
+		if found_entity in processed_entities:
+			continue
+		
+		processed_entities[found_entity] = true
+		
+		# Get faction of target
+		var target_faction: Faction = _get_faction(found_entity)
+		
+		# Only apply debuff to hostile entities
+		if target_faction == null or caster_faction == null:
+			continue
+		
+		# Skip same faction and self
+		if target_faction.faction == caster_faction.faction:
+			continue
+		
+		targets_hit.append(found_entity.name)
+		
+		# Dispatch to all debuff attributes
+		for attr: ItemAttribute in ctx.item_instance.attributes:
+			if attr == null or not attr is DebuffSpellAttribute:
+				continue
+			var debuff_attr: DebuffSpellAttribute = attr as DebuffSpellAttribute
+			debuff_attr.apply_debuff_to_target(found_entity, ctx, ctx.item_instance)
+	
+	# Print summary of targets hit
+	if targets_hit.is_empty():
+		print("[DebuffSpell] ✗ No valid targets hit")
+	else:
+		print("[DebuffSpell] ✓ Debuff applied to: %s" % ", ".join(targets_hit))
+
+
+func _get_faction(entity: Node) -> Faction:
+	"""Helper to get Faction component from an entity"""
+	if entity == null:
+		return null
+	
+	if entity is Entity:
+		return (entity as Entity).find_component(&"Faction") as Faction
+	
+	# Fallback for non-Entity nodes
+	return entity.get_node_or_null("Faction") as Faction
