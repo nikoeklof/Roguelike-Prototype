@@ -25,12 +25,12 @@ metadata/_custom_type_script = "uid://d38xstn1bs221"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_4vlro"]
 shader = ExtResource("13_5atrd")
-shader_parameter/base_tint = Vector4(1, 1, 1, 1)
+shader_parameter/base_tint = Vector4(0, 1, 1, 1)
 shader_parameter/hurt_flash = 0.0
 shader_parameter/debuff_intensity = 0.0
-shader_parameter/debuff_color = Vector4(0, 0.6, 0.2, 1)
-shader_parameter/debuff_pulse_speed = 2.0
-shader_parameter/debuff_glow = 0.5
+shader_parameter/debuff_color = Vector4(0.5, 0.2, 0.8, 1)
+shader_parameter/debuff_pulse_speed = 3.00000011875
+shader_parameter/debuff_glow = 0.50000002375
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2mdsq"]
 atlas = ExtResource("17_uqhsm")
@@ -451,10 +451,10 @@ metadata/_custom_type_script = "uid://br17e58m0jn6e"
 [node name="Metrics" type="Node" parent="." unique_id=264427172]
 script = ExtResource("17_5atrd")
 
-[node name="EntityVisualController" type="Node" parent="." unique_id=467352005]
+[node name="VisualController" type="Node" parent="." unique_id=467352005]
 script = ExtResource("18_3e56a")
 sprite_path = NodePath("../Visual/Sprite")
-default_tint = Color(0.9411765, 0, 0.3764706, 1)
+default_tint = Color(0.9019608, 0, 0.17254902, 0.57254905)
 
 [editable path="Equipment"]
 [editable path="StateHandler"]

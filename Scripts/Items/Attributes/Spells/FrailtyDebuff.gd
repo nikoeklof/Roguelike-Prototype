@@ -14,8 +14,51 @@ func on_hit(context: CombatContext, hit: HitEvent, item_instance: ItemInstance) 
 
 	var key: StringName = _make_key(item_instance, "frailty")
 	stats.set_damage_taken_mult(key, damage_taken_mult)
+	
+	# UPDATE SHADER VISUAL
+	_set_visual_effect(hit.victim, 1.0)
 
 	_start_clear_timer(hit.victim, duration_sec, stats, key)
+
+
+func _start_clear_timer(host: Node, sec: float, stats: Stats, key: StringName) -> void:
+	var t: Timer = Timer.new()
+	t.one_shot = true
+	t.wait_time = maxf(0.01, sec)
+	host.add_child(t)
+	t.timeout.connect(Callable(self, "_clear_frailty_and_free_timer").bind(stats, key, t, host), CONNECT_ONE_SHOT)
+	t.start()
+
+
+func _clear_frailty_and_free_timer(stats: Stats, key: StringName, timer: Timer, host: Node) -> void:
+	if is_instance_valid(stats):
+		stats.clear_damage_taken_mult(key)
+	
+	# CLEAR SHADER VISUAL
+	_set_visual_effect(host, 0.0)
+
+	if is_instance_valid(timer):
+		timer.queue_free()
+
+
+func _set_visual_effect(target: Node, amount: float) -> void:
+	"""Set the shader visual effect for this debuff"""
+	if target == null:
+		return
+	
+	# Get the EntityVisualController
+	var visual_controller: EntityVisualController = null
+	if target is Entity:
+		visual_controller = (target as Entity).find_component(&"EntityVisualController") as EntityVisualController
+	else:
+		visual_controller = target.get_node_or_null("EntityVisualController") as EntityVisualController
+	
+	if visual_controller == null:
+		return
+	
+	# Use poison_amount as the visual indicator for frailty
+	# (or you could use another available shader parameter)
+	visual_controller.set_poison_amount(amount)
 
 
 func _find_stats(root: Node) -> Stats:
@@ -29,20 +72,3 @@ func _make_key(item_instance: ItemInstance, suffix: String) -> StringName:
 	if item_instance != null:
 		seed = item_instance.seed
 	return StringName("spell_%s_%d" % [suffix, seed])
-
-
-func _start_clear_timer(host: Node, sec: float, stats: Stats, key: StringName) -> void:
-	var t: Timer = Timer.new()
-	t.one_shot = true
-	t.wait_time = maxf(0.01, sec)
-	host.add_child(t)
-	t.timeout.connect(Callable(self, "_clear_frailty_and_free_timer").bind(stats, key, t), CONNECT_ONE_SHOT)
-	t.start()
-
-
-func _clear_frailty_and_free_timer(stats: Stats, key: StringName, timer: Timer) -> void:
-	if is_instance_valid(stats):
-		stats.clear_damage_taken_mult(key)
-
-	if is_instance_valid(timer):
-		timer.queue_free()
