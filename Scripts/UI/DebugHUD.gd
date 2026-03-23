@@ -226,11 +226,11 @@ func _update_stats_display() -> void:
 		var first_line: String = seed_label.text.split("\n")[0]
 		stats_text = first_line
 	
-	stats_text += "\n\nMovement Speed Mult: %.2fx" % _stats.move_speed_mult()
+	stats_text += "\nMovement Speed Mult: %.2fx" % _stats.move_speed_mult()
 	stats_text += "\nEffective Move Speed: %.1f" % effective_move_speed
 	stats_text += "\nAccel Mult: %.2fx" % _stats.accel_mult()
 	stats_text += "\nFriction Mult: %.2fx" % _stats.friction_mult()
-	stats_text += "\n\nAttack Speed Mult: %.2fx" % _stats.attack_speed_mult()
+	stats_text += "\nAttack Speed Mult: %.2fx" % _stats.attack_speed_mult()
 	stats_text += "\nDamage Taken Mult: %.2fx" % _stats.damage_taken_mult()
 	stats_text += "\nFlat Damage Reduction: %.1f" % _stats.flat_damage_reduction()
 	
@@ -282,9 +282,9 @@ func _get_active_buffs_text() -> String:
 		# Extract buff name and get remaining duration
 		var remaining: float = _buff_timers.get(buff, 0.0) - now
 		if remaining > 0.0:
-			text += "\n  • %s (%.1fs)" % [buff, remaining]
+			text += "\n %s (%.1fs)" % [buff, remaining]
 		else:
-			text += "\n  • %s" % buff
+			text += "\n %s" % buff
 	
 	return text
 
