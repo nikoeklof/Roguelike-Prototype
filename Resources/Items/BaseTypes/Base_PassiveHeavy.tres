@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ShieldItemDef" format=3 uid="uid://rhtbswfunek4"]
+
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_mot6y"]
+[ext_resource type="Script" uid="uid://b7cbswyrmorl7" path="res://Scripts/Items/ShieldItemDef.gd" id="2_fhhmf"]
+
+[sub_resource type="Resource" id="Resource_m5jda"]
+script = ExtResource("1_mot6y")
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[resource]
+script = ExtResource("2_fhhmf")
+movement_speed_mult_while_blocking = 0.65
+passive_damage_reduction_mult = 0.15
+passive_movement_speed_mult = 0.9
+flat_damage_reduction = 5.0
+id = &"aegis_ward"
+display_name = "Aegis Ward"
+category = 3
+base_stats = SubResource("Resource_m5jda")
+metadata/_custom_type_script = "uid://b7cbswyrmorl7"

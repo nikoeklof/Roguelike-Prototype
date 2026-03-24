@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ShieldItemDef" format=3 uid="uid://504ku17i8hsy"]
+
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_pkyro"]
+[ext_resource type="Script" uid="uid://b7cbswyrmorl7" path="res://Scripts/Items/ShieldItemDef.gd" id="2_bt8du"]
+
+[sub_resource type="Resource" id="Resource_m5jda"]
+script = ExtResource("1_pkyro")
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[resource]
+script = ExtResource("2_bt8du")
+movement_speed_mult_while_blocking = 0.65
+passive_damage_reduction_mult = 0.05
+passive_movement_speed_mult = 0.9500000000000001
+flat_damage_reduction = 1.0
+id = &"light_ward"
+display_name = "Light Ward"
+category = 3
+base_stats = SubResource("Resource_m5jda")
+metadata/_custom_type_script = "uid://b7cbswyrmorl7"

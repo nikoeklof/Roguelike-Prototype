@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://cgowu6aw4e6fp"]
+
+[ext_resource type="Script" uid="uid://bi8t3q08r6d27" path="res://Scripts/Components/Equipment/Items/Shield.gd" id="1_k0358"]
+[ext_resource type="Resource" uid="uid://5gd5qvx5y8b2" path="res://Resources/Items/BaseTypes/Base_ActiveKnighShield.tres" id="2_k0358"]
+
+[node name="BaseActiveBuckler" type="Node" unique_id=1313363266]
+script = ExtResource("1_k0358")
+item_def = ExtResource("2_k0358")
+metadata/_custom_type_script = "uid://bi8t3q08r6d27"

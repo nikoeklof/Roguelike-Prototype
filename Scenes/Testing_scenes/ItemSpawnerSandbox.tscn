@@ -112,7 +112,7 @@ position = Vector2(52, -358)
 script = ExtResource("3_x3clo")
 base_type = ExtResource("10_k1kh3")
 run_seed_override_enabled = true
-run_seed_override = 12359
+run_seed_override = 12345
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"
 
 [node name="Dummy" parent="." unique_id=1065698850 instance=ExtResource("9_s54dy")]

@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://bd8wv1wd4rxsy"]
+
+[ext_resource type="Script" uid="uid://bi8t3q08r6d27" path="res://Scripts/Components/Equipment/Items/Shield.gd" id="1_fiet8"]
+[ext_resource type="Resource" uid="uid://rhtbswfunek4" path="res://Resources/Items/BaseTypes/Base_PassiveHeavy.tres" id="2_fiet8"]
+
+[node name="BasePassiveLight" type="Node" unique_id=1702422151]
+script = ExtResource("1_fiet8")
+item_def = ExtResource("2_fiet8")
+metadata/_custom_type_script = "uid://bi8t3q08r6d27"
