@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://coysc1s1blu"]
+
+[ext_resource type="Script" uid="uid://bi8t3q08r6d27" path="res://Scripts/Components/Equipment/Items/Shield.gd" id="1_seihq"]
+
+[node name="ShieldPassiveTemplate" type="Node" unique_id=1023433723]
+script = ExtResource("1_seihq")
+metadata/_custom_type_script = "uid://bi8t3q08r6d27"

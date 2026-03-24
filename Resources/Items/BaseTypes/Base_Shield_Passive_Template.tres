@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://bsmjfk0obawn"]
+
+[ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="1"]
+[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_stats"]
+[ext_resource type="Script" uid="uid://b7cbswyrmorl7" path="res://Scripts/Items/ShieldItemDef.gd" id="2_shield"]
+
+[sub_resource type="Resource" id="Resource_stats"]
+script = ExtResource("1_stats")
+metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+
+[sub_resource type="Resource" id="Resource_shield"]
+script = ExtResource("2_shield")
+flat_damage_reduction = 1.0
+id = &"shield_passive_template"
+display_name = "Passive Shield"
+category = 3
+base_stats = SubResource("Resource_stats")
+metadata/_custom_type_script = "uid://b7cbswyrmorl7"
+
+[sub_resource type="Resource" id="Resource_to0um"]
+metadata/__load_path__ = "res://Resources/Items/Pools/Pool_Shield_Passive.tres"
+
+[resource]
+script = ExtResource("1")
+id = &"base_shield_passive"
+item_def = SubResource("Resource_shield")
+pool_def = SubResource("Resource_to0um")
+auto_weapon_token = "ShieldPassive"
+use_ranged_mode_roll = false
+metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"

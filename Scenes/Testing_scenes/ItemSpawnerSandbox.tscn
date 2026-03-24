@@ -11,6 +11,8 @@
 [ext_resource type="PackedScene" uid="uid://b0o48nlgcurhq" path="res://Scenes/Templates/Entities/Dummy_Target.tscn" id="9_s54dy"]
 [ext_resource type="Resource" uid="uid://bj0t03hq8mn" path="res://Resources/Items/BaseTypes/Base_Spell_Debuff.tres" id="10_k1kh3"]
 [ext_resource type="Resource" uid="uid://bj0t03hq8mm" path="res://Resources/Items/BaseTypes/Base_Spell_Buff.tres" id="10_ypj4y"]
+[ext_resource type="Resource" uid="uid://bsmjfk0obawn" path="res://Resources/Items/BaseTypes/Base_Shield_Active_Template.tres" id="12_h5kqh"]
+[ext_resource type="Resource" uid="uid://bsmjfk0obawn" path="res://Resources/Items/BaseTypes/Base_Shield_Passive_Template.tres" id="13_6dspf"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
 size = Vector2(1169, 29.33334)
@@ -120,3 +122,15 @@ position = Vector2(137, -51)
 initial_faction = 2
 
 [node name="Player" parent="." unique_id=423000657 instance=ExtResource("1_kyx5t")]
+
+[node name="ItemSpawner8" type="Node2D" parent="." unique_id=643840709]
+position = Vector2(259, 195)
+script = ExtResource("3_x3clo")
+base_type = ExtResource("12_h5kqh")
+metadata/_custom_type_script = "uid://dpt1ah3dct4go"
+
+[node name="ItemSpawner9" type="Node2D" parent="." unique_id=2041788261]
+position = Vector2(577, 170)
+script = ExtResource("3_x3clo")
+base_type = ExtResource("13_6dspf")
+metadata/_custom_type_script = "uid://dpt1ah3dct4go"

@@ -1,11 +1,9 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
-/Art/
 /Sounds/
 /TileSets/
 /Sprites/
-/addons/
 /Sprites.zip
 *.tmp
 # gitignore for Visual Studio Code

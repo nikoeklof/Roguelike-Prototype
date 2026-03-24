@@ -20,7 +20,9 @@ const MELEE_TEMPLATE : PackedScene = preload("res://Scenes/Templates/EquipmentIt
 const RANGED_TEMPLATE : PackedScene = preload("res://Scenes/Templates/EquipmentItems/Ranged_Weapon_template.tscn")
 const SPELL_BUFF_TEMPLATE: PackedScene = preload("res://Scenes/Items/Spells/Spell_Buff_Template.tscn")
 const SPELL_DEBUFF_TEMPLATE : PackedScene = preload("res://Scenes/Items/Spells/Spell_Debuff_Template.tscn")
-const SHIELD_TEMPLATE : PackedScene = preload("res://Scenes/Templates/EquipmentItems/Shield_template.tscn")
+const SHIELD_ACTIVE_TEMPLATE : PackedScene = preload("res://Scenes/Items/Shields/Shield_Active_Template.tscn")
+const SHIELD_PASSIVE_TEMPLATE : PackedScene = preload("res://Scenes/Items/Shields/Shield_Passive_Template.tscn")
+
 
 
 func _ready() -> void:
@@ -155,9 +157,15 @@ func _make_equipment_item(inst: ItemInstance) -> Node:
 			else:
 				scene = preload("res://Scenes/Items/Spells/Spell_Buff_Template.tscn")  # Default to buff
 		ItemDef.Category.SHIELD:
-			scene = SHIELD_TEMPLATE
-		_:
-			scene = MELEE_TEMPLATE
+				var shield_def: ShieldItemDef = inst.def as ShieldItemDef
+				if shield_def != null:
+					match shield_def.shield_type:
+						ShieldItemDef.ShieldType.ACTIVE:
+							scene = SHIELD_ACTIVE_TEMPLATE
+						ShieldItemDef.ShieldType.PASSIVE:
+							scene = SHIELD_PASSIVE_TEMPLATE
+				else:
+					scene = SHIELD_ACTIVE_TEMPLATE  # Default fallback
 
 	if scene == null:
 		return null
@@ -332,3 +340,28 @@ func _to_token(s: String) -> String:
 		out = out.substr(0, out.length() - 1)
 
 	return out
+
+static func get_shield_display_info(inst: ItemInstance) -> Dictionary:
+	"""Return shield stats formatted for UI display"""
+	if inst == null or inst.def == null:
+		return {}
+	
+	var shield_def: ShieldItemDef = inst.def as ShieldItemDef
+	if shield_def == null:
+		return {}
+	
+	var info: Dictionary = {
+		"type": ShieldItemDef.ShieldType.keys()[shield_def.shield_type],
+	}
+	
+	match shield_def.shield_type:
+		ShieldItemDef.ShieldType.ACTIVE:
+			info["block_damage_reduction"] = "%.0f%%" % (shield_def.block_damage_reduction * 100.0)
+			info["movement_speed_while_blocking"] = "%.0f%%" % (shield_def.movement_speed_mult_while_blocking * 100.0)
+		
+		ShieldItemDef.ShieldType.PASSIVE:
+			info["damage_reduction"] = "%.0f%%" % (shield_def.passive_damage_reduction_mult * 100.0)
+			info["movement_speed"] = "%.0f%%" % (shield_def.passive_movement_speed_mult * 100.0)
+			info["flat_reduction"] = "%.1f" % shield_def.flat_damage_reduction
+	
+	return info

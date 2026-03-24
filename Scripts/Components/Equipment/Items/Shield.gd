@@ -26,6 +26,9 @@ func _ready() -> void:
 		_instance.ensure_initialized()
 		if editor_attribute_count > 0:
 			_instance.roll_attributes(editor_attribute_count)
+	
+	# Auto-apply shield mode based on ItemDef
+	_apply_shield_mode()
 
 
 func get_pickup_slot_kind() -> int:
@@ -46,6 +49,19 @@ func set_item_instance(inst: ItemInstance) -> void:
 		item_def = _instance.def
 		item_seed = _instance.seed
 	_refresh_key()
+	_apply_shield_mode()
+
+
+func get_shield_type() -> int:
+	"""Return the shield type (ACTIVE or PASSIVE)"""
+	if item_def == null:
+		return -1
+	
+	var shield_def: ShieldItemDef = item_def as ShieldItemDef
+	if shield_def == null:
+		return -1
+	
+	return int(shield_def.shield_type)
 
 
 func on_equipped(owner_entity: Node) -> void:
@@ -61,6 +77,31 @@ func on_unequipped(owner_entity: Node) -> void:
 		return
 	_clear_passives(target)
 	_owner = null
+
+
+# ------------------------------------------------------------
+# Shield Mode Management
+# ------------------------------------------------------------
+func _apply_shield_mode() -> void:
+	"""Automatically apply active or passive shield based on ItemDef"""
+	if _instance == null or _instance.def == null:
+		return
+	
+	var shield_def: ShieldItemDef = _instance.def as ShieldItemDef
+	if shield_def == null:
+		return
+	
+	print("[Shield] Applying shield mode: %s (%s)" % [
+		shield_def.resource_name,
+		ShieldItemDef.ShieldType.keys()[shield_def.shield_type]
+	])
+	
+	# The actual shield component activation happens in ShieldSlot
+	# This is just for logging and validation
+
+
+# ---- Rest of the file continues as before ----
+# (copy the _refresh_key, _apply_passives, _clear_passives, _find_health, _find_stats methods)
 
 
 # ------------------------------------------------------------

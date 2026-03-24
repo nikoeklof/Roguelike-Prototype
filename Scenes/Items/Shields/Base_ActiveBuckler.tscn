@@ -1,9 +1,0 @@
-[gd_scene format=3 uid="uid://dbxevsgvhvk1u"]
-
-[ext_resource type="Script" uid="uid://bi8t3q08r6d27" path="res://Scripts/Components/Equipment/Items/Shield.gd" id="1_cucft"]
-[ext_resource type="Resource" uid="uid://bx7fb2c3oa6gk" path="res://Resources/Items/BaseTypes/Base_ActiveBuckler.tres" id="2_fjtaf"]
-
-[node name="BaseActiveBuckler" type="Node" unique_id=1313363266]
-script = ExtResource("1_cucft")
-item_def = ExtResource("2_fjtaf")
-metadata/_custom_type_script = "uid://bi8t3q08r6d27"
