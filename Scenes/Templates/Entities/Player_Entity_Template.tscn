@@ -460,15 +460,17 @@ script = ExtResource("20_tm314")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea" unique_id=1202237707]
 shape = SubResource("CircleShape2D_d71ut")
 
-[node name="VisualController" type="Node" parent="." unique_id=923009030]
-script = ExtResource("20_o0gml")
-
 [node name="SpellCastingManager" type="Node" parent="." unique_id=1842546258]
 script = ExtResource("21_o0gml")
 equipment_path = NodePath("../Equipment")
 
 [node name="Capabilities" type="Node" parent="." unique_id=687748092]
 script = ExtResource("5_14ypb")
+
+[node name="EntityVisualController" type="Node" parent="." unique_id=1162939747]
+script = ExtResource("20_o0gml")
+sprite_path = NodePath("../Visual/Sprite")
+metadata/_custom_type_script = "uid://qp2c6a6vyih1"
 
 [editable path="Equipment"]
 [editable path="StateHandler"]

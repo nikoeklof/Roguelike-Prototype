@@ -47,7 +47,7 @@ func _set_visual_effect(target: Node, amount: float) -> void:
 	if target == null:
 		return
 	
-	# Get the EntityVisualController
+	# Get the EntityVisualController component
 	var visual_controller: EntityVisualController = null
 	if target is Entity:
 		visual_controller = (target as Entity).find_component(&"EntityVisualController") as EntityVisualController
@@ -57,7 +57,8 @@ func _set_visual_effect(target: Node, amount: float) -> void:
 	if visual_controller == null:
 		return
 	
-	# Use freeze_amount as the visual indicator for slow
+	# Set debuff intensity (enables the effect) and freeze amount
+	visual_controller.set_debuff_intensity(amount)
 	visual_controller.set_freeze_amount(amount)
 
 

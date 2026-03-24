@@ -25,12 +25,12 @@ metadata/_custom_type_script = "uid://d38xstn1bs221"
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_4vlro"]
 shader = ExtResource("13_5atrd")
-shader_parameter/base_tint = Vector4(0, 1, 1, 1)
+shader_parameter/base_tint = Vector4(1, 1, 1, 1)
 shader_parameter/hurt_flash = 0.0
-shader_parameter/debuff_intensity = 0.0
-shader_parameter/debuff_color = Vector4(0.5, 0.2, 0.8, 1)
+shader_parameter/debuff_intensity = 1.0
+shader_parameter/debuff_color = Vector4(0.2, 0.1, 0.8, 1)
 shader_parameter/debuff_pulse_speed = 3.00000011875
-shader_parameter/debuff_glow = 0.50000002375
+shader_parameter/debuff_glow = 1.0000000475
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2mdsq"]
 atlas = ExtResource("17_uqhsm")
@@ -404,6 +404,7 @@ initial_item_scene = null
 
 [node name="ShieldSlot" parent="Equipment" index="3" unique_id=1862735357]
 initial_item_scene = null
+hide_equipped_item_visuals = null
 
 [node name="AnimDriver" type="Node" parent="." unique_id=106839113 node_paths=PackedStringArray("sprite", "anim_player")]
 script = ExtResource("14_y5kjn")
@@ -451,10 +452,11 @@ metadata/_custom_type_script = "uid://br17e58m0jn6e"
 [node name="Metrics" type="Node" parent="." unique_id=264427172]
 script = ExtResource("17_5atrd")
 
-[node name="VisualController" type="Node" parent="." unique_id=467352005]
+[node name="EntityVisualController" type="Node" parent="." unique_id=477417316]
 script = ExtResource("18_3e56a")
 sprite_path = NodePath("../Visual/Sprite")
-default_tint = Color(0.9019608, 0, 0.17254902, 0.57254905)
+default_tint = Color(0.9411765, 0.007843138, 0.28627452, 0.6901961)
+metadata/_custom_type_script = "uid://qp2c6a6vyih1"
 
 [editable path="Equipment"]
 [editable path="StateHandler"]
