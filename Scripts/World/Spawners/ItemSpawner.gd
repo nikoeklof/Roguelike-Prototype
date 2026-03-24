@@ -340,28 +340,3 @@ func _to_token(s: String) -> String:
 		out = out.substr(0, out.length() - 1)
 
 	return out
-
-static func get_shield_display_info(inst: ItemInstance) -> Dictionary:
-	"""Return shield stats formatted for UI display"""
-	if inst == null or inst.def == null:
-		return {}
-	
-	var shield_def: ShieldItemDef = inst.def as ShieldItemDef
-	if shield_def == null:
-		return {}
-	
-	var info: Dictionary = {
-		"type": ShieldItemDef.ShieldType.keys()[shield_def.shield_type],
-	}
-	
-	match shield_def.shield_type:
-		ShieldItemDef.ShieldType.ACTIVE:
-			info["block_damage_reduction"] = "%.0f%%" % (shield_def.block_damage_reduction * 100.0)
-			info["movement_speed_while_blocking"] = "%.0f%%" % (shield_def.movement_speed_mult_while_blocking * 100.0)
-		
-		ShieldItemDef.ShieldType.PASSIVE:
-			info["damage_reduction"] = "%.0f%%" % (shield_def.passive_damage_reduction_mult * 100.0)
-			info["movement_speed"] = "%.0f%%" % (shield_def.passive_movement_speed_mult * 100.0)
-			info["flat_reduction"] = "%.1f" % shield_def.flat_damage_reduction
-	
-	return info

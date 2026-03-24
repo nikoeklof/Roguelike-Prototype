@@ -90,6 +90,7 @@ func _add_preview_panel(bt: BaseItemType, title_prefix: String) -> void:
 		text += header_text.call()
 		text += "Seed: %d\n" % seed
 		text += _build_mode_line(inst)
+		text += _build_shield_line(inst)
 		text += _build_attr_lines(inst)
 		text += _build_stats_lines(inst)
 
@@ -161,10 +162,31 @@ func _build_mode_line(inst: ItemInstance) -> String:
 	if inst == null:
 		return "Mode: <n/a>\n"
 
+	# Only show mode for ranged items
+	if inst.def == null or int(inst.def.category) != ItemDef.Category.RANGED:
+		return ""
+
 	var mode: int = int(RangedShotData.ShotMode.PROJECTILE)
 	if int(inst.ranged_mode) >= 0:
 		mode = int(inst.ranged_mode)
 	return "Mode: %s\n" % _mode_to_string(mode)
+
+
+func _build_shield_line(inst: ItemInstance) -> String:
+	"""Display shield type for shield items"""
+	if inst == null or inst.def == null:
+		return ""
+
+	# Only show for shields
+	if int(inst.def.category) != ItemDef.Category.SHIELD:
+		return ""
+
+	var shield_def: ShieldItemDef = inst.def as ShieldItemDef
+	if shield_def == null:
+		return ""
+
+	var shield_type: String = ShieldItemDef.ShieldType.keys()[shield_def.shield_type]
+	return "Shield Type: %s\n" % shield_type
 
 
 func _build_attr_lines(inst: ItemInstance) -> String:
@@ -215,6 +237,23 @@ func _build_stats_lines(inst: ItemInstance) -> String:
 	var stats: ItemStats = stats_v as ItemStats
 	var s: String = "\nStats:\n"
 
+	# Special handling for shields
+	if inst.def != null and int(inst.def.category) == ItemDef.Category.SHIELD:
+		var shield_def: ShieldItemDef = inst.def as ShieldItemDef
+		if shield_def != null:
+			match shield_def.shield_type:
+				ShieldItemDef.ShieldType.ACTIVE:
+					s += "  Block Damage Reduction: %.0f%%\n" % (shield_def.block_damage_reduction * 100.0)
+					s += "  Movement Speed While Blocking: %.0f%%\n" % (shield_def.movement_speed_mult_while_blocking * 100.0)
+				
+				ShieldItemDef.ShieldType.PASSIVE:
+					s += "  Damage Reduction: %.0f%%\n" % (shield_def.passive_damage_reduction_mult * 100.0)
+					s += "  Movement Speed: %.0f%%\n" % (shield_def.passive_movement_speed_mult * 100.0)
+					if not is_equal_approx(shield_def.flat_damage_reduction, 0.0):
+						s += "  Flat Damage Reduction: %.1f\n" % shield_def.flat_damage_reduction
+			return s
+
+	# Standard stat display for non-shields
 	for p: Dictionary in stats.get_property_list():
 		var n: StringName = p.name
 		var ns: String = String(n)
