@@ -6,14 +6,25 @@ class_name ShieldRegenerationAttribute
 
 const META_REGEN_TIMER: StringName = &"__shield_regen_timer"
 
-func _ready() -> void:
-	pass  # Regeneration is passive, no special setup needed
+func default_domains() -> PackedStringArray:
+	return PackedStringArray(["block_start", "block_end"])
 
-func get_stat_additive(_context: CombatContext, _item_instance: ItemInstance) -> ItemStats:
-	# Regeneration doesn't modify stats directly
-	return ItemStats.new()
+func on_block_start(context: CombatContext, _item_instance: ItemInstance) -> void:
+	"""Start regeneration when block starts"""
+	if context == null or context.owner == null:
+		return
+	
+	start_regeneration(context.owner)
 
-# This would need to be called from Shield.gd's on_equipped
+
+func on_block_end(context: CombatContext, _item_instance: ItemInstance) -> void:
+	"""Stop regeneration when block ends"""
+	if context == null or context.owner == null:
+		return
+	
+	stop_regeneration(context.owner)
+
+
 func start_regeneration(owner: Node) -> void:
 	if owner == null:
 		return

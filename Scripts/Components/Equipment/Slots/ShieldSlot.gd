@@ -12,6 +12,12 @@ func _ready() -> void:
 	if not changed.is_connected(_on_item_changed):
 		changed.connect(_on_item_changed)
 	
+	# Defer component creation to avoid "busy setting up children" error
+	call_deferred("_setup_shield_components")
+
+
+func _setup_shield_components() -> void:
+	"""Setup shield components after parent is ready"""
 	# Find or create shield components on parent entity
 	var entity: Entity = get_parent().get_parent() as Entity
 	if entity == null:
@@ -49,9 +55,6 @@ func _on_item_changed(new_item: Node, old_item: Node) -> void:
 		return
 	
 	var shield_def: ShieldItemDef = null
-	
-	# The item in the slot is the actual equipped item/scene
-	# We need to find its ShieldItemDef through the item definition
 	
 	# Check if it's a Shield (base class)
 	if not new_item is Shield:

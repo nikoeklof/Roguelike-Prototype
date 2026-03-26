@@ -10,7 +10,7 @@ const META_PHASE_UNTIL: StringName = &"__phasing_until"
 const META_LAST_PHASE: StringName = &"__last_phase_time"
 
 func default_domains() -> PackedStringArray:
-	return PackedStringArray(["stats"])
+	return PackedStringArray(["stats", "block_start"])
 
 func get_stat_additive(context: CombatContext, _item_instance: ItemInstance) -> ItemStats:
 	if context == null or context.owner == null:
@@ -18,12 +18,6 @@ func get_stat_additive(context: CombatContext, _item_instance: ItemInstance) -> 
 
 	var owner: Node = context.owner
 	var now: float = Time.get_ticks_msec() / 1000.0
-
-	# Check if we should activate phasing
-	if not owner.get_meta(META_PHASING, false):
-		var last_phase: float = owner.get_meta(META_LAST_PHASE, 0.0)
-		if now >= last_phase + phase_cooldown_sec:
-			_activate_phasing(owner, now)
 
 	# Apply damage reduction if currently phasing
 	var phase_until: float = owner.get_meta(META_PHASE_UNTIL, 0.0)
@@ -35,7 +29,27 @@ func get_stat_additive(context: CombatContext, _item_instance: ItemInstance) -> 
 	return ItemStats.new()
 
 
-func _activate_phasing(owner: Node, now: float) -> void:
+func on_block_start(context: CombatContext, _item_instance: ItemInstance) -> void:
+	"""Activate phasing when block starts"""
+	if context == null or context.owner == null:
+		return
+
+	var owner: Node = context.owner
+	var now: float = Time.get_ticks_msec() / 1000.0
+	var last_phase: float = owner.get_meta(META_LAST_PHASE, 0.0)
+
+	# Can we use phasing again?
+	if now >= last_phase + phase_cooldown_sec:
+		activate_phasing(owner, now)
+
+
+func on_block_end(context: CombatContext, _item_instance: ItemInstance) -> void:
+	"""Optionally stop phasing when block ends (set to no-op for continuous phasing)"""
+	# Currently does nothing - phasing continues until duration expires
+	pass
+
+
+func activate_phasing(owner: Node, now: float) -> void:
 	"""Start a phasing session"""
 	owner.set_meta(META_PHASING, true)
 	owner.set_meta(META_PHASE_UNTIL, now + phase_duration_sec)
@@ -49,7 +63,6 @@ func _activate_phasing(owner: Node, now: float) -> void:
 		visual_controller = owner.get_node_or_null("EntityVisualController") as EntityVisualController
 
 	if visual_controller != null:
-		# Use shield_amount to show phasing effect
 		visual_controller.set_shield_amount(0.8)
 
 	# Clean up after phasing ends
@@ -70,7 +83,6 @@ func _end_phasing(owner: Node, timer: Timer) -> void:
 
 	owner.set_meta(META_PHASING, false)
 
-	# Clear visual effect
 	var visual_controller: EntityVisualController = null
 	if owner is Entity:
 		visual_controller = (owner as Entity).find_component(&"EntityVisualController") as EntityVisualController
@@ -83,4 +95,4 @@ func _end_phasing(owner: Node, timer: Timer) -> void:
 	if is_instance_valid(timer):
 		timer.queue_free()
 
-	print("[PhasingAttribute] Phasing ended. Cooldown: %.2fs" % phase_cooldown_sec)
+	print("[PhasingAttribute] Phasing ended")

@@ -4,20 +4,14 @@ class_name ItemAttribute
 @export var id: StringName = &""
 @export var display_name: String = ""
 
-# Editor-only: shown in the attribute picker tooltip.
 @export_multiline var editor_description: String = ""
 
-# Domains let us scale to hundreds of attributes without asking every attribute
-# about every calculation/event.
-#
-# If empty, the attribute is treated as "legacy" and will apply to all domains.
 @export var domains: PackedStringArray = []
 
 func default_domains() -> PackedStringArray:
 	return PackedStringArray()
 
 func get_domains() -> PackedStringArray:
-	# If the resource doesn't set domains, fall back to script defaults.
 	if domains.size() > 0:
 		return domains
 	return default_domains()
@@ -33,7 +27,14 @@ func applies_to_domain(domain: StringName) -> bool:
 func contribute_modifiers(_context: CombatContext, _item_instance: ItemInstance, _domain: StringName, _out_mods: Array) -> void:
 	pass
 
-# ---- Hooks (keep your existing signatures/logic below) ----
+# ---- Shield blocking hooks (NEW) ----
+func on_block_start(_context: CombatContext, _item_instance: ItemInstance) -> void:
+	pass
+
+func on_block_end(_context: CombatContext, _item_instance: ItemInstance) -> void:
+	pass
+
+# ---- Existing hooks ----
 func get_stat_additive(_context: CombatContext, _item_instance: ItemInstance) -> ItemStats:
 	return null
 
