@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ShieldBonusAttribute" format=3 uid="uid://shield_bonus"]
+
+[ext_resource type="Script" path="res://Scripts/Items/Attributes/Shields/Attr_ShieldBonus.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"shield_bonus"
+display_name = "Shield Fortitude"
+editor_description = "Increases all shields' damage reduction and flat protection"
+damage_reduction_bonus = 0.05
+flat_reduction_bonus = 2.0

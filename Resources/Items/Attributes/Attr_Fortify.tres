@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="FortifyAttribute" format=3 uid="uid://shield_fortify"]
+
+[ext_resource type="Script" path="res://Scripts/Items/Attributes/Shields/Attr_ActiveShield_Fortify.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"fortify"
+display_name = "Fortify"
+editor_description = "Active shields: Provides additional damage reduction while blocking"
+additional_damage_reduction = 0.15
