@@ -3,7 +3,6 @@ class_name BlockState
 
 var _shield: Shield
 var _active_shield: ActiveShield
-var _passive_shield: PassiveShield
 
 
 func enter(_msg: Dictionary = {}) -> void:
@@ -14,7 +13,6 @@ func enter(_msg: Dictionary = {}) -> void:
 	
 	# Get shield components
 	_active_shield = entity.find_component(&"ActiveShield") as ActiveShield
-	_passive_shield = entity.find_component(&"PassiveShield") as PassiveShield
 	
 	# Get currently equipped shield
 	var equipment: Equipment = entity.find_component(&"Equipment") as Equipment
@@ -61,7 +59,11 @@ func enter(_msg: Dictionary = {}) -> void:
 func exit() -> void:
 	print("[BlockState] Exited block state")
 	
-	# Get shield for cleanup
+	# Stop active shield blocking if it was active
+	if _active_shield != null and _active_shield.is_blocking():
+		_active_shield.stop_blocking()
+	
+	# Get shield for passive cleanup
 	if _shield == null:
 		return
 	
@@ -73,21 +75,22 @@ func exit() -> void:
 	if shield_def == null:
 		return
 	
-	match shield_def.shield_type:
-		ShieldItemDef.ShieldType.ACTIVE:
-			if _active_shield != null:
-				_active_shield.stop_blocking()
-		
-		ShieldItemDef.ShieldType.PASSIVE:
-			# Use executor to deactivate all block_end attributes
-			ShieldBlockExecutor.execute_block_end(entity, _shield, shield_instance)
+	# Cleanup passive shield attributes
+	if shield_def.shield_type == ShieldItemDef.ShieldType.PASSIVE:
+		ShieldBlockExecutor.execute_block_end(entity, _shield, shield_instance)
 
 
 func physics_update(_delta: float) -> void:
 	if entity == null:
 		return
 	
-	# Check if block input is still pressed
-	if not Input.is_action_pressed("block"):
+	# Get control source
+	var control: ControlSource = entity.find_component(&"ControlSource") as ControlSource
+	if control == null:
+		state_handler.change_state("Idle")
+		return
+	
+	# Exit block if input released
+	if not control.wants_block():
 		state_handler.change_state("Idle")
 		return

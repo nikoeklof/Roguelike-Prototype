@@ -9,7 +9,7 @@ class_name PlayerControl
 
 # Combat
 @export var attack_action: StringName = &"Attack"
-@export var block_action: StringName  = &"Shield"
+@export var block_action: StringName  = &"Block"  # Changed from "Shield" to "Block"
 
 # Slot switching
 @export var slot_melee_action: StringName  = &"SlotMelee"

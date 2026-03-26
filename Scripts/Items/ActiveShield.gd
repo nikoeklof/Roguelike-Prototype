@@ -4,13 +4,12 @@ class_name ActiveShield
 signal blocking_started
 signal blocking_stopped
 
-@export_node_path("Node2D") var shield_visual_path: NodePath  # Visual representation of shield
+@export_node_path("Node2D") var shield_visual_path: NodePath
 
 var _entity: Entity
 var _is_blocking: bool = false
 var _shield_def: ShieldItemDef
 var _shield_visual: Node2D
-var _block_collider: Area2D  # Collider for blocking projectiles
 
 
 func _ready() -> void:
@@ -29,18 +28,28 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if _entity == null:
+	if _entity == null or _shield_def == null:
 		return
 	
-	# Check for block input
-	var control: ControlSource = _entity.get_node_or_null("ControlSource") as ControlSource
-	if control != null:
-		var is_block_pressed = control.is_blocking()
-		
-		if is_block_pressed and not _is_blocking:
-			start_blocking()
-		elif not is_block_pressed and _is_blocking:
-			stop_blocking()
+	# Only handle blocking for active shields
+	if _shield_def.shield_type != ShieldItemDef.ShieldType.ACTIVE:
+		return
+	
+	# Get control source to check for block input
+	var control: ControlSource = _entity.find_component(&"ControlSource") as ControlSource
+	if control == null:
+		return
+	
+	var wants_block: bool = control.wants_block()
+	
+	if wants_block and not _is_blocking:
+		# Trigger Block state
+		if _entity.state_machine != null:
+			_entity.state_machine.change_state("Block")
+	elif not wants_block and _is_blocking:
+		# Exit block state
+		if _entity.state_machine != null:
+			_entity.state_machine.change_state("Idle")
 
 
 func set_shield_def(def: ShieldItemDef) -> void:
@@ -58,20 +67,17 @@ func start_blocking() -> void:
 	if _shield_def == null or _is_blocking:
 		return
 	
-	print("[ActiveShield] Player started blocking")
+	print("[ActiveShield] Started blocking")
 	_is_blocking = true
 	
 	# Show shield visual
 	if _shield_visual != null:
 		_shield_visual.visible = true
 	
-	# Apply movement penalty
+	# Apply movement penalty and damage reduction
 	var stats: Stats = _entity.find_component(&"Stats") as Stats
 	if stats != null:
 		stats.set_move_speed_mult(&"shield_block", _shield_def.movement_speed_mult_while_blocking)
-	
-	# Apply damage reduction
-	if stats != null:
 		stats.set_flat_damage_reduction(&"shield_block", _shield_def.block_damage_reduction)
 	
 	blocking_started.emit()
@@ -81,7 +87,7 @@ func stop_blocking() -> void:
 	if not _is_blocking:
 		return
 	
-	print("[ActiveShield] Player stopped blocking")
+	print("[ActiveShield] Stopped blocking")
 	_is_blocking = false
 	
 	# Hide shield visual
