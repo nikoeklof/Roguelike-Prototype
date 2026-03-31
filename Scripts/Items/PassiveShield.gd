@@ -3,7 +3,6 @@ class_name PassiveShield
 
 var _entity: Entity
 var _shield_def: ShieldItemDef
-var _stats_key: StringName = &"passive_shield"
 
 
 func _ready() -> void:
@@ -12,53 +11,31 @@ func _ready() -> void:
 
 func set_shield_def(def: ShieldItemDef) -> void:
 	"""Set the shield definition when equipped"""
-	# Clear old effects
-	_clear_buffs()
-	
 	if def == null or def.shield_type != ShieldItemDef.ShieldType.PASSIVE:
 		_shield_def = null
 		return
 	
+	print("[PassiveShield] Shield equipped: %s" % def.display_name)
 	_shield_def = def
-	_apply_buffs()
 
 
-func _apply_buffs() -> void:
-	if _shield_def == null or _entity == null:
+func on_block_start(shield_instance: ItemInstance) -> void:
+	"""Called when Block state is entered"""
+	if _entity == null or shield_instance == null:
 		return
 	
-	var stats: Stats = _entity.find_component(&"Stats") as Stats
-	if stats == null:
-		return
+	print("[PassiveShield] Block started - activating attributes")
 	
-	print("[PassiveShield] Applying passive buffs")
-	
-	# Apply movement speed buff
-	stats.set_move_speed_mult(_stats_key, _shield_def.passive_movement_speed_mult)
-	
-	# Apply damage reduction
-	if _shield_def.passive_damage_reduction_mult > 0.0:
-		stats.set_damage_taken_mult(_stats_key, 1.0 - _shield_def.passive_damage_reduction_mult)
-	
-	# Apply flat damage reduction
-	if _shield_def.flat_damage_reduction > 0.0:
-		stats.set_flat_damage_reduction(_stats_key, _shield_def.flat_damage_reduction)
+	# Let the executor handle attribute activation
+	ShieldBlockExecutor.execute_block_start(_entity, shield_instance as Shield, shield_instance)
 
 
-func _clear_buffs() -> void:
+func on_block_end() -> void:
+	"""Called when Block state is exited"""
 	if _entity == null:
 		return
 	
-	var stats: Stats = _entity.find_component(&"Stats") as Stats
-	if stats == null:
-		return
+	print("[PassiveShield] Block ended - deactivating attributes")
 	
-	print("[PassiveShield] Removing passive buffs")
-	
-	stats.clear_move_speed_mult(_stats_key)
-	stats.clear_damage_taken_mult(_stats_key)
-	stats.clear_flat_damage_reduction(_stats_key)
-
-
-func get_shield_def() -> ShieldItemDef:
-	return _shield_def
+	# The executor will handle cleanup via on_block_end hooks in attributes
+	# This is a placeholder for any passive-shield-specific cleanup

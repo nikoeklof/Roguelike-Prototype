@@ -1,4 +1,4 @@
-extends StaticBody2D
+extends Area2D
 class_name ParryCollider
 
 @export var duration_sec: float = 0.15
@@ -6,6 +6,7 @@ class_name ParryCollider
 @export var reflect_speed_mult: float = 1.0
 
 var _owner: Node = null
+var _collision_shape: CollisionShape2D
 
 
 func setup(owner_entity: Node, shape_size: Vector2, local_offset: Vector2, duration: float, do_reflect: bool) -> void:
@@ -13,13 +14,25 @@ func setup(owner_entity: Node, shape_size: Vector2, local_offset: Vector2, durat
 	duration_sec = duration
 	reflect = do_reflect
 
-	var cs: CollisionShape2D = CollisionShape2D.new()
+	# Create collision shape
+	_collision_shape = CollisionShape2D.new()
 	var rect: RectangleShape2D = RectangleShape2D.new()
 	rect.size = shape_size
-	cs.shape = rect
-	cs.position = local_offset
-	add_child(cs)
+	_collision_shape.shape = rect
+	_collision_shape.position = local_offset
+	add_child(_collision_shape)
 
+	# Configure Area2D for detection
+	monitoring = false  # Don't check collisions actively
+	monitorable = true  # Allow others to detect us
+
+	# Set collision layers
+	collision_layer = 0      # We're not on any physics layer
+	collision_mask = 0       # We don't check collisions
+
+	print("[ParryCollider] Setup: size=%s, offset=%s, duration=%.2fs, reflect=%s" % [shape_size, local_offset, duration_sec, do_reflect])
+
+	# Set lifetime
 	var t: Timer = Timer.new()
 	t.one_shot = true
 	t.wait_time = maxf(0.01, duration_sec)
@@ -29,6 +42,7 @@ func setup(owner_entity: Node, shape_size: Vector2, local_offset: Vector2, durat
 
 
 func _on_lifetime_timeout() -> void:
+	print("[ParryCollider] Lifetime expired, removing collider")
 	queue_free()
 
 
@@ -37,9 +51,11 @@ func on_projectile_hit(p: Projectile) -> bool:
 		return false
 
 	if reflect:
+		print("[ParryCollider] Reflecting projectile")
 		p.velocity = -p.velocity * maxf(0.01, reflect_speed_mult)
 		p.set_projectile_owner(_owner)
 		return true
 
+	print("[ParryCollider] Destroying projectile")
 	p.queue_free()
 	return true

@@ -9,10 +9,8 @@ metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [resource]
 script = ExtResource("1_kg3rm")
-shield_type = 0
 block_damage_reduction = 0.85
 movement_speed_mult_while_blocking = 0.5
-passive_movement_speed_mult = 0.9500000000000001
 id = &"knight_shield"
 display_name = "Knight's Shield"
 category = 3

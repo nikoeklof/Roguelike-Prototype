@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://dsfbnsscp8kn4" path="res://Scripts/States/Combat/Attack.gd" id="3_stk6j"]
 [ext_resource type="Script" uid="uid://wbnylfo1x7ld" path="res://Scripts/States/Locomotion/Walk.gd" id="4_o6t3v"]
 [ext_resource type="Script" uid="uid://rpmmcrxywk5o" path="res://Scripts/States/Combat/Hurt.gd" id="5_isfbc"]
-[ext_resource type="Script" uid="uid://bgry0xmkcjj3u" path="res://Scripts/States/Combat/Block.gd" id="6_lbga7"]
+[ext_resource type="Script" uid="uid://bgry0xmkcjj3u" path="res://Scripts/States/Combat/BlockState.gd" id="6_lbga7"]
 
 [node name="StateHandler" type="Node" unique_id=1266186412]
 script = ExtResource("1_ug4wf")
@@ -22,6 +22,6 @@ script = ExtResource("4_o6t3v")
 [node name="Hurt" type="Node" parent="." unique_id=209892331]
 script = ExtResource("5_isfbc")
 
-[node name="BlockState" type="Node" parent="." unique_id=1750324360]
+[node name="Block" type="Node" parent="." unique_id=1750324360]
 script = ExtResource("6_lbga7")
 metadata/_custom_type_script = "uid://bgry0xmkcjj3u"

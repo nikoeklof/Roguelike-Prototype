@@ -1,22 +1,27 @@
 extends ItemDef
 class_name ShieldItemDef
 
-enum ShieldType {
-	ACTIVE,    # Can block projectiles/melee, has movement penalty
-	PASSIVE    # Stat buffs only, no active blocking
-}
+enum ShieldType { ACTIVE, PASSIVE }
 
-@export var shield_type: ShieldType = ShieldType.PASSIVE
+@export var shield_type: ShieldType = ShieldType.ACTIVE
 
-# ACTIVE SHIELD STATS
-@export_range(0.0, 1.0, 0.01) var block_damage_reduction: float = 0.7  # 70% reduction
-@export_range(0.1, 0.9, 0.05) var movement_speed_mult_while_blocking: float = 0.6  # 40% slower
+# Active shield properties
+@export var block_damage_reduction: float = 0.7
+@export var movement_speed_mult_while_blocking: float = 0.65
 
-# PASSIVE SHIELD STATS
-@export_range(0.0, 1.0, 0.01) var passive_damage_reduction_mult: float = 0.1  # 10% reduction
-@export_range(0.8, 1.2, 0.05) var passive_movement_speed_mult: float = 0.95  # 5% slower
-@export_range(0.0, 50.0, 1.0) var flat_damage_reduction: float = 0.0
+# Blocking collider configuration (only for ACTIVE shields)
+@export_group("Active Shield Blocking Collider")
+@export var blocking_collider_size: Vector2 = Vector2(60, 40)
+@export var blocking_collider_offset: Vector2 = Vector2(30, 0)
+@export var blocking_collider_duration: float = 0.2
 
+# Passive shield properties
+@export_group("Passive Shield")
+@export var passive_damage_reduction_mult: float = 0.1
+@export var passive_movement_speed_mult: float = 0.95
+
+# Flat damage reduction (applies to both active and passive)
+@export var flat_damage_reduction: float = 0.0
 
 func get_display_name() -> String:
 	var type_name = ShieldType.keys()[shield_type]

@@ -131,5 +131,4 @@ func _active_attack_kind() -> Combat.AttackKind:
 	var eq: Equipment = _equipment(entity)
 	if eq != null:
 		return eq.active_slot
-
 	return Combat.AttackKind.MELEE

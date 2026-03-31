@@ -42,44 +42,52 @@ func _setup_shield_components() -> void:
 
 func _on_item_changed(new_item: Node, old_item: Node) -> void:
 	"""Called when item changes in this slot"""
+	print("[ShieldSlot] Item changed: %s -> %s" % [old_item, new_item])
+	
 	if _active_shield == null or _passive_shield == null:
+		print("[ShieldSlot] WARNING: Shield components not initialized yet")
 		return
 	
 	# Handle unequip
 	if old_item != null:
-		_active_shield.set_shield_def(null)
-		_passive_shield.set_shield_def(null)
+		var old_shield: Shield = old_item as Shield
+		if old_shield != null:
+			_active_shield.set_shield_def(null)
+			_passive_shield.set_shield_def(null)
 	
 	# Handle equip
 	if new_item == null:
+		print("[ShieldSlot] No item equipped")
 		return
 	
-	var shield_def: ShieldItemDef = null
-	
-	# Check if it's a Shield (base class)
+	# Check if it's a Shield
 	if not new_item is Shield:
-		print("[ShieldSlot] WARNING: Equipped item is not a Shield, it's: %s" % new_item.get_class())
+		print("[ShieldSlot] ERROR: Equipped item is not a Shield, it's: %s" % new_item.get_class())
 		return
 	
 	var shield_item: Shield = new_item as Shield
+	var shield_instance: ItemInstance = shield_item.get_item_instance()
 	
-	# Try to get def from the Shield directly
-	if shield_item.has_meta("item_def"):
-		shield_def = shield_item.get_meta("item_def") as ShieldItemDef
-	elif shield_item.has_method("get_item_def"):
-		shield_def = shield_item.call("get_item_def") as ShieldItemDef
-	
-	if shield_def == null:
-		print("[ShieldSlot] WARNING: Shield has no ItemDef attached")
+	if shield_instance == null:
+		print("[ShieldSlot] ERROR: Shield has no ItemInstance")
 		return
 	
-	print("[ShieldSlot] Equipped shield: %s (type: %s)" % [shield_def.resource_name, ShieldItemDef.ShieldType.keys()[shield_def.shield_type]])
+	var shield_def: ShieldItemDef = shield_instance.def as ShieldItemDef
 	
-	# Set appropriate shield component
+	if shield_def == null:
+		print("[ShieldSlot] ERROR: Shield ItemDef is not a ShieldItemDef")
+		return
+	
+	print("[ShieldSlot] Equipped shield: %s (type: %s)" % [shield_def.display_name, ShieldItemDef.ShieldType.keys()[shield_def.shield_type]])
+	
+	# Set appropriate shield component based on type
 	match shield_def.shield_type:
 		ShieldItemDef.ShieldType.ACTIVE:
+			print("[ShieldSlot] Setting up ACTIVE shield")
 			_active_shield.set_shield_def(shield_def)
 			_passive_shield.set_shield_def(null)
+		
 		ShieldItemDef.ShieldType.PASSIVE:
+			print("[ShieldSlot] Setting up PASSIVE shield")
 			_passive_shield.set_shield_def(shield_def)
 			_active_shield.set_shield_def(null)

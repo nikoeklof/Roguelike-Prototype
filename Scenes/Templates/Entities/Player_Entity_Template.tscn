@@ -402,7 +402,9 @@ initial_item_scene = null
 initial_item_scene = null
 
 [node name="ShieldSlot" parent="Equipment" index="3" unique_id=1862735357]
+allow_multiple = false
 initial_item_scene = null
+hide_equipped_item_visuals = false
 
 [node name="Mover" type="Node" parent="." unique_id=102850989]
 script = ExtResource("10_ovmla")

@@ -15,6 +15,7 @@ var _key: StringName = &"shield_passive"
 
 
 func _ready() -> void:
+	# DON'T apply shield mode in _ready - wait for instance to be set
 	_refresh_key()
 
 	# If hand-authored, create an instance here.
@@ -26,9 +27,9 @@ func _ready() -> void:
 		_instance.ensure_initialized()
 		if editor_attribute_count > 0:
 			_instance.roll_attributes(editor_attribute_count)
-	
-	# Auto-apply shield mode based on ItemDef
-	_apply_shield_mode()
+		
+		# Now apply shield mode after instance is set up
+		_apply_shield_mode()
 
 
 func get_pickup_slot_kind() -> int:
@@ -44,20 +45,26 @@ func get_item_instance() -> ItemInstance:
 
 
 func set_item_instance(inst: ItemInstance) -> void:
+	"""Called when this shield is picked up or equipped"""
 	_instance = inst
 	if _instance != null and _instance.def != null:
 		item_def = _instance.def
 		item_seed = _instance.seed
+	else:
+		print("[Shield] WARNING: set_item_instance called with null instance or def")
+		return
+	
 	_refresh_key()
+	# Apply shield mode after instance and def are properly set
 	_apply_shield_mode()
 
 
 func get_shield_type() -> int:
 	"""Return the shield type (ACTIVE or PASSIVE)"""
-	if item_def == null:
+	if _instance == null or _instance.def == null:
 		return -1
 	
-	var shield_def: ShieldItemDef = item_def as ShieldItemDef
+	var shield_def: ShieldItemDef = _instance.def as ShieldItemDef
 	if shield_def == null:
 		return -1
 	
@@ -79,39 +86,30 @@ func on_unequipped(owner_entity: Node) -> void:
 	_owner = null
 
 
-# ------------------------------------------------------------
-# Shield Mode Management
-# ------------------------------------------------------------
+# ---- Shield Mode Management ----
 func _apply_shield_mode() -> void:
 	"""Automatically apply active or passive shield based on ItemDef"""
 	if _instance == null or _instance.def == null:
+		print("[Shield] ERROR: Cannot apply shield mode - no instance or def")
 		return
 	
 	var shield_def: ShieldItemDef = _instance.def as ShieldItemDef
 	if shield_def == null:
+		print("[Shield] ERROR: ItemDef is not a ShieldItemDef")
 		return
 	
 	print("[Shield] Applying shield mode: %s (%s)" % [
-		shield_def.resource_name,
+		shield_def.display_name,
 		ShieldItemDef.ShieldType.keys()[shield_def.shield_type]
 	])
-	
-	# The actual shield component activation happens in ShieldSlot
-	# This is just for logging and validation
 
 
-# ---- Rest of the file continues as before ----
-# (copy the _refresh_key, _apply_passives, _clear_passives, _find_health, _find_stats methods)
-
-
-# ------------------------------------------------------------
-# Internals
-# ------------------------------------------------------------
+# ---- Rest of file continues ----
 func _refresh_key() -> void:
 	var def_id := "none"
-	if item_def != null and item_def.id != &"":
-		def_id = String(item_def.id)
-	_key = StringName("shield_%s_%d" % [def_id, int(item_seed)])
+	if _instance != null and _instance.def != null and _instance.def.id != &"":
+		def_id = String(_instance.def.id)
+	_key = StringName("shield_%s_%d" % [def_id, int(_instance.seed) if _instance != null else 0])
 
 
 func _apply_passives(owner_entity: Node) -> void:
@@ -138,14 +136,12 @@ func _apply_passives(owner_entity: Node) -> void:
 	var hp := _find_health(owner_entity)
 	if hp != null:
 		if not is_equal_approx(stats_res.bonus_max_hp, 0.0):
-			# Signature used by your existing TestShield: add_max_hp(amount, heal, clamp_to_max?)
 			hp.add_max_hp(stats_res.bonus_max_hp, stats_res.heal_on_equip, false)
 		elif not is_equal_approx(stats_res.heal_on_equip, 0.0):
 			hp.heal(stats_res.heal_on_equip)
 
 	var stats := _find_stats(owner_entity)
 	if stats != null:
-		# Multipliers: only set if meaningful to avoid noise
 		if not is_equal_approx(stats_res.move_speed_mult, 1.0):
 			stats.set_move_speed_mult(_key, stats_res.move_speed_mult)
 
@@ -159,7 +155,6 @@ func _apply_passives(owner_entity: Node) -> void:
 func _clear_passives(owner_entity: Node) -> void:
 	var hp := _find_health(owner_entity)
 	if hp != null and _instance != null:
-		# Remove max HP bonus if applied
 		var ctx := CombatContext.new()
 		ctx.owner = owner_entity
 		ctx.aim_dir = Vector2.RIGHT
