@@ -15,11 +15,13 @@ var _floor_spawner: Node = null
 var _player: Node2D = null
 var _equipment: Equipment = null
 var _stats: Stats = null
+var _passive_shield_activator: PassiveShieldAttributeActivator = null
 
 var _update_timer: float = 0.0
 var _last_move_speed: float = 0.0
 var _last_cooldown: float = -1.0
 var _last_buffs: String = ""
+var _last_shield_info: String = ""
 
 # Track buff durations
 var _buff_timers: Dictionary = {}  # key -> end_time
@@ -98,6 +100,8 @@ func _bind_player() -> void:
 	if _stats == null:
 		push_warning("DebugHUD: Player has no Stats component.")
 		return
+
+	_passive_shield_activator = _player.get_node_or_null("PassiveShieldAttributeActivator") as PassiveShieldAttributeActivator
 
 	if not _stats.changed.is_connected(_on_stats_changed):
 		_stats.changed.connect(_on_stats_changed)
@@ -179,14 +183,16 @@ func _update_realtime_values() -> void:
 	var current_move_speed: float = base_move_speed * _stats.move_speed_mult()
 	var cooldown_remaining: float = _stats.get_spell_cooldown_remaining()
 	var buffs_text: String = _get_active_buffs_text()
+	var shield_info: String = _get_shield_info()
 	
 	# Only update if something actually changed
-	if current_move_speed == _last_move_speed and cooldown_remaining == _last_cooldown and buffs_text == _last_buffs:
+	if current_move_speed == _last_move_speed and cooldown_remaining == _last_cooldown and buffs_text == _last_buffs and shield_info == _last_shield_info:
 		return
 	
 	_last_move_speed = current_move_speed
 	_last_cooldown = cooldown_remaining
 	_last_buffs = buffs_text
+	_last_shield_info = shield_info
 	
 	# Rebuild ONLY the stats text, keep seed
 	var text: String = ""
@@ -196,18 +202,25 @@ func _update_realtime_values() -> void:
 	else:
 		text = "Seed: 0"
 	
-	text += "\n\nMovement Speed Mult: %.2fx" % _stats.move_speed_mult()
+	text += "\n\n[b]STATS[/b]"
+	text += "\nMovement Speed Mult: %.2fx" % _stats.move_speed_mult()
 	text += "\nEffective Move Speed: %.1f" % current_move_speed
 	text += "\nAccel Mult: %.2fx" % _stats.accel_mult()
 	text += "\nFriction Mult: %.2fx" % _stats.friction_mult()
 	text += "\n\nAttack Speed Mult: %.2fx" % _stats.attack_speed_mult()
 	text += "\nDamage Taken Mult: %.2fx" % _stats.damage_taken_mult()
 	text += "\nFlat Damage Reduction: %.1f" % _stats.flat_damage_reduction()
+	
+	# Add shield info
+	text += "\n\n[b]SHIELD[/b]"
+	text += shield_info
+	
 	text += "\n\nSpell Cooldown: "
 	if cooldown_remaining > 0.0:
 		text += "%.2fs" % cooldown_remaining
 	else:
 		text += "Ready"
+	
 	text += buffs_text
 	
 	seed_label.text = text
@@ -226,6 +239,7 @@ func _update_stats_display() -> void:
 		var first_line: String = seed_label.text.split("\n")[0]
 		stats_text = first_line
 	
+	stats_text += "\n\n[b]STATS[/b]"
 	stats_text += "\nMovement Speed Mult: %.2fx" % _stats.move_speed_mult()
 	stats_text += "\nEffective Move Speed: %.1f" % effective_move_speed
 	stats_text += "\nAccel Mult: %.2fx" % _stats.accel_mult()
@@ -233,6 +247,10 @@ func _update_stats_display() -> void:
 	stats_text += "\nAttack Speed Mult: %.2fx" % _stats.attack_speed_mult()
 	stats_text += "\nDamage Taken Mult: %.2fx" % _stats.damage_taken_mult()
 	stats_text += "\nFlat Damage Reduction: %.1f" % _stats.flat_damage_reduction()
+	
+	# Add shield info
+	stats_text += "\n\n[b]SHIELD[/b]"
+	stats_text += _get_shield_info()
 	
 	var cooldown_remaining := _stats.get_spell_cooldown_remaining()
 	stats_text += "\n\nSpell Cooldown: "
@@ -247,6 +265,69 @@ func _update_stats_display() -> void:
 	_last_move_speed = base_move_speed * _stats.move_speed_mult()
 	_last_cooldown = cooldown_remaining
 	_last_buffs = _get_active_buffs_text()
+	_last_shield_info = _get_shield_info()
+
+
+func _get_shield_info() -> String:
+	"""Get shield modifiers and status"""
+	var text: String = ""
+	
+	if _equipment == null:
+		text += "\n(No equipment)"
+		return text
+	
+	var shield_slot: ShieldSlot = _equipment.get_node_or_null("ShieldSlot") as ShieldSlot
+	if shield_slot == null:
+		text += "\n(No shield slot)"
+		return text
+	
+	var shield: Shield = shield_slot.get_item() as Shield
+	if shield == null:
+		text += "\n(No shield equipped)"
+		return text
+	
+	var shield_instance: ItemInstance = shield.get_item_instance()
+	if shield_instance == null or shield_instance.def == null:
+		text += "\n(No instance)"
+		return text
+	
+	var shield_def: ShieldItemDef = shield_instance.def as ShieldItemDef
+	if shield_def == null:
+		text += "\n(Invalid def)"
+		return text
+	
+	# Shield name and type
+	text += "\nName: %s (%s)" % [
+		shield_def.display_name,
+		ShieldItemDef.ShieldType.keys()[shield_def.shield_type]
+	]
+	
+	# Shield modifiers
+	text += "\nBlock Reduction: %.1f%%" % (shield_def.block_damage_reduction * 100.0)
+	text += "\nMove Speed Mult: %.2f" % shield_def.movement_speed_mult_while_blocking
+	text += "\nFlat Reduction: %.1f" % shield_def.flat_damage_reduction
+	
+	# Attributes with ability info
+	if not shield_instance.attributes.is_empty():
+		text += "\nAttributes (%d):" % shield_instance.attributes.size()
+		for attr: ItemAttribute in shield_instance.attributes:
+			if attr == null:
+				continue
+			text += "\n  • %s" % attr.display_name
+			
+			# Show cooldown and status for ability attributes
+			if _passive_shield_activator != null and attr is PhasingAttribute:
+				var cooldown: float = _passive_shield_activator.get_ability_cooldown_remaining(attr)
+				var is_active: bool = _passive_shield_activator.get_ability_active(attr)
+				
+				if is_active:
+					text += " [ACTIVE]"
+				elif cooldown > 0.0:
+					text += " [CD: %.1fs]" % cooldown
+				else:
+					text += " [READY]"
+	
+	return text
 
 
 func _get_active_buffs_text() -> String:
@@ -263,8 +344,20 @@ func _get_active_buffs_text() -> String:
 	_collect_buffs_with_duration(buffs, _stats._melee_damage_mult_mods, now)
 	_collect_buffs_with_duration(buffs, _stats._ranged_damage_mult_mods, now)
 	
+	# Add passive shield ability buffs
+	if _passive_shield_activator != null and _equipment != null:
+		var shield_slot: ShieldSlot = _equipment.get_node_or_null("ShieldSlot") as ShieldSlot
+		if shield_slot != null:
+			var shield: Shield = shield_slot.get_item() as Shield
+			if shield != null:
+				var shield_instance: ItemInstance = shield.get_item_instance()
+				if shield_instance != null:
+					var passive_buffs: Array[String] = _passive_shield_activator.get_active_ability_buffs(shield_instance)
+					for buff_text: String in passive_buffs:
+						buffs.append(buff_text)
+	
 	if buffs.is_empty():
-		return "\n\nActive Buffs: (none)"
+		return "\n\n[b]ACTIVE BUFFS[/b]\n(none)"
 	
 	# Remove duplicates using a dictionary
 	var unique_buffs: Dictionary = {}
@@ -277,7 +370,7 @@ func _get_active_buffs_text() -> String:
 		sorted_buffs.append(buff_name)
 	sorted_buffs.sort()
 	
-	var text: String = "\n\nActive Buffs:"
+	var text: String = "\n\n[b]ACTIVE BUFFS[/b]:"
 	for buff: String in sorted_buffs:
 		# Extract buff name and get remaining duration
 		var remaining: float = _buff_timers.get(buff, 0.0) - now

@@ -30,23 +30,30 @@ func get_stat_additive(context: CombatContext, _item_instance: ItemInstance) -> 
 
 
 func on_block_start(context: CombatContext, _item_instance: ItemInstance) -> void:
-	"""Activate phasing when block starts"""
+	"""Initialize phasing when block starts"""
 	if context == null or context.owner == null:
 		return
+	
+	var owner: Node = context.owner
+	owner.set_meta(META_LAST_PHASE, 0.0)
+	owner.set_meta(META_PHASING, false)
+	owner.set_meta(META_PHASE_UNTIL, 0.0)
 
+
+func on_block_end(_context: CombatContext, _item_instance: ItemInstance) -> void:
+	"""Stop phasing when block ends"""
+	pass
+
+
+func on_ability_activate(context: CombatContext, _item_instance: ItemInstance) -> void:
+	"""Called when block input triggers the ability"""
+	if context == null or context.owner == null:
+		return
+	
 	var owner: Node = context.owner
 	var now: float = Time.get_ticks_msec() / 1000.0
-	var last_phase: float = owner.get_meta(META_LAST_PHASE, 0.0)
-
-	# Can we use phasing again?
-	if now >= last_phase + phase_cooldown_sec:
-		activate_phasing(owner, now)
-
-
-func on_block_end(context: CombatContext, _item_instance: ItemInstance) -> void:
-	"""Optionally stop phasing when block ends (set to no-op for continuous phasing)"""
-	# Currently does nothing - phasing continues until duration expires
-	pass
+	
+	activate_phasing(owner, now)
 
 
 func activate_phasing(owner: Node, now: float) -> void:
@@ -55,7 +62,7 @@ func activate_phasing(owner: Node, now: float) -> void:
 	owner.set_meta(META_PHASE_UNTIL, now + phase_duration_sec)
 	owner.set_meta(META_LAST_PHASE, now)
 
-	# Apply visual effect (shader)
+	# Apply visual effect
 	var visual_controller: EntityVisualController = null
 	if owner is Entity:
 		visual_controller = (owner as Entity).find_component(&"EntityVisualController") as EntityVisualController

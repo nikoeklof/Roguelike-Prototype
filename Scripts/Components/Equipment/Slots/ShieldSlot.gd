@@ -3,6 +3,7 @@ class_name ShieldSlot
 
 var _active_shield: ActiveShield
 var _passive_shield: PassiveShield
+var _passive_shield_activator: PassiveShieldAttributeActivator
 
 
 func _ready() -> void:
@@ -18,7 +19,6 @@ func _ready() -> void:
 
 func _setup_shield_components() -> void:
 	"""Setup shield components after parent is ready"""
-	# Find or create shield components on parent entity
 	var entity: Entity = get_parent().get_parent() as Entity
 	if entity == null:
 		print("[ShieldSlot] ERROR: Could not find parent entity")
@@ -36,6 +36,12 @@ func _setup_shield_components() -> void:
 		_passive_shield.name = "PassiveShield"
 		entity.add_child(_passive_shield)
 	
+	_passive_shield_activator = entity.find_component(&"PassiveShieldAttributeActivator") as PassiveShieldAttributeActivator
+	if _passive_shield_activator == null:
+		_passive_shield_activator = PassiveShieldAttributeActivator.new()
+		_passive_shield_activator.name = "PassiveShieldAttributeActivator"
+		entity.add_child(_passive_shield_activator)
+	
 	# Apply initial shield if one is already equipped
 	_on_item_changed(get_item(), null)
 
@@ -44,7 +50,7 @@ func _on_item_changed(new_item: Node, old_item: Node) -> void:
 	"""Called when item changes in this slot"""
 	print("[ShieldSlot] Item changed: %s -> %s" % [old_item, new_item])
 	
-	if _active_shield == null or _passive_shield == null:
+	if _active_shield == null or _passive_shield == null or _passive_shield_activator == null:
 		print("[ShieldSlot] WARNING: Shield components not initialized yet")
 		return
 	
@@ -60,9 +66,8 @@ func _on_item_changed(new_item: Node, old_item: Node) -> void:
 		print("[ShieldSlot] No item equipped")
 		return
 	
-	# Check if it's a Shield
 	if not new_item is Shield:
-		print("[ShieldSlot] ERROR: Equipped item is not a Shield, it's: %s" % new_item.get_class())
+		print("[ShieldSlot] ERROR: Equipped item is not a Shield")
 		return
 	
 	var shield_item: Shield = new_item as Shield
@@ -85,9 +90,12 @@ func _on_item_changed(new_item: Node, old_item: Node) -> void:
 		ShieldItemDef.ShieldType.ACTIVE:
 			print("[ShieldSlot] Setting up ACTIVE shield")
 			_active_shield.set_shield_def(shield_def)
-			_passive_shield.set_shield_def(null)
+			_passive_shield.set_shield_def(null)  # FIXED: null instead of None
 		
 		ShieldItemDef.ShieldType.PASSIVE:
 			print("[ShieldSlot] Setting up PASSIVE shield")
 			_passive_shield.set_shield_def(shield_def)
-			_active_shield.set_shield_def(null)
+			_active_shield.set_shield_def(null)  # FIXED: null instead of None
+			
+			# Initialize passive shield abilities
+			_passive_shield.on_block_start(shield_instance)

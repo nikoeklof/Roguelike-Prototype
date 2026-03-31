@@ -20,6 +20,7 @@
 [ext_resource type="Script" uid="uid://qp2c6a6vyih1" path="res://Scripts/States/VFX/EntityVisualController.gd" id="20_o0gml"]
 [ext_resource type="Script" uid="uid://8avggln5hcfi" path="res://Scripts/Interaction/Interactor.gd" id="20_tm314"]
 [ext_resource type="Script" uid="uid://dq8au21fkubdm" path="res://Scripts/Components/Combat/SpellCastingManager.gd" id="21_o0gml"]
+[ext_resource type="Script" uid="uid://bs4c2dtvfm8dk" path="res://Scripts/Components/Combat/PassiveShieldAttributeActivator.gd" id="22_7r15b"]
 [ext_resource type="Texture2D" uid="uid://ef76oyy21t8e" path="res://Art/Characters/Player_Character_8_way.png" id="22_fnpwp"]
 
 [sub_resource type="Resource" id="Resource_rmh8v"]
@@ -473,6 +474,9 @@ script = ExtResource("5_14ypb")
 script = ExtResource("20_o0gml")
 sprite_path = NodePath("../Visual/Sprite")
 metadata/_custom_type_script = "uid://qp2c6a6vyih1"
+
+[node name="PassiveShieldAttributeActivator" type="Node" parent="." unique_id=336129853]
+script = ExtResource("22_7r15b")
 
 [editable path="Equipment"]
 [editable path="StateHandler"]
