@@ -44,7 +44,7 @@ metadata/_custom_type_script = "uid://chuv51kaj1jd3"
 
 [sub_resource type="Resource" id="Resource_fnwo2"]
 script = ExtResource("4_lhs4p")
-shield_common = Array[ExtResource("3_rcbjt")]([SubResource("Resource_kvxaw"), SubResource("Resource_x8cc1"), SubResource("Resource_yfrsl"), null])
+shield_common = Array[ExtResource("3_rcbjt")]([SubResource("Resource_kvxaw"), SubResource("Resource_x8cc1"), SubResource("Resource_yfrsl")])
 metadata/_custom_type_script = "uid://bo58hs72paoxt"
 
 [resource]

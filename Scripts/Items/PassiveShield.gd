@@ -3,6 +3,7 @@ class_name PassiveShield
 
 var _entity: Entity
 var _shield_def: ShieldItemDef
+var _shield: Shield  # Add this to store the shield reference
 
 
 func _ready() -> void:
@@ -27,7 +28,7 @@ func on_block_start(shield_instance: ItemInstance) -> void:
 	print("[PassiveShield] Block started - activating attributes")
 	
 	# Let the executor handle attribute activation
-	ShieldBlockExecutor.execute_block_start(_entity, shield_instance as Shield, shield_instance)
+	ShieldBlockExecutor.execute_block_start(_entity, _shield, shield_instance)
 
 
 func on_block_end() -> void:

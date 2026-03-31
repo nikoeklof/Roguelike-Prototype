@@ -7,11 +7,14 @@ const DOMAIN_BLOCK_END: StringName = &"block_end"
 
 
 static func execute_block_start(entity: Node, shield: Shield, shield_instance: ItemInstance) -> void:
-	"""Activate all blocking-related attributes on a passive shield"""
-	if shield_instance == null or shield_instance.attributes.is_empty():
+	"""Activate all blocking-related attributes on a shield"""
+	if shield_instance == null:
 		return
 	
-	print("[ShieldBlockExecutor] Executing block_start for shield: %s" % shield.name)
+	if shield_instance.attributes.is_empty():
+		return
+	
+	print("[ShieldBlockExecutor] Executing block_start for shield: %s (%d attributes)" % [shield.name if shield else "unknown", shield_instance.attributes.size()])
 	
 	# Create context
 	var ctx := CombatContext.new()
@@ -29,11 +32,14 @@ static func execute_block_start(entity: Node, shield: Shield, shield_instance: I
 
 
 static func execute_block_end(entity: Node, shield: Shield, shield_instance: ItemInstance) -> void:
-	"""Deactivate all blocking-related attributes on a passive shield"""
-	if shield_instance == null or shield_instance.attributes.is_empty():
+	"""Deactivate all blocking-related attributes on a shield"""
+	if shield_instance == null:
 		return
 	
-	print("[ShieldBlockExecutor] Executing block_end for shield: %s" % shield.name)
+	if shield_instance.attributes.is_empty():
+		return
+	
+	print("[ShieldBlockExecutor] Executing block_end for shield: %s (%d attributes)" % [shield.name if shield else "unknown", shield_instance.attributes.size()])
 	
 	# Create context
 	var ctx := CombatContext.new()
@@ -52,13 +58,17 @@ static func execute_block_end(entity: Node, shield: Shield, shield_instance: Ite
 
 static func _execute_attribute_block_start(attr: ItemAttribute, ctx: CombatContext, inst: ItemInstance) -> void:
 	"""Execute block_start hook on attribute"""
-	if attr.has_method("on_block_start"):
-		attr.call("on_block_start", ctx, inst)
-		print("[ShieldBlockExecutor] Called on_block_start for: %s" % attr.get_class())
+	if not attr.has_method("on_block_start"):
+		return
+	
+	attr.call("on_block_start", ctx, inst)
+	print("[ShieldBlockExecutor] Called on_block_start for: %s" % attr.get_class())
 
 
 static func _execute_attribute_block_end(attr: ItemAttribute, ctx: CombatContext, inst: ItemInstance) -> void:
 	"""Execute block_end hook on attribute"""
-	if attr.has_method("on_block_end"):
-		attr.call("on_block_end", ctx, inst)
-		print("[ShieldBlockExecutor] Called on_block_end for: %s" % attr.get_class())
+	if not attr.has_method("on_block_end"):
+		return
+	
+	attr.call("on_block_end", ctx, inst)
+	print("[ShieldBlockExecutor] Called on_block_end for: %s" % attr.get_class())
