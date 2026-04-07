@@ -3,6 +3,7 @@ class_name BlockState
 
 var _shield: Shield
 var _shield_instance: ItemInstance
+var _mover: Mover
 
 
 func enter(_msg: Dictionary = {}) -> void:
@@ -10,6 +11,9 @@ func enter(_msg: Dictionary = {}) -> void:
 		return
 	
 	print("[BlockState] Entered block state")
+	
+	# Get mover component for movement
+	_mover = entity.find_component(&"Mover") as Mover if entity is Entity else null
 	
 	# Get currently equipped shield
 	var equipment: Equipment = entity.find_component(&"Equipment") as Equipment
@@ -44,7 +48,6 @@ func enter(_msg: Dictionary = {}) -> void:
 		return
 	
 	print("[BlockState] Activating active shield")
-	# FIXED: ShieldBlockExecutor instead of ShieldBlockingExecutor
 	var active_shield: ActiveShield = entity.find_component(&"ActiveShield") as ActiveShield
 	if active_shield != null:
 		active_shield.on_block_start()
@@ -65,7 +68,7 @@ func exit() -> void:
 		active_shield.on_block_end()
 
 
-func physics_update(_delta: float) -> void:
+func physics_update(delta: float) -> void:
 	if entity == null:
 		return
 	
@@ -73,3 +76,10 @@ func physics_update(_delta: float) -> void:
 	if control == null or not control.wants_block():
 		state_handler.change_state("Idle")
 		return
+	
+	# ALLOW MOVEMENT WHILE BLOCKING
+	var move_input: Vector2 = control.move_intent()
+	
+	if _mover != null and entity is CharacterBody2D:
+		_mover.intent = move_input
+		_mover.apply(entity as CharacterBody2D, delta)

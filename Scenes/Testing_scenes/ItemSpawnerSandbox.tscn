@@ -22,6 +22,8 @@
 [ext_resource type="Script" uid="uid://iynllwy4bkcr" path="res://Scripts/Items/Attributes/Shields/Attr_ShieldBonus.gd" id="18_kke02"]
 [ext_resource type="Script" uid="uid://cmb3gps077g2o" path="res://Scripts/Items/Attributes/Shields/ParryWindowAttribute.gd" id="19_87t23"]
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="20_5unc3"]
+[ext_resource type="PackedScene" uid="uid://m40h81hrtiei" path="res://Scenes/Entities/AI/Enemy_Melee_Template_Version1.tscn" id="23_51bvn"]
+[ext_resource type="PackedScene" uid="uid://c8x6or1oclhbr" path="res://Scenes/Items/Weapons/wpn_melee_dagger_base.tscn" id="24_kke02"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
 size = Vector2(1169, 29.33334)
@@ -32,6 +34,9 @@ metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [sub_resource type="Resource" id="Resource_6g5pj"]
 script = ExtResource("14_yv6yn")
+blocking_collider_size = Vector2(10, 40)
+blocking_collider_offset = Vector2(25, 0)
+blocking_collider_duration = 1.0
 id = &"shield_active_template"
 display_name = "Active Shield"
 category = 3
@@ -251,3 +256,12 @@ position = Vector2(577, 170)
 script = ExtResource("3_x3clo")
 base_type = SubResource("Resource_lhmkw")
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"
+
+[node name="EnemyMelee" parent="." unique_id=698630020 instance=ExtResource("23_51bvn")]
+
+[node name="MeleeSlot" parent="EnemyMelee/Equipment" parent_id_path=PackedInt32Array(698630020, 1519894343) index="0" unique_id=1103842256]
+initial_item_scene = ExtResource("24_kke02")
+
+[editable path="EnemyMelee"]
+[editable path="EnemyMelee/Equipment"]
+[editable path="EnemyMelee/StateHandler"]

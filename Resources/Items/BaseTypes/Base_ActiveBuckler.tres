@@ -9,6 +9,7 @@ metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [resource]
 script = ExtResource("2_1rlcj")
+blocking_collider_size = Vector2(10, 40)
 id = &"buckler_shield"
 display_name = "Buckler Shield"
 category = 3

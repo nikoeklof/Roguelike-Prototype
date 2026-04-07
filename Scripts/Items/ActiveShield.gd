@@ -74,12 +74,15 @@ func on_block_start() -> void:
 	if _shield_visual != null:
 		_shield_visual.visible = true
 	
+	# Create persistent blocking collider
 	_create_blocking_collider()
 	
+	# Apply movement penalty and damage reduction
 	var stats: Stats = _entity.find_component(&"Stats") as Stats
 	if stats != null:
 		stats.set_move_speed_mult(&"shield_block", _shield_def.movement_speed_mult_while_blocking)
 		stats.set_flat_damage_reduction(&"shield_block", _shield_def.flat_damage_reduction)
+		print("[ActiveShield] Applied blocking penalties")
 	
 	blocking_started.emit()
 
@@ -95,10 +98,12 @@ func on_block_end() -> void:
 	if _shield_visual != null:
 		_shield_visual.visible = false
 	
+	# Remove blocking collider
 	if _active_blocking_collider != null and is_instance_valid(_active_blocking_collider):
 		_active_blocking_collider.queue_free()
 		_active_blocking_collider = null
 	
+	# Remove movement penalty
 	var stats: Stats = _entity.find_component(&"Stats") as Stats
 	if stats != null:
 		stats.clear_move_speed_mult(&"shield_block")
@@ -118,7 +123,7 @@ func get_block_damage_reduction() -> float:
 
 
 func _create_blocking_collider() -> void:
-	"""Create blocking collider for this active shield"""
+	"""Create blocking collider that persists while holding block (no duration limit)"""
 	if _shield_def == null:
 		return
 	
@@ -137,13 +142,17 @@ func _create_blocking_collider() -> void:
 	parent.add_child(pc)
 	pc.position = Vector2.ZERO
 	pc.rotation = 0.0
+	
+	# Use VERY LONG duration so it lasts as long as block is held
+	# It will be removed in on_block_end()
+	var long_duration: float = 999999.0
 	pc.setup(
 		_entity,
 		_shield_def.blocking_collider_size,
 		_shield_def.blocking_collider_offset,
-		_shield_def.blocking_collider_duration,
+		long_duration,
 		false
 	)
 	
 	_active_blocking_collider = pc
-	print("[ActiveShield] Blocking collider created")
+	print("[ActiveShield] Blocking collider created (persistent)")
