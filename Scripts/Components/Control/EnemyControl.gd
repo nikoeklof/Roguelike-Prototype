@@ -12,6 +12,10 @@ var _pressed_frame := false
 var _released_frame := false
 var _is_down := false
 
+# Ensures press survives across Idle → Attack state transition
+var _press_consumed_count: int = 0
+const PRESS_CONSUME_LIMIT: int = 2  # Idle reads it, then Attack.enter reads it
+
 # Block state
 var _block_intent: bool = false
 
@@ -20,21 +24,20 @@ func set_move_intent(v: Vector2) -> void:
 	_move = v
 
 
-# Call from AI when you want to initiate an attack (one-shot or hold start).
 func press_attack(dir: Vector2, kind: int) -> void:
 	_attack_dir = dir
 	_attack_kind = kind
-
 	_pressed_frame = true
+	_press_consumed_count = 0
 	_released_frame = false
 	_is_down = true
 
 
-# Optional: call from AI when you want HOLD_RELEASE style release.
 func release_attack() -> void:
 	_released_frame = true
 	_pressed_frame = false
 	_is_down = false
+	_attack_kind = Combat.AttackKind.NONE
 
 
 func set_block_intent(value: bool) -> void:
@@ -47,10 +50,12 @@ func move_intent() -> Vector2:
 
 # --- Raw button semantics ---
 func attack_pressed() -> bool:
-	# one-shot true for the frame after AI press_attack()
-	var v := _pressed_frame
-	_pressed_frame = false
-	return v
+	if _pressed_frame:
+		_press_consumed_count += 1
+		if _press_consumed_count >= PRESS_CONSUME_LIMIT:
+			_pressed_frame = false
+		return true
+	return false
 
 func attack_released() -> bool:
 	var v := _released_frame
@@ -66,8 +71,15 @@ func attack_kind_peek() -> int:
 	return _attack_kind if _is_down else Combat.AttackKind.NONE
 
 func attack_kind_pressed() -> int:
-	# one-shot: consume the press
 	if attack_pressed():
+		return _attack_kind
+	return Combat.AttackKind.NONE
+
+func attack_kind_held() -> int:
+	return _attack_kind if _is_down else Combat.AttackKind.NONE
+
+func attack_kind_released() -> int:
+	if attack_released():
 		return _attack_kind
 	return Combat.AttackKind.NONE
 

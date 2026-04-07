@@ -57,4 +57,4 @@ player_root_path = NodePath("../Player")
 [node name="Player" parent="." unique_id=423000657 groups=["player"] instance=ExtResource("1_kyx5t")]
 
 [node name="EnemyMelee" parent="." unique_id=698630020 instance=ExtResource("23_51bvn")]
-position = Vector2(176, -171)
+position = Vector2(168, -177)

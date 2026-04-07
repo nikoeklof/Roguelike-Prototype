@@ -77,7 +77,7 @@ func _full_init() -> void:
 	_health = _entity.find_component(&"Health") as Health
 	_capabilities = _entity.find_component(&"Capabilities") as Capabilities
 	_faction = _entity.find_component(&"Faction") as Faction
-	_control = _entity.find_component(&"EnemyControl") as EnemyControl
+	_control = _entity.find_component(&"ControlSource") as EnemyControl
 	
 	if _capabilities == null:
 		print("[EnemyAI] ERROR: No Capabilities component")
@@ -92,7 +92,7 @@ func _full_init() -> void:
 		return
 	
 	if _control == null:
-		print("[EnemyAI] WARNING: No EnemyControl component - AI cannot execute actions")
+		print("[EnemyAI] WARNING: No ControlSource component - AI cannot execute actions")
 	
 	# Check if entity can attack
 	var can_attack: bool = _capabilities.is_enabled(Capabilities.CAN_ATTACK)
@@ -397,39 +397,66 @@ func _make_decision() -> void:
 
 func _execute_decision() -> void:
 	"""Bridge between AI decisions and the EnemyControl/Combat systems"""
-	if _current_decision == null:
+	if _current_decision == null or _control == null:
 		return
-	
-	# Clear block intent by default each frame
-	if _control != null:
-		_control.set_block_intent(false)
 	
 	var dir_to_target := Vector2.ZERO
 	if _target != null:
 		dir_to_target = (_target.global_position - _entity.global_position).normalized()
 	
+	# Default: not blocking
+	_control.set_block_intent(false)
+	
 	match _current_decision.state:
 		"melee_attack":
-			if _control != null and _combat != null:
+			if _combat != null:
 				_equipment.set_active_slot_melee("ai_melee")
-				_control.press_attack(dir_to_target, Combat.AttackKind.MELEE)
-		"ranged_attack":
-			if _control != null and _combat != null:
-				_equipment.set_active_slot_ranged("ai_ranged")
-				_control.press_attack(dir_to_target, Combat.AttackKind.RANGED)
-		"cast_spell":
-			if _control != null and _combat != null:
-				_equipment.set_active_slot_spell("ai_spell")
-				_control.press_attack(dir_to_target, Combat.AttackKind.SPELL)
-		"shield_block":
-			if _control != null:
-				_control.set_block_intent(true)
-		"chase":
-			if _control != null:
+				# Let the state machine + Combat handle the actual attack.
+				# We set move intent toward target so Walk→Idle→Attack cycle works,
+				# and press_attack so the ControlSource signals the Attack state.
 				_control.set_move_intent(dir_to_target)
-		"idle":
-			if _control != null:
+				if not _control.attack_is_down():
+					_control.press_attack(dir_to_target, Combat.AttackKind.MELEE)
+		"ranged_attack":
+			if _combat != null:
+				_equipment.set_active_slot_ranged("ai_ranged")
 				_control.set_move_intent(Vector2.ZERO)
+				if not _control.attack_is_down():
+					_control.press_attack(dir_to_target, Combat.AttackKind.RANGED)
+		"cast_spell":
+			if _combat != null:
+				_equipment.set_active_slot_spell("ai_spell")
+				_control.set_move_intent(Vector2.ZERO)
+				if not _control.attack_is_down():
+					_control.press_attack(dir_to_target, Combat.AttackKind.SPELL)
+		"shield_block":
+			_control.set_block_intent(true)
+			if _control.attack_is_down():
+				_control.release_attack()
+		"chase":
+			var dist: float = _entity.global_position.distance_to(_target.global_position) if _target != null else INF
+			if dist < 1.0:
+				# Overlapping — escape downward
+				_control.set_move_intent(Vector2.DOWN)
+			elif dist < 20.0:
+				# Too close — push apart
+				_control.set_move_intent(-dir_to_target * 0.5)
+			else:
+				_control.set_move_intent(dir_to_target)
+			if _control.attack_is_down():
+				_control.release_attack()
+		"kite":
+			# Handled by RangedAIModule.physics_update()
+			if _control.attack_is_down():
+				_control.release_attack()
+		"idle", "patrol", "patrol_idle":
+			_control.set_move_intent(Vector2.ZERO)
+			if _control.attack_is_down():
+				_control.release_attack()
+		_:
+			# Unknown state — release everything
+			if _control.attack_is_down():
+				_control.release_attack()
 
 
 func _resolve_conflicts(decisions: Array[AIDecision], context: Dictionary) -> AIDecision:

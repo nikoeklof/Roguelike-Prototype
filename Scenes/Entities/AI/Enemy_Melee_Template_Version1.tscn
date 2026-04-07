@@ -363,7 +363,7 @@ size = Vector2(11, 8)
 
 [node name="EnemyMelee" type="CharacterBody2D" unique_id=698630020]
 collision_layer = 4
-collision_mask = 14
+collision_mask = 7
 script = ExtResource("1_7r15b")
 initial_faction = 2
 
@@ -382,6 +382,7 @@ script = ExtResource("5_14ypb")
 
 [node name="Stats" type="Node" parent="." unique_id=1582419012]
 script = ExtResource("6_j5qy7")
+base_move_speed = 150.0
 base_friction = 1300.0
 
 [node name="Health" type="Node" parent="." unique_id=689961032]
@@ -477,7 +478,7 @@ script = ExtResource("22_7r15b")
 script = ExtResource("23_ai001")
 decision_interval = 0.15
 
-[node name="EnemyControl" type="Node" parent="." unique_id=1952024130]
+[node name="ControlSource" type="Node" parent="." unique_id=1952024130]
 script = ExtResource("22_2fryh")
 metadata/_custom_type_script = "uid://bbbudfifufwof"
 

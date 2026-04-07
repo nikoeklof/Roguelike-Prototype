@@ -7,7 +7,7 @@ class_name DebugHUD
 @export_range(0.01, 0.5, 0.01) var update_tick_rate: float = 0.1
 
 @onready var minimap: MinimapControl = %Minimap
-@onready var seed_label: Label = %SeedLabel
+@onready var seed_label: RichTextLabel = %SeedLabel
 @onready var equip_list: ItemList = %EquipList
 @onready var details: RichTextLabel = %Details
 
@@ -223,6 +223,9 @@ func _update_realtime_values() -> void:
 	
 	text += buffs_text
 	
+	# Add enemy AI info
+	text += _get_enemy_ai_info()
+	
 	seed_label.text = text
 
 
@@ -260,6 +263,9 @@ func _update_stats_display() -> void:
 		stats_text += "Ready"
 	
 	stats_text += _get_active_buffs_text()
+	
+	# Add enemy AI info
+	stats_text += _get_enemy_ai_info()
 	
 	seed_label.text = stats_text
 	_last_move_speed = base_move_speed * _stats.move_speed_mult()
@@ -401,6 +407,105 @@ func _collect_buffs_with_duration(buffs: Array[String], mods: Dictionary, now: f
 		# Remove expired timers
 		if _buff_timers[buff_name] <= now:
 			_buff_timers.erase(buff_name)
+
+
+# -------------------------
+# Enemy AI Debug
+# -------------------------
+
+func _get_enemy_ai_info() -> String:
+	"""Gather loadout + AI state for all enemies in the scene"""
+	var enemies: Array[Node] = get_tree().get_nodes_in_group("enemy") if get_tree() != null else []
+	
+	# Fallback: if no "enemy" group, scan for EnemyAI nodes
+	if enemies.is_empty():
+		var all_ais: Array[Node] = _find_all_nodes_of_class(get_tree().root, "EnemyAI")
+		for ai_node: Node in all_ais:
+			var entity: Node = ai_node.get_parent()
+			if entity != null and not enemies.has(entity):
+				enemies.append(entity)
+	
+	if enemies.is_empty():
+		return "\n\n[b]ENEMY AI[/b]\n(no enemies found)"
+	
+	var text: String = "\n\n[b]ENEMY AI (%d)[/b]" % enemies.size()
+	
+	for i: int in range(enemies.size()):
+		var enemy: Node = enemies[i]
+		text += "\n\n--- %s ---" % enemy.name
+		
+		# Get AI component
+		var ai: EnemyAI = enemy.get_node_or_null("EnemyAI") as EnemyAI
+		if ai != null:
+			# Awareness state
+			var awareness_names := ["IDLE", "ALERT", "LOST"]
+			var awareness_idx: int = ai.get_awareness()
+			var awareness_str: String = awareness_names[awareness_idx] if awareness_idx < awareness_names.size() else "UNKNOWN"
+			text += "\nState: %s" % awareness_str
+			
+			# Current decision
+			var decision: AIDecision = ai.get_current_decision()
+			if decision != null:
+				text += "\nDecision: %s (pri: %d)" % [decision.state, decision.priority]
+			else:
+				text += "\nDecision: (none)"
+			
+			# Distance to target
+			var target: Node2D = ai.get_target()
+			if target != null and ai.get_entity() != null:
+				var dist: float = ai.get_entity().global_position.distance_to(target.global_position)
+				text += "\nDist to player: %.0f" % dist
+			else:
+				text += "\nTarget: (none)"
+		else:
+			text += "\n(no EnemyAI component)"
+		
+		# Get equipment/loadout
+		var eq: Equipment = enemy.get_node_or_null("Equipment") as Equipment
+		if eq != null:
+			var items: Dictionary[String, Node] = eq.get_equipped_items_debug()
+			text += "\n[b]Loadout:[/b]"
+			
+			var has_any_item: bool = false
+			for slot_name: String in ["MELEE", "RANGED", "SPELL", "SHIELD"]:
+				var item: Node = items.get(slot_name)
+				if item != null:
+					has_any_item = true
+					var item_label: String = _get_item_display_name(item)
+					text += "\n  %s: %s" % [slot_name, item_label]
+				else:
+					text += "\n  %s: (empty)" % slot_name
+			
+			if not has_any_item:
+				text += "\n  (all slots empty!)"
+		else:
+			text += "\n(no Equipment component)"
+		
+		# Get health
+		var health: Health = null
+		if enemy is Entity:
+			health = (enemy as Entity).find_component(&"Health") as Health
+		else:
+			health = enemy.get_node_or_null("Health") as Health
+		
+		if health != null:
+			text += "\nHP: %.0f / %.0f (%.0f%%)" % [health.hp, health.max_hp, (health.hp / health.max_hp) * 100.0]
+	
+	return text
+
+
+func _find_all_nodes_of_class(root: Node, class_name_str: String) -> Array[Node]:
+	"""Recursively find all nodes whose script class_name matches"""
+	var result: Array[Node] = []
+	if root == null:
+		return result
+	
+	for child: Node in root.get_children():
+		if child.get_class() == class_name_str or (child.get_script() != null and child is EnemyAI):
+			result.append(child)
+		result.append_array(_find_all_nodes_of_class(child, class_name_str))
+	
+	return result
 
 
 # -------------------------
