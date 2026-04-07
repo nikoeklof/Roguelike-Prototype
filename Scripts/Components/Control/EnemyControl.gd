@@ -12,6 +12,9 @@ var _pressed_frame := false
 var _released_frame := false
 var _is_down := false
 
+# Block state
+var _block_intent: bool = false
+
 
 func set_move_intent(v: Vector2) -> void:
 	_move = v
@@ -32,6 +35,10 @@ func release_attack() -> void:
 	_released_frame = true
 	_pressed_frame = false
 	_is_down = false
+
+
+func set_block_intent(value: bool) -> void:
+	_block_intent = value
 
 
 func move_intent() -> Vector2:
@@ -67,3 +74,7 @@ func attack_kind_pressed() -> int:
 
 func aim_dir(fallback: Vector2) -> Vector2:
 	return fallback if _attack_dir == Vector2.ZERO else _attack_dir
+
+
+func wants_block() -> bool:
+	return _block_intent

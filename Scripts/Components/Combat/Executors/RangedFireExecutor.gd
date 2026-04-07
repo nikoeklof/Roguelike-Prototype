@@ -423,11 +423,6 @@ func _debug_make_line(parent: Node) -> Line2D:
 	parent.add_child(line)
 	return line
 
-	var timer: SceneTreeTimer = get_tree().create_timer(0.15)
-	timer.timeout.connect(Callable(self, "_queue_free_node_if_valid").bind(line), CONNECT_ONE_SHOT)
-
-	return line
-
 
 func _debug_draw_transient_line(from: Vector2, to: Vector2, life_sec: float) -> void:
 	if not debug_draw_shots:
@@ -480,6 +475,15 @@ func _debug_clear_beam_line(delay_sec: float) -> void:
 	var line: Line2D = _beam_line
 	_beam_line = null
 
+	# Free immediately if delay is negligible, otherwise tween
+	if delay_sec <= 0.01:
+		line.queue_free()
+		return
+
+	if not line.is_inside_tree():
+		line.queue_free()
+		return
+
 	var tween: Tween = line.create_tween()
 	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	tween.tween_interval(max(0.01, delay_sec))
@@ -503,3 +507,14 @@ func _collect_collision_rids(node: Node, out: Array[RID]) -> void:
 
 	for child: Node in node.get_children():
 		_collect_collision_rids(child, out)
+		
+
+func _exit_tree() -> void:
+	# Safety: if this executor is freed mid-beam, clean up the orphaned line
+	if _beam_tween != null and is_instance_valid(_beam_tween):
+		_beam_tween.kill()
+	_beam_tween = null
+	
+	if _beam_line != null and is_instance_valid(_beam_line):
+		_beam_line.queue_free()
+	_beam_line = null

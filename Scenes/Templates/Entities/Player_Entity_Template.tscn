@@ -22,6 +22,18 @@
 [ext_resource type="Script" uid="uid://dq8au21fkubdm" path="res://Scripts/Components/Combat/SpellCastingManager.gd" id="21_o0gml"]
 [ext_resource type="Script" uid="uid://bs4c2dtvfm8dk" path="res://Scripts/Components/Combat/PassiveShieldAttributeActivator.gd" id="22_7r15b"]
 [ext_resource type="Texture2D" uid="uid://ef76oyy21t8e" path="res://Art/Characters/Player_Character_8_way.png" id="22_fnpwp"]
+[ext_resource type="Script" uid="uid://cwbkt1ur6316g" path="res://Scripts/Components/Equipment/Slots/LoadoutAssigner.gd" id="23_oirap"]
+[ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="24_x8u2g"]
+[ext_resource type="Resource" uid="uid://dki8qndxyoqep" path="res://Resources/Items/BaseTypes/Base_Maul.tres" id="25_s8hwr"]
+[ext_resource type="Resource" uid="uid://bo12lrqfrp7gs" path="res://Resources/Items/BaseTypes/Base_Sword.tres" id="26_02ocv"]
+[ext_resource type="Resource" uid="uid://ch6uawoeugf1x" path="res://Resources/Items/BaseTypes/Base_Dagger.tres" id="27_hsnb7"]
+[ext_resource type="Resource" uid="uid://8ljp76qu0ced" path="res://Resources/Items/BaseTypes/Base_SMG.tres" id="28_dk20e"]
+[ext_resource type="Resource" uid="uid://du2xohmhqnykk" path="res://Resources/Items/BaseTypes/Base_Pistol.tres" id="29_oqplw"]
+[ext_resource type="Resource" uid="uid://dd7da2d8a8a74" path="res://Resources/Items/BaseTypes/Base_Shotgun.tres" id="30_dkplh"]
+[ext_resource type="Resource" uid="uid://bj0t03hq8mm" path="res://Resources/Items/BaseTypes/Base_Spell_Buff.tres" id="31_82nsm"]
+[ext_resource type="Resource" uid="uid://bj0t03hq8mn" path="res://Resources/Items/BaseTypes/Base_Spell_Debuff.tres" id="32_yc78x"]
+[ext_resource type="Resource" uid="uid://bsmjfk0obawn" path="res://Resources/Items/BaseTypes/Base_Shield_Active_Template.tres" id="33_fnpwp"]
+[ext_resource type="Resource" uid="uid://bsmjfk0obawn" path="res://Resources/Items/BaseTypes/Base_Shield_Passive_Template.tres" id="34_rmh8v"]
 
 [sub_resource type="Resource" id="Resource_rmh8v"]
 script = ExtResource("14_s8hwr")
@@ -477,6 +489,18 @@ metadata/_custom_type_script = "uid://qp2c6a6vyih1"
 
 [node name="PassiveShieldAttributeActivator" type="Node" parent="." unique_id=336129853]
 script = ExtResource("22_7r15b")
+
+[node name="LoadoutAssigner" type="Node" parent="." unique_id=279898592]
+script = ExtResource("23_oirap")
+melee_pool = Array[ExtResource("24_x8u2g")]([ExtResource("25_s8hwr"), ExtResource("26_02ocv"), ExtResource("27_hsnb7")])
+ranged_pool = Array[ExtResource("24_x8u2g")]([ExtResource("28_dk20e"), ExtResource("29_oqplw"), ExtResource("30_dkplh")])
+spell_pool = Array[ExtResource("24_x8u2g")]([ExtResource("31_82nsm"), ExtResource("32_yc78x")])
+shield_pool = Array[ExtResource("24_x8u2g")]([ExtResource("33_fnpwp"), ExtResource("34_rmh8v")])
+guarantee_melee = true
+guarantee_ranged = true
+guarantee_spell = true
+guarantee_shield = true
+metadata/_custom_type_script = "uid://cwbkt1ur6316g"
 
 [editable path="Equipment"]
 [editable path="StateHandler"]

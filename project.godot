@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 GameClock="*uid://phsoknmb2wgw"
+WorldSeed="*uid://cv7s2poyxooix"
 
 [editor]
 

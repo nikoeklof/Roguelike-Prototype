@@ -18,9 +18,22 @@
 [ext_resource type="PackedScene" uid="uid://b8s1g24kyrtsq" path="res://Scenes/StateHandler/StateHandler.tscn" id="18_p0go8"]
 [ext_resource type="Script" uid="uid://qp2c6a6vyih1" path="res://Scripts/States/VFX/EntityVisualController.gd" id="20_o0gml"]
 [ext_resource type="Script" uid="uid://dq8au21fkubdm" path="res://Scripts/Components/Combat/SpellCastingManager.gd" id="21_o0gml"]
+[ext_resource type="Script" uid="uid://bbbudfifufwof" path="res://Scripts/Components/Control/EnemyControl.gd" id="22_2fryh"]
 [ext_resource type="Script" uid="uid://bs4c2dtvfm8dk" path="res://Scripts/Components/Combat/PassiveShieldAttributeActivator.gd" id="22_7r15b"]
 [ext_resource type="Texture2D" uid="uid://ef76oyy21t8e" path="res://Art/Characters/Player_Character_8_way.png" id="22_fnpwp"]
 [ext_resource type="Script" uid="uid://bf1jc03yjtbpr" path="res://Scripts/Components/AI/EnemyAI.gd" id="23_ai001"]
+[ext_resource type="Script" uid="uid://cwbkt1ur6316g" path="res://Scripts/Components/Equipment/Slots/LoadoutAssigner.gd" id="23_mo1ti"]
+[ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="24_ume4a"]
+[ext_resource type="Resource" uid="uid://dki8qndxyoqep" path="res://Resources/Items/BaseTypes/Base_Maul.tres" id="25_uqtn4"]
+[ext_resource type="Resource" uid="uid://bo12lrqfrp7gs" path="res://Resources/Items/BaseTypes/Base_Sword.tres" id="26_n6bx3"]
+[ext_resource type="Resource" uid="uid://ch6uawoeugf1x" path="res://Resources/Items/BaseTypes/Base_Dagger.tres" id="27_7plt6"]
+[ext_resource type="Resource" uid="uid://8ljp76qu0ced" path="res://Resources/Items/BaseTypes/Base_SMG.tres" id="28_uql27"]
+[ext_resource type="Resource" uid="uid://du2xohmhqnykk" path="res://Resources/Items/BaseTypes/Base_Pistol.tres" id="29_a30pk"]
+[ext_resource type="Resource" uid="uid://dd7da2d8a8a74" path="res://Resources/Items/BaseTypes/Base_Shotgun.tres" id="30_ik44k"]
+[ext_resource type="Resource" uid="uid://bj0t03hq8mm" path="res://Resources/Items/BaseTypes/Base_Spell_Buff.tres" id="31_b81aq"]
+[ext_resource type="Resource" uid="uid://bj0t03hq8mn" path="res://Resources/Items/BaseTypes/Base_Spell_Debuff.tres" id="32_6yjbs"]
+[ext_resource type="Resource" uid="uid://bsmjfk0obawn" path="res://Resources/Items/BaseTypes/Base_Shield_Active_Template.tres" id="33_hkgrd"]
+[ext_resource type="Resource" uid="uid://bsmjfk0obawn" path="res://Resources/Items/BaseTypes/Base_Shield_Passive_Template.tres" id="34_u45qo"]
 
 [sub_resource type="Resource" id="Resource_rmh8v"]
 script = ExtResource("14_s8hwr")
@@ -455,6 +468,7 @@ equipment_path = NodePath("../Equipment")
 [node name="EntityVisualController" type="Node" parent="." unique_id=2027082757]
 script = ExtResource("20_o0gml")
 sprite_path = NodePath("../Visual/Sprite")
+default_tint = Color(1, 0.093340985, 0.9706901, 1)
 
 [node name="PassiveShieldAttributeActivator" type="Node" parent="." unique_id=1702645069]
 script = ExtResource("22_7r15b")
@@ -462,6 +476,23 @@ script = ExtResource("22_7r15b")
 [node name="EnemyAI" type="Node" parent="." unique_id=539114663]
 script = ExtResource("23_ai001")
 decision_interval = 0.15
+
+[node name="EnemyControl" type="Node" parent="." unique_id=1952024130]
+script = ExtResource("22_2fryh")
+metadata/_custom_type_script = "uid://bbbudfifufwof"
+
+[node name="LoadoutAssigner" type="Node" parent="." unique_id=1700062721]
+script = ExtResource("23_mo1ti")
+melee_pool = Array[ExtResource("24_ume4a")]([ExtResource("25_uqtn4"), ExtResource("26_n6bx3"), ExtResource("27_7plt6")])
+ranged_pool = Array[ExtResource("24_ume4a")]([ExtResource("28_uql27"), ExtResource("29_a30pk"), ExtResource("30_ik44k")])
+spell_pool = Array[ExtResource("24_ume4a")]([ExtResource("31_b81aq"), ExtResource("32_6yjbs")])
+shield_pool = Array[ExtResource("24_ume4a")]([ExtResource("33_hkgrd"), ExtResource("34_u45qo")])
+guarantee_melee = true
+ranged_chance = 0.0
+spell_chance = 0.0
+shield_chance = 0.0
+only_if_empty = false
+metadata/_custom_type_script = "uid://cwbkt1ur6316g"
 
 [editable path="Equipment"]
 [editable path="StateHandler"]

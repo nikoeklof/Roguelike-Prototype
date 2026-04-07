@@ -439,10 +439,34 @@ func _refresh_inventory() -> void:
 		if item == null:
 			equip_list.add_item("%s: (empty)" % k)
 		else:
-			var item_name: String = "(unnamed)"
-			if item.get("name") != null:
-				item_name = str(item.get("name"))
-			equip_list.add_item("%s: %s" % [k, item_name])
+			var label: String = _get_item_display_name(item)
+			equip_list.add_item("%s: %s" % [k, label])
+
+
+func _get_item_display_name(item: Node) -> String:
+	"""Extract the display name from an item's ItemInstance/ItemDef."""
+	# Try to get ItemInstance first
+	if item.has_method("get_item_instance"):
+		var inst: ItemInstance = item.call("get_item_instance") as ItemInstance
+		if inst != null and inst.def != null:
+			var display: String = inst.def.display_name.strip_edges()
+			if not display.is_empty():
+				# Append rarity (attribute count) if any
+				var rarity: int = inst.attributes.size()
+				if rarity > 0:
+					return "%s [%d attr]" % [display, rarity]
+				return display
+	
+	# Fallback: check item_def directly (some items expose it as a property)
+	if "item_def" in item:
+		var def: ItemDef = item.get("item_def") as ItemDef
+		if def != null:
+			var display: String = def.display_name.strip_edges()
+			if not display.is_empty():
+				return display
+	
+	# Last resort: node name
+	return str(item.name)
 
 func _on_item_selected(index: int) -> void:
 	if details == null:
