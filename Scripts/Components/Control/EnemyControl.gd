@@ -16,8 +16,19 @@ var _is_down := false
 var _press_consumed_count: int = 0
 const PRESS_CONSUME_LIMIT: int = 2  # Idle reads it, then Attack.enter reads it
 
+# Auto-release: how many physics frames to hold the press before releasing
+var _hold_frames_remaining: int = 0
+const HOLD_DURATION_FRAMES: int = 4  # Hold for 4 frames then auto-release
+
 # Block state
 var _block_intent: bool = false
+
+
+func _physics_process(_delta: float) -> void:
+	if _is_down and _hold_frames_remaining > 0:
+		_hold_frames_remaining -= 1
+		if _hold_frames_remaining <= 0:
+			release_attack()
 
 
 func set_move_intent(v: Vector2) -> void:
@@ -31,6 +42,7 @@ func press_attack(dir: Vector2, kind: int) -> void:
 	_press_consumed_count = 0
 	_released_frame = false
 	_is_down = true
+	_hold_frames_remaining = HOLD_DURATION_FRAMES
 
 
 func release_attack() -> void:
@@ -38,6 +50,7 @@ func release_attack() -> void:
 	_pressed_frame = false
 	_is_down = false
 	_attack_kind = Combat.AttackKind.NONE
+	_hold_frames_remaining = 0
 
 
 func set_block_intent(value: bool) -> void:

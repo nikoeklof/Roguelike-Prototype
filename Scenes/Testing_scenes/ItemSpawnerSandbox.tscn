@@ -51,7 +51,25 @@ shape = SubResource("RectangleShape2D_3dogw")
 [node name="Player" parent="." unique_id=423000657 groups=["player"] instance=ExtResource("1_kyx5t")]
 
 [node name="EnemyMelee" parent="." unique_id=698630020 instance=ExtResource("23_51bvn")]
-position = Vector2(168, -177)
+position = Vector2(306, -214)
+
+[node name="EnemyMelee2" parent="." unique_id=125305916 instance=ExtResource("23_51bvn")]
+position = Vector2(328, -323)
+
+[node name="EnemyMelee3" parent="." unique_id=1257952411 instance=ExtResource("23_51bvn")]
+position = Vector2(461, -170)
+
+[node name="EnemyMelee4" parent="." unique_id=1938174871 instance=ExtResource("23_51bvn")]
+position = Vector2(551, -301)
+
+[node name="EnemyMelee5" parent="." unique_id=326761337 instance=ExtResource("23_51bvn")]
+position = Vector2(284, -303)
+
+[node name="EnemyMelee6" parent="." unique_id=871696389 instance=ExtResource("23_51bvn")]
+position = Vector2(403, -291)
+
+[node name="EnemyMelee7" parent="." unique_id=1862048971 instance=ExtResource("23_51bvn")]
+position = Vector2(477, -239)
 
 [node name="DebugHud" parent="." unique_id=1698329193 instance=ExtResource("2_tiaw2")]
 player_root_path = NodePath("../Player")

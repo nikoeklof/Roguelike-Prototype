@@ -52,6 +52,10 @@ var _patrol_timer: float = 0.0
 var _patrol_idle: bool = false
 var _patrol_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
+# Debug
+var _debug_timer: float = 0.0
+const DEBUG_INTERVAL: float = 2.0
+
 
 func _ready() -> void:
 	_entity = get_parent() as Entity
@@ -94,10 +98,16 @@ func _full_init() -> void:
 	if _control == null:
 		print("[EnemyAI] WARNING: No ControlSource component - AI cannot execute actions")
 	
+	if _combat == null:
+		print("[EnemyAI] WARNING: No Combat component - AI cannot attack")
+	
 	# Check if entity can attack
 	var can_attack: bool = _capabilities.is_enabled(Capabilities.CAN_ATTACK)
 	if not can_attack:
 		print("[EnemyAI] WARNING: Entity cannot attack (no can_attack capability)")
+	
+	# Try to find player before creating modules
+	_try_acquire_target()
 	
 	# Initialize behavior modules based on inventory
 	_initialize_behavior_modules()
@@ -109,46 +119,41 @@ func _full_init() -> void:
 	_patrol_rng.seed = hash(str(_entity.get_path()))
 	_pick_new_patrol_direction()
 	
-	# Try to find player immediately, but don't worry if not found
-	_try_acquire_target()
-	
 	if _target != null:
 		_set_awareness(Awareness.ALERT)
 	else:
 		_set_awareness(Awareness.IDLE)
 		print("[EnemyAI] No player found yet — starting patrol")
 	
-	print("[EnemyAI] Ready with %d behavior modules" % _behavior_modules.size())
+	print("[EnemyAI] Ready with %d behavior modules, combat=%s, control=%s" % [
+		_behavior_modules.size(),
+		"OK" if _combat != null else "NULL",
+		"OK" if _control != null else "NULL"
+	])
 
 
 func _try_acquire_target() -> void:
-	"""Try to find a player. Returns true if found."""
+	"""Try to find a player. Updates all modules if target changes."""
 	var player: Node2D = get_tree().get_first_node_in_group("player") as Node2D
-	if player != null and _is_valid_target(player):
-		if _target != player:
-			_target = player
-			target_changed.emit(_target)
-			
-			# Update target reference on all modules
-			for module in _behavior_modules:
-				if "target" in module:
-					module.target = _target
+	if player == null:
 		return
 	
-	# Player node exists but might be too far — still track it
-	if player != null and _target == null:
-		_target = player
-		target_changed.emit(_target)
-		for module in _behavior_modules:
-			if "target" in module:
-				module.target = _target
+	if _target == player:
+		return  # Already tracking this target
+	
+	_target = player
+	target_changed.emit(_target)
+	print("[EnemyAI] Target acquired: %s" % _target.name)
+	
+	# Update target on ALL modules using the proper method
+	for module: AIBehaviorModule in _behavior_modules:
+		module.set_target(_target)
 
 
 func _is_valid_target(target: Node2D) -> bool:
 	"""Check if a target is valid (exists, alive, in range)."""
 	if target == null or not is_instance_valid(target):
 		return false
-	# Could add health check here later
 	return true
 
 
@@ -193,12 +198,17 @@ func _initialize_behavior_modules() -> void:
 	if shield_slot != null:
 		has_shield = shield_slot.get_item() != null
 	
+	print("[EnemyAI] Inventory check: melee=%s ranged=%s spell=%s shield=%s" % [has_melee, has_ranged, has_spell, has_shield])
+	
 	if has_melee:
 		var melee_module = MeleeAIModule.new()
 		melee_module._setup(_entity, _target, _combat, _mover, _stats, _health, _equipment)
 		add_child(melee_module)
 		_behavior_modules.append(melee_module)
-		print("[EnemyAI] Added MeleeAIModule (melee equipped)")
+		print("[EnemyAI] Added MeleeAIModule (target=%s, combat=%s)" % [
+			"OK" if _target != null else "NULL",
+			"OK" if _combat != null else "NULL"
+		])
 	
 	if has_ranged:
 		var ranged_module = RangedAIModule.new()
@@ -238,6 +248,24 @@ func _physics_process(delta: float) -> void:
 	# Update awareness state based on target distance
 	_update_awareness(delta)
 	
+	# Periodic debug
+	_debug_timer += delta
+	if _debug_timer >= DEBUG_INTERVAL:
+		_debug_timer = 0.0
+		var dist: float = INF
+		if _target != null and _entity != null:
+			dist = _entity.global_position.distance_to(_target.global_position)
+		var state_names := ["IDLE", "ALERT", "LOST"]
+		var decision_str: String = _current_decision.state if _current_decision != null else "null"
+		print("[EnemyAI] STATUS: awareness=%s, decision=%s, dist=%.1f, target=%s, modules=%d, control=%s" % [
+			state_names[_awareness],
+			decision_str,
+			dist,
+			"OK" if _target != null else "NULL",
+			_behavior_modules.size(),
+			"OK" if _control != null else "NULL"
+		])
+	
 	# Route to appropriate behavior based on awareness
 	match _awareness:
 		Awareness.IDLE:
@@ -253,7 +281,6 @@ func _update_awareness(delta: float) -> void:
 	var has_target: bool = _target != null and is_instance_valid(_target)
 	
 	if not has_target:
-		# No player in the scene at all
 		if _awareness != Awareness.IDLE:
 			_set_awareness(Awareness.IDLE)
 		return
@@ -262,22 +289,18 @@ func _update_awareness(delta: float) -> void:
 	
 	match _awareness:
 		Awareness.IDLE:
-			# Spot the player within aggro range
 			if distance <= aggro_range:
 				_set_awareness(Awareness.ALERT)
 		
 		Awareness.ALERT:
-			# Player moved out of deaggro range
 			if distance > deaggro_range:
 				_lost_timer = 0.0
 				_set_awareness(Awareness.LOST)
 		
 		Awareness.LOST:
-			# Player came back into aggro range
 			if distance <= aggro_range:
 				_set_awareness(Awareness.ALERT)
 			else:
-				# Search timer expires → go back to patrol
 				_lost_timer += delta
 				if _lost_timer >= lost_search_duration:
 					_set_awareness(Awareness.IDLE)
@@ -294,7 +317,6 @@ func _process_patrol(delta: float) -> void:
 	if _patrol_timer <= 0.0:
 		_pick_new_patrol_direction()
 	
-	# Apply patrol movement
 	if _control != null:
 		_control.set_block_intent(false)
 		if _patrol_idle:
@@ -302,7 +324,6 @@ func _process_patrol(delta: float) -> void:
 		else:
 			_control.set_move_intent(_patrol_dir * patrol_speed_mult)
 	
-	# Update decision for debug purposes
 	if _patrol_idle:
 		_current_decision = AIDecision.new("patrol_idle", 0)
 	else:
@@ -311,13 +332,11 @@ func _process_patrol(delta: float) -> void:
 
 func _pick_new_patrol_direction() -> void:
 	"""Choose a new random patrol direction or idle pause."""
-	# Chance to stop and idle
 	if _patrol_rng.randf() < patrol_idle_chance:
 		_patrol_idle = true
 		_patrol_timer = _patrol_rng.randf_range(patrol_idle_duration_min, patrol_idle_duration_max)
 	else:
 		_patrol_idle = false
-		# Pick a random direction
 		var angle: float = _patrol_rng.randf_range(0.0, TAU)
 		_patrol_dir = Vector2(cos(angle), sin(angle))
 		_patrol_timer = _patrol_rng.randf_range(patrol_direction_change_min, patrol_direction_change_max)
@@ -351,7 +370,6 @@ func _process_combat(delta: float) -> void:
 
 func _process_lost(delta: float) -> void:
 	"""Move toward last known player position, then give up."""
-	# Move toward where the player was
 	if _target != null and is_instance_valid(_target) and _control != null:
 		var dir: Vector2 = (_target.global_position - _entity.global_position).normalized()
 		_control.set_move_intent(dir * 0.6)
@@ -368,7 +386,6 @@ func _make_decision() -> void:
 	"""Gather context and ask modules for best action, with conflict resolution"""
 	var context := _build_context()
 	
-	# Ask all modules for decisions
 	var candidate_decisions: Array[AIDecision] = []
 	
 	for module in _behavior_modules:
@@ -385,7 +402,6 @@ func _make_decision() -> void:
 		_current_decision = AIDecision.new("chase", 50)
 		return
 	
-	# Resolve conflicts between decisions
 	var best_decision := _resolve_conflicts(candidate_decisions, context)
 	
 	if _current_decision == null or best_decision.state != _current_decision.state:
@@ -411,17 +427,18 @@ func _execute_decision() -> void:
 		"melee_attack":
 			if _combat != null:
 				_equipment.set_active_slot_melee("ai_melee")
-				# Let the state machine + Combat handle the actual attack.
-				# We set move intent toward target so Walk→Idle→Attack cycle works,
-				# and press_attack so the ControlSource signals the Attack state.
 				_control.set_move_intent(dir_to_target)
 				if not _control.attack_is_down():
+					print("[EnemyAI] EXEC: press_attack MELEE dir=%s" % dir_to_target)
 					_control.press_attack(dir_to_target, Combat.AttackKind.MELEE)
+				else:
+					print("[EnemyAI] EXEC: melee_attack but attack already down, waiting for auto-release")
 		"ranged_attack":
 			if _combat != null:
 				_equipment.set_active_slot_ranged("ai_ranged")
 				_control.set_move_intent(Vector2.ZERO)
 				if not _control.attack_is_down():
+					print("[EnemyAI] EXEC: press_attack RANGED dir=%s" % dir_to_target)
 					_control.press_attack(dir_to_target, Combat.AttackKind.RANGED)
 		"cast_spell":
 			if _combat != null:
@@ -436,17 +453,14 @@ func _execute_decision() -> void:
 		"chase":
 			var dist: float = _entity.global_position.distance_to(_target.global_position) if _target != null else INF
 			if dist < 1.0:
-				# Overlapping — escape downward
 				_control.set_move_intent(Vector2.DOWN)
 			elif dist < 20.0:
-				# Too close — push apart
 				_control.set_move_intent(-dir_to_target * 0.5)
 			else:
 				_control.set_move_intent(dir_to_target)
 			if _control.attack_is_down():
 				_control.release_attack()
 		"kite":
-			# Handled by RangedAIModule.physics_update()
 			if _control.attack_is_down():
 				_control.release_attack()
 		"idle", "patrol", "patrol_idle":
@@ -454,7 +468,6 @@ func _execute_decision() -> void:
 			if _control.attack_is_down():
 				_control.release_attack()
 		_:
-			# Unknown state — release everything
 			if _control.attack_is_down():
 				_control.release_attack()
 
@@ -479,7 +492,6 @@ func _resolve_conflicts(decisions: Array[AIDecision], context: Dictionary) -> AI
 		else:
 			movement_decisions.append(decision)
 	
-	# Defense overrides everything if health is critical
 	if not defense_decisions.is_empty():
 		var health_percent: float = context.get("health_percent", 1.0)
 		if health_percent < 0.3:

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="AttributePoolDef" format=3 uid="uid://c6kyrmppx6hml"]
+[gd_resource type="Resource" script_class="AttributePoolDef" format=3]
 
 [ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="1_8yo1t"]
 [ext_resource type="Script" uid="uid://bo58hs72paoxt" path="res://Scripts/Items/AttributePoolDef.gd" id="2_h8fvq"]

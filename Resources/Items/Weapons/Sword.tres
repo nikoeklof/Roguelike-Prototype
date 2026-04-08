@@ -11,7 +11,7 @@ windup_time = 0.1
 recovery_time = 0.1
 knockback = 1.0
 hitbox_offset = Vector2(0.6, 0)
-hitbox_size = Vector2(1.2, 1)
+hitbox_size = Vector2(70, 20)
 metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [resource]

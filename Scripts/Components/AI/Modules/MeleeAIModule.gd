@@ -6,10 +6,17 @@ class_name MeleeAIModule
 @export var chase_speed_mult: float = 1.0
 @export var separation_distance: float = 20.0
 
+var _debug_timer: float = 0.0
+const DEBUG_INTERVAL: float = 1.0
+
 
 func decide(context: Dictionary) -> AIDecision:
 	"""Decide melee action based on context"""
-	if _target == null or _combat == null:
+	if _target == null:
+		print("[MeleeAI] decide: _target is NULL — cannot decide")
+		return null
+	if _combat == null:
+		print("[MeleeAI] decide: _combat is NULL — cannot decide")
 		return null
 	
 	var distance: float = context.get("distance", INF)
@@ -18,6 +25,7 @@ func decide(context: Dictionary) -> AIDecision:
 	
 	# Priority 100: Attack if ready and in range
 	if distance <= attack_range and is_ready:
+		print("[MeleeAI] decide: MELEE_ATTACK (dist=%.1f, range=%.1f, cd=%.2f)" % [distance, attack_range, melee_cooldown])
 		return AIDecision.new("melee_attack", 100, {
 			"ready": true,
 			"distance": distance
@@ -35,23 +43,18 @@ func decide(context: Dictionary) -> AIDecision:
 
 
 func physics_update(delta: float, decision: AIDecision) -> void:
-	"""Handle movement with overlap protection"""
-	if decision == null or decision.state != "chase" or _target == null or _mover == null:
-		return
-	
-	var to_target: Vector2 = _target.global_position - _entity.global_position
-	var distance: float = to_target.length()
-	
-	if distance < 1.0:
-		# Nearly perfectly overlapping — push away on a fixed axis
-		_mover.intent = Vector2.DOWN * chase_speed_mult
-	elif distance <= separation_distance:
-		# Too close / overlapping — push apart instead of chasing
-		_mover.intent = -to_target.normalized() * chase_speed_mult * 0.5
-	elif distance <= stop_distance:
-		_mover.intent = Vector2.ZERO
-	else:
-		_mover.intent = to_target.normalized() * chase_speed_mult
-	
-	if _entity is CharacterBody2D:
-		_mover.apply(_entity as CharacterBody2D, delta)
+	"""Periodic debug only. Movement is handled by EnemyAI._execute_decision() 
+	via the control source → state machine → mover pipeline."""
+	_debug_timer += delta
+	if _debug_timer >= DEBUG_INTERVAL:
+		_debug_timer = 0.0
+		var dist: float = INF
+		if _target != null and _entity != null:
+			dist = _entity.global_position.distance_to(_target.global_position)
+		var decision_str: String = decision.state if decision != null else "null"
+		print("[MeleeAI] tick: target=%s, combat=%s, dist=%.1f, decision=%s" % [
+			"OK" if _target != null else "NULL",
+			"OK" if _combat != null else "NULL",
+			dist,
+			decision_str
+		])

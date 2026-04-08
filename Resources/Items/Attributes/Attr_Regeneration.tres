@@ -1,11 +1,9 @@
-[gd_resource type="Resource" script_class="ShieldRegenerationAttribute" format=3 uid="uid://shield_regen"]
+[gd_resource type="Resource" script_class="ShieldRegenerationAttribute" format=3 uid="uid://dg6cdanvp7eul"]
 
-[ext_resource type="Script" path="res://Scripts/Items/Attributes/Shields/Attr_PassiveShield_Regeneration.gd" id="script"]
+[ext_resource type="Script" uid="uid://dpdx2d7h3wywm" path="res://Scripts/Items/Attributes/Shields/Attr_PassiveShield_Regeneration.gd" id="script"]
 
 [resource]
 script = ExtResource("script")
 id = &"regeneration"
 display_name = "Regeneration"
 editor_description = "Passive shields: Slowly recover health while equipped"
-tick_interval_sec = 1.0
-hp_per_tick = 5.0

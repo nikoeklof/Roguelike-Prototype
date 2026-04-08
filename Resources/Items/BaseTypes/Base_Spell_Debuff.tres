@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_ixux0"]
 [ext_resource type="PackedScene" uid="uid://cosg8jgc5pgfy" path="res://Scenes/Templates/EquipmentItems/Projectile_template.tscn" id="2_l6pcr"]
 [ext_resource type="Script" uid="uid://chvmgm0f6jstl" path="res://Scripts/Items/SpellItemDef.gd" id="2_y68fg"]
-[ext_resource type="Resource" uid="uid://c6kyrmppx6hml" path="res://Resources/Items/Pools/Pool_Spell_Debuff_All.tres" id="3"]
+[ext_resource type="Resource" uid="uid://c6kyrmppx6hml" path="res://Resources/Items/Pools/Pool_Shield_All.tres" id="3"]
 
 [sub_resource type="Resource" id="Resource_l6pcr"]
 script = ExtResource("1_ixux0")

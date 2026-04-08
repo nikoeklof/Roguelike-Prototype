@@ -76,12 +76,14 @@ func on_equipped(owner_entity: Node) -> void:
 	if owner_entity == null:
 		return
 	_apply_passives(owner_entity)
+	_fire_attribute_hooks("on_equip", owner_entity)
 
 
 func on_unequipped(owner_entity: Node) -> void:
 	var target := owner_entity if owner_entity != null else _owner
 	if target == null:
 		return
+	_fire_attribute_hooks("on_unequip", target)
 	_clear_passives(target)
 	_owner = null
 
@@ -181,3 +183,28 @@ func _find_stats(root: Node) -> Stats:
 	if root is Entity:
 		return (root as Entity).find_component(&"Stats") as Stats
 	return root.get_node_or_null("Stats") as Stats
+
+func _fire_attribute_hooks(method_name: String, owner_entity: Node) -> void:
+	"""Call a method on all attributes that implement it (e.g. on_equip, on_unequip)."""
+	if _instance == null or _instance.attributes.is_empty():
+		return
+
+	var ctx := CombatContext.new()
+	ctx.owner = owner_entity
+	ctx.aim_dir = Vector2.RIGHT
+	ctx.item = self
+	ctx.item_instance = _instance
+
+	if owner_entity is Entity:
+		var ent := owner_entity as Entity
+		ctx.stats = ent.find_component(&"Stats")
+		ctx.faction = ent.find_component(&"Faction")
+		ctx.tags = ent.find_component(&"Tags")
+		ctx.capabilities = ent.find_component(&"Capabilities")
+
+	for attr: ItemAttribute in _instance.attributes:
+		if attr == null:
+			continue
+		if attr.has_method(method_name):
+			print("[Shield] Firing %s on attribute: %s" % [method_name, attr.display_name])
+			attr.call(method_name, ctx, _instance)

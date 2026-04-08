@@ -22,6 +22,11 @@ func _setup(entity: Entity, target: Node2D, combat: Combat, mover: Mover, stats:
 	_equipment = equipment
 
 
+func set_target(new_target: Node2D) -> void:
+	"""Update the target reference. Called by EnemyAI when target changes."""
+	_target = new_target
+
+
 func decide(context: Dictionary) -> AIDecision:
 	"""Make decision based on context. Override in subclasses."""
 	return null
