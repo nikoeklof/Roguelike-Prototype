@@ -48,13 +48,11 @@ position = Vector2(37, -492.5)
 scale = Vector2(0.375, 0.375)
 shape = SubResource("RectangleShape2D_3dogw")
 
-[node name="DebugHud" parent="." unique_id=1698329193 instance=ExtResource("2_tiaw2")]
-scale = Vector2(0.8, 0.8)
-transform = Transform2D(0.8, 0, 0, 0.8, 0, 0)
-follow_viewport_enabled = false
-player_root_path = NodePath("../Player")
-
 [node name="Player" parent="." unique_id=423000657 groups=["player"] instance=ExtResource("1_kyx5t")]
 
 [node name="EnemyMelee" parent="." unique_id=698630020 instance=ExtResource("23_51bvn")]
 position = Vector2(168, -177)
+
+[node name="DebugHud" parent="." unique_id=1698329193 instance=ExtResource("2_tiaw2")]
+follow_viewport_enabled = false
+player_root_path = NodePath("../Player")
