@@ -5,17 +5,14 @@ class_name DebugHUD
 ## and concatenates section outputs into the display label.
 ## To add a new section: add a child node with a script extending DebugHUDSection.
 
-@export var floor_spawner_path: NodePath
 @export var player_root_path: NodePath
 @export var toggle_action: StringName = &"ui_debug_toggle"
 @export_range(0.01, 0.5, 0.01) var update_tick_rate: float = 0.1
 
-@onready var minimap: MinimapControl = %Minimap
 @onready var info_label: RichTextLabel = %InfoLabel
 @onready var equip_list: ItemList = %EquipList
 @onready var details: RichTextLabel = %Details
 
-var _floor_spawner: Node = null
 var _player: Node2D = null
 var _equipment: Equipment = null
 var _stats: Stats = null
@@ -23,7 +20,6 @@ var _passive_shield_activator: PassiveShieldAttributeActivator = null
 
 var _sections: Array[DebugHUDSection] = []
 var _update_timer: float = 0.0
-var _seed_line: String = "Seed:"
 var _last_output: String = ""
 
 
@@ -33,18 +29,12 @@ var _last_output: String = ""
 
 func _ready() -> void:
 	_collect_sections()
-	_bind_floor_spawner()
 	_bind_player()
 	_wire_ui()
-
-	call_deferred("_pull_existing_floor_plan")
 	call_deferred("_refresh_inventory")
 
 
 func _process(delta: float) -> void:
-	if minimap != null and _player != null:
-		minimap.set_player_cell(_world_to_cell(_player.global_position))
-
 	_update_timer += delta
 	if _update_timer >= update_tick_rate:
 		_update_timer = 0.0
@@ -81,14 +71,15 @@ func _rebuild_display() -> void:
 		return
 
 	var ctx: DebugHUDContext = _build_context()
-
-	var output: String = _seed_line
+	var output: String = ""
 
 	for section: DebugHUDSection in _sections:
 		var body: String = section.build_text(ctx)
 		if body.is_empty():
 			continue
-		output += "\n\n[b]%s[/b]\n" % section.section_name()
+		if not output.is_empty():
+			output += "\n\n"
+		output += "[b]%s[/b]\n" % section.section_name()
 		output += body
 
 	# Only update the label if content changed
@@ -111,9 +102,7 @@ func _build_context() -> DebugHUDContext:
 	if _player != null:
 		ctx.player_health = _player.get_node_or_null("Health") as Health
 
-	# Gather enemies
 	ctx.enemies = _find_enemies()
-
 	return ctx
 
 
@@ -122,11 +111,9 @@ func _find_enemies() -> Array[Node]:
 	if get_tree() == null:
 		return enemies
 
-	# Try group first
 	for node: Node in get_tree().get_nodes_in_group("enemy"):
 		enemies.append(node)
 
-	# Fallback: scan for EnemyAI nodes
 	if enemies.is_empty():
 		_scan_for_enemy_ai(get_tree().root, enemies)
 
@@ -147,21 +134,6 @@ func _scan_for_enemy_ai(root: Node, out: Array[Node]) -> void:
 # -------------------------
 # Binding
 # -------------------------
-
-func _bind_floor_spawner() -> void:
-	if floor_spawner_path != NodePath():
-		_floor_spawner = get_node_or_null(floor_spawner_path)
-	else:
-		_floor_spawner = get_tree().get_first_node_in_group("floor_spawner")
-
-	if _floor_spawner == null:
-		push_warning("DebugHUD: FloorSpawner not found.")
-		return
-
-	if _floor_spawner.has_signal("floor_plan_generated"):
-		if not _floor_spawner.is_connected("floor_plan_generated", _on_floor_plan_generated):
-			_floor_spawner.connect("floor_plan_generated", _on_floor_plan_generated)
-
 
 func _bind_player() -> void:
 	if player_root_path != NodePath():
@@ -204,26 +176,6 @@ func _connect_slot_changed(path: NodePath) -> void:
 func _wire_ui() -> void:
 	if equip_list != null and not equip_list.item_selected.is_connected(_on_item_selected):
 		equip_list.item_selected.connect(_on_item_selected)
-
-
-# -------------------------
-# Floor plan
-# -------------------------
-
-func _pull_existing_floor_plan() -> void:
-	if _floor_spawner == null:
-		return
-	if _floor_spawner.has_method("get_floor_plan"):
-		var plan: Variant = _floor_spawner.call("get_floor_plan")
-		if plan != null:
-			_on_floor_plan_generated(plan)
-
-
-func _on_floor_plan_generated(plan: FloorGenerator.FloorPlan) -> void:
-	print("[DebugHUD] got floor plan. coords=", plan.coords.size())
-	if minimap != null:
-		minimap.set_floor_plan(plan)
-	_seed_line = "Seed: %d" % int(plan.seed)
 
 
 # -------------------------
@@ -320,15 +272,3 @@ func _on_item_selected(index: int) -> void:
 				var prop_name: String = str(p["name"])
 				var value: Variant = item.get(prop_name)
 				details.append_text("%s: %s\n" % [prop_name, str(value)])
-
-
-# -------------------------
-# Helpers
-# -------------------------
-
-func _world_to_cell(world_pos: Vector2) -> Vector2i:
-	const CELL_SIZE_WORLD: float = 528.0
-	return Vector2i(
-		roundi(world_pos.x / CELL_SIZE_WORLD),
-		roundi(world_pos.y / CELL_SIZE_WORLD)
-	)
