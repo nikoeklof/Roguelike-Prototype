@@ -82,6 +82,7 @@ visible = false
 player_root_path = NodePath("../Player")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=2065425086]
+visible = false
 navigation_polygon = SubResource("NavigationPolygon_tj7c2")
 
 [node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="NavigationRegion2D" unique_id=1170045039]
