@@ -18,32 +18,33 @@ func decide(context: Dictionary) -> AIDecision:
 	if _combat == null:
 		print("[MeleeAI] decide: _combat is NULL — cannot decide")
 		return null
-	
+
 	var distance: float = context.get("distance", INF)
 	var melee_cooldown: float = context.get("melee_cooldown", 0.0)
 	var is_ready: bool = melee_cooldown <= 0.0
-	
-	# Priority 100: Attack if ready and in range
-	if distance <= attack_range and is_ready:
-		print("[MeleeAI] decide: MELEE_ATTACK (dist=%.1f, range=%.1f, cd=%.2f)" % [distance, attack_range, melee_cooldown])
+	var has_los: bool = context.get("has_los", false)
+
+	# Priority 100: Attack if ready, in range, AND have line of sight
+	if distance <= attack_range and is_ready and has_los:
+		print("[MeleeAI] decide: MELEE_ATTACK (dist=%.1f, range=%.1f, cd=%.2f, LOS=true)" % [distance, attack_range, melee_cooldown])
 		return AIDecision.new("melee_attack", 100, {
 			"ready": true,
 			"distance": distance
 		})
-	
-	# Priority 70: Chase if in range to attack soon
+
+	# Priority 70: Chase if in aggro range (chase regardless of LOS — need to navigate to target)
 	if distance <= context.get("aggro_range", 300.0):
 		return AIDecision.new("chase", 70, {
 			"ready": is_ready,
 			"distance": distance,
 			"cooldown": melee_cooldown
 		})
-	
+
 	return null
 
 
 func physics_update(delta: float, decision: AIDecision) -> void:
-	"""Periodic debug only. Movement is handled by EnemyAI._execute_decision() 
+	"""Periodic debug only. Movement is handled by EnemyAI._execute_decision()
 	via the control source → state machine → mover pipeline."""
 	_debug_timer += delta
 	if _debug_timer >= DEBUG_INTERVAL:
