@@ -14,7 +14,7 @@ var pierce: int = 0
 var speed: float = 450.0
 var gravity: float = 0.0
 var lifetime_sec: float = 2.0
-var range: float = 900.0
+var max_range: float = 900.0
 
 var beam_duration_sec: float = 0.35
 var beam_tick_sec: float = 0.10

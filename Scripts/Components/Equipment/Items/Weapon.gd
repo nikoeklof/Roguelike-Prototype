@@ -1,6 +1,7 @@
 extends Node2D
 class_name Weapon
 
+@warning_ignore("unused_signal")
 signal attack_finished
 
 @export var enabled: bool = true

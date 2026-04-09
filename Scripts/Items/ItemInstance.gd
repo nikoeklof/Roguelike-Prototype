@@ -2,7 +2,7 @@ extends Resource
 class_name ItemInstance
 
 @export var def: ItemDef
-@export var seed: int = 0
+@export var item_seed: int = 0
 
 # Rolled shot mode for ranged items. This is the ONLY place shot mode lives
 # (mode is not represented by attributes anymore).

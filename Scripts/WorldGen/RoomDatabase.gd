@@ -110,7 +110,7 @@ func _collect_room_scene_paths(dir_path: String, out_paths: Array[String]) -> vo
 
 	dir.list_dir_begin()
 	while true:
-		var name: String = dir.get_next()
+		var _name: String = dir.get_next()
 		if name.is_empty():
 			break
 		if name.begins_with("."):

@@ -33,8 +33,8 @@ func _fire(snap: AttackSnapshot) -> void:
 	if not (context.owner is Node2D):
 		return
 
-	var owner: Node2D = context.owner as Node2D
-	var muzzle: Node2D = _resolve_muzzle(owner)
+	var owner_entity: Node2D = context.owner as Node2D
+	var muzzle: Node2D = _resolve_muzzle(owner_entity)
 	var inst: ItemInstance = context.item_instance
 
 	var base_dir: Vector2 = context.aim_dir
@@ -60,7 +60,7 @@ func _build_base_shot(
 ) -> RangedShotData:
 	var shot: RangedShotData = RangedShotData.new()
 
-	shot.mode = snap.ranged_mode
+	shot.mode = snap.ranged_mode as RangedShotData.ShotMode
 	shot.origin = muzzle.global_position + snap.muzzle_offset.rotated(muzzle.global_rotation)
 	shot.direction = _compute_shot_dir(snap, base_dir, index, count, inst)
 
@@ -80,15 +80,15 @@ func _build_base_shot(
 	shot.projectile_sprite_tint = snap.projectile_sprite_tint
 	shot.inherit_owner_velocity = snap.projectile_inherit_owner_velocity
 
-	shot.range = snap.hitscan_range
+	shot.max_range = snap.hitscan_range
 	if shot.mode == RangedShotData.ShotMode.BEAM:
-		shot.range = snap.beam_range
+		shot.max_range = snap.beam_range
 
 	shot.beam_duration_sec = snap.beam_duration_sec
 	shot.beam_tick_sec = snap.beam_tick_sec
 
 	if snap.projectile_range > 0.0:
-		shot.range = snap.projectile_range
+		shot.max_range = snap.projectile_range
 
 	return shot
 
@@ -122,7 +122,7 @@ func _compute_shot_dir(
 	inst: ItemInstance
 ) -> Vector2:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	var seed_base: int = inst.seed if inst != null else 1337
+	var seed_base: int = inst.item_seed if inst != null else 1337
 	var roll: int = maxi(1, snap.spread_roll)
 
 	rng.seed = int(
@@ -145,30 +145,30 @@ func _compute_shot_dir(
 	return dir.normalized()
 
 
-func _resolve_muzzle(owner: Node) -> Node2D:
-	var ws: Node2D = owner.get_node_or_null("FacingPointer/AimRay/WeaponSocket") as Node2D
+func _resolve_muzzle(source_entity: Node) -> Node2D:
+	var ws: Node2D = source_entity.get_node_or_null("FacingPointer/AimRay/WeaponSocket") as Node2D
 	if ws != null:
 		return ws
 
-	var ar: Node2D = owner.get_node_or_null("FacingPointer/AimRay") as Node2D
+	var ar: Node2D = source_entity.get_node_or_null("FacingPointer/AimRay") as Node2D
 	if ar != null:
 		return ar
 
-	var direct: Node2D = owner.get_node_or_null("WeaponSocket") as Node2D
+	var direct: Node2D = source_entity.get_node_or_null("WeaponSocket") as Node2D
 	if direct != null:
 		return direct
 
-	return owner as Node2D
+	return source_entity as Node2D
 
 
 func _fire_projectile(shot: RangedShotData, snap: AttackSnapshot, inst: ItemInstance) -> void:
-	var projectile_scene: PackedScene = shot.projectile_scene
-	if projectile_scene == null and shot.projectile_spec != null:
-		projectile_scene = shot.projectile_spec.scene
-	if projectile_scene == null:
-		projectile_scene = DEFAULT_PROJECTILE_SCENE
+	var proj_scene: PackedScene = shot.projectile_scene
+	if proj_scene == null and shot.projectile_spec != null:
+		proj_scene = shot.projectile_spec.scene
+	if proj_scene == null:
+		proj_scene = DEFAULT_PROJECTILE_SCENE
 
-	var node: Node = projectile_scene.instantiate()
+	var node: Node = proj_scene.instantiate()
 	var projectile: Projectile = node as Projectile
 	if projectile == null:
 		push_warning("projectile_scene is not a Projectile.")
@@ -193,7 +193,7 @@ func _fire_projectile(shot: RangedShotData, snap: AttackSnapshot, inst: ItemInst
 	launch.damage = shot.damage
 	launch.pierce = shot.pierce
 	launch.radius = max(1.0, shot.projectile_radius)
-	launch.max_range = max(0.0, shot.range)
+	launch.max_range = max(0.0, shot.max_range)
 	launch.collision_mask = shot.projectile_collision_mask
 	launch.sprite_texture = shot.projectile_sprite_texture
 	launch.sprite_tint = shot.projectile_sprite_tint
@@ -204,9 +204,9 @@ func _fire_projectile(shot: RangedShotData, snap: AttackSnapshot, inst: ItemInst
 	if inst != null:
 		ItemAttributeBus.dispatch_projectile_spawn(context, projectile, inst)
 
-	var owner: Node = context.owner
-	if owner != null and owner.get_parent() != null:
-		owner.get_parent().add_child(projectile)
+	var parent_node: Node = context.owner
+	if parent_node != null and parent_node.get_parent() != null:
+		parent_node.get_parent().add_child(projectile)
 	else:
 		get_tree().current_scene.add_child(projectile)
 
@@ -214,11 +214,11 @@ func _fire_projectile(shot: RangedShotData, snap: AttackSnapshot, inst: ItemInst
 func _collect_ray_hits(
 	origin: Vector2,
 	to: Vector2,
-	owner: Node2D,
+	source_entity: Node2D,
 	max_targets: int
 ) -> Dictionary:
-	var space: PhysicsDirectSpaceState2D = owner.get_world_2d().direct_space_state
-	var exclude: Array[RID] = _build_owner_exclude_list(owner)
+	var space: PhysicsDirectSpaceState2D = source_entity.get_world_2d().direct_space_state
+	var exclude: Array[RID] = _build_owner_exclude_list(source_entity)
 	var victims: Array[Dictionary] = []
 	var final_pos: Vector2 = to
 	var seen_victims: Dictionary = {}
@@ -251,7 +251,7 @@ func _collect_ray_hits(
 			break
 
 		# Ignore self-hits if they slipped through.
-		if victim_root == owner or owner.is_ancestor_of(victim_root):
+		if victim_root == source_entity or source_entity.is_ancestor_of(victim_root):
 			_collect_collision_rids(victim_root, exclude)
 			continue
 
@@ -292,17 +292,17 @@ func _fire_hitscan(
 	if not (combat_context.owner is Node2D):
 		return
 
-	var owner: Node2D = combat_context.owner as Node2D
+	var source_entity: Node2D = combat_context.owner as Node2D
 	var origin: Vector2 = shot.origin
 	var dir: Vector2 = shot.direction.normalized()
-	var range_value: float = max(1.0, shot.range)
+	var range_value: float = max(1.0, shot.max_range)
 	var damage: float = shot.damage
 	var pierce: int = max(0, shot.pierce)
 
 	var to: Vector2 = origin + dir * range_value
 	var max_targets: int = max(1, pierce + 1)
 
-	var result: Dictionary = _collect_ray_hits(origin, to, owner, max_targets)
+	var result: Dictionary = _collect_ray_hits(origin, to, source_entity, max_targets)
 	var victims: Array[Dictionary] = result.get("victims", []) as Array[Dictionary]
 	var final_pos: Vector2 = result.get("final_pos", to) as Vector2
 
@@ -371,8 +371,8 @@ func _beam_tick(
 	if not (combat_context.owner is Node2D):
 		return
 
-	var owner: Node2D = combat_context.owner as Node2D
-	var muzzle: Node2D = _resolve_muzzle(owner)
+	var source_entity: Node2D = combat_context.owner as Node2D
+	var muzzle: Node2D = _resolve_muzzle(source_entity)
 
 	var origin: Vector2 = muzzle.global_position
 	var dir: Vector2 = combat_context.aim_dir
@@ -381,14 +381,14 @@ func _beam_tick(
 	else:
 		dir = dir.normalized()
 
-	var range_value: float = max(1.0, base_shot.range)
+	var range_value: float = max(1.0, base_shot.max_range)
 	var damage: float = base_shot.damage
 	var pierce: int = max(0, base_shot.pierce)
 
 	var to: Vector2 = origin + dir * range_value
 	var max_targets: int = max(1, pierce + 1)
 
-	var result: Dictionary = _collect_ray_hits(origin, to, owner, max_targets)
+	var result: Dictionary = _collect_ray_hits(origin, to, source_entity, max_targets)
 	var victims: Array[Dictionary] = result.get("victims", []) as Array[Dictionary]
 	var final_pos: Vector2 = result.get("final_pos", to) as Vector2
 
@@ -432,8 +432,8 @@ func _debug_draw_transient_line(from: Vector2, to: Vector2, life_sec: float) -> 
 	if not (context.owner is Node2D):
 		return
 
-	var owner: Node2D = context.owner as Node2D
-	var parent: Node = owner.get_parent() if owner.get_parent() != null else get_tree().current_scene
+	var source_entity: Node2D = context.owner as Node2D
+	var parent: Node = source_entity.get_parent() if source_entity.get_parent() != null else get_tree().current_scene
 	if parent == null:
 		return
 
@@ -456,8 +456,8 @@ func _debug_set_beam_line(from: Vector2, to: Vector2) -> void:
 		return
 
 	if _beam_line == null or not is_instance_valid(_beam_line):
-		var owner: Node2D = context.owner as Node2D
-		var parent: Node = owner.get_parent() if owner.get_parent() != null else get_tree().current_scene
+		var source_entity: Node2D = context.owner as Node2D
+		var parent: Node = source_entity.get_parent() if source_entity.get_parent() != null else get_tree().current_scene
 		if parent == null:
 			return
 		_beam_line = _debug_make_line(parent)
@@ -490,10 +490,9 @@ func _debug_clear_beam_line(delay_sec: float) -> void:
 	tween.tween_callback(Callable(line, "queue_free"))
 
 
-# Ignore player hitboxes
-func _build_owner_exclude_list(owner: Node) -> Array[RID]:
+func _build_owner_exclude_list(source_entity: Node) -> Array[RID]:
 	var out: Array[RID] = []
-	_collect_collision_rids(owner, out)
+	_collect_collision_rids(source_entity, out)
 	return out
 
 
@@ -507,14 +506,13 @@ func _collect_collision_rids(node: Node, out: Array[RID]) -> void:
 
 	for child: Node in node.get_children():
 		_collect_collision_rids(child, out)
-		
+
 
 func _exit_tree() -> void:
-	# Safety: if this executor is freed mid-beam, clean up the orphaned line
 	if _beam_tween != null and is_instance_valid(_beam_tween):
 		_beam_tween.kill()
 	_beam_tween = null
-	
+
 	if _beam_line != null and is_instance_valid(_beam_line):
 		_beam_line.queue_free()
 	_beam_line = null

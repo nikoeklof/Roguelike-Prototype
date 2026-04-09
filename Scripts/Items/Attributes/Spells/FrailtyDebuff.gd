@@ -4,7 +4,7 @@ class_name FrailtyDebuff
 @export_range(1.01, 3.0, 0.01) var damage_taken_mult: float = 1.4
 @export_range(0.1, 20.0, 0.1) var duration_sec: float = 4.0
 
-func on_hit(context: CombatContext, hit: HitEvent, item_instance: ItemInstance) -> void:
+func on_hit(_context: CombatContext, hit: HitEvent, item_instance: ItemInstance) -> void:
 	if hit == null or hit.victim == null:
 		return
 
@@ -68,7 +68,7 @@ func _find_stats(root: Node) -> Stats:
 
 
 func _make_key(item_instance: ItemInstance, suffix: String) -> StringName:
-	var seed: int = 0
+	var item_seed: int = 0
 	if item_instance != null:
-		seed = item_instance.seed
-	return StringName("spell_%s_%d" % [suffix, seed])
+		item_seed = item_instance.seed
+	return StringName("spell_%s_%d" % [suffix, item_seed])

@@ -22,12 +22,12 @@ class RoomNode:
 		coord = c
 
 class FloorPlan:
-	var seed: int
+	var _seed: int
 	var rooms: Dictionary = {}       # Vector2i -> RoomNode
 	var coords: Array[Vector2i] = [] # typed list of keys
 
 	func _init(s: int) -> void:
-		seed = s
+		_seed = s
 		rooms = {}
 		coords = []
 
@@ -43,7 +43,7 @@ class FloorPlan:
 # Public API
 # -----------------------------------------------------------------------------
 func generate(
-	seed: int,
+	_seed: int,
 	main_len: int = 18,
 
 	# Branching derived from main_len:
@@ -61,9 +61,9 @@ func generate(
 	min_separation: int = 1
 ) -> FloorPlan:
 	var rng := RandomNumberGenerator.new()
-	rng.seed = seed
+	rng.seed = _seed
 
-	var plan := FloorPlan.new(seed)
+	var plan := FloorPlan.new(_seed)
 
 	# Build topology first.
 	var origin: Vector2i = Vector2i.ZERO

@@ -39,10 +39,10 @@ func _find_stats(root: Node) -> Stats:
 
 
 func _make_key(item_instance: ItemInstance, suffix: String) -> StringName:
-	var seed: int = 0
+	var item_seed: int = 0
 	if item_instance != null:
-		seed = item_instance.seed
-	return StringName("spell_%s_%d" % [suffix, seed])
+		item_seed = item_instance.seed
+	return StringName("spell_%s_%d" % [suffix, item_seed])
 
 
 func _start_clear_timer(host: Node, sec: float, stats: Stats, keys: Array) -> void:

@@ -14,6 +14,7 @@ static func execute_block_start(entity: Node, shield: Shield, shield_instance: I
 	if shield_instance.attributes.is_empty():
 		return
 	
+	@warning_ignore("incompatible_ternary")
 	print("[ShieldBlockExecutor] Executing block_start for shield: %s (%d attributes)" % [shield.name if shield else "unknown", shield_instance.attributes.size()])
 	
 	# Create context
@@ -39,6 +40,7 @@ static func execute_block_end(entity: Node, shield: Shield, shield_instance: Ite
 	if shield_instance.attributes.is_empty():
 		return
 	
+	@warning_ignore("incompatible_ternary")
 	print("[ShieldBlockExecutor] Executing block_end for shield: %s (%d attributes)" % [shield.name if shield else "unknown", shield_instance.attributes.size()])
 	
 	# Create context

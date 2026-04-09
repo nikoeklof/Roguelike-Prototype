@@ -12,5 +12,5 @@ func section_name() -> String:
 ## Build the BBCode body for this section.
 ## `ctx` is a DebugHUDContext with references to common nodes.
 ## Return "" to hide this section entirely for this frame.
-func build_text(ctx: DebugHUDContext) -> String:
+func build_text(_ctx: DebugHUDContext) -> String:
 	return ""

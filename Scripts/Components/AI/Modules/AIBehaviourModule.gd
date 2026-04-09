@@ -27,7 +27,7 @@ func set_target(new_target: Node2D) -> void:
 	_target = new_target
 
 
-func decide(context: Dictionary) -> AIDecision:
+func decide(_context: Dictionary) -> AIDecision:
 	"""Make decision based on context. Override in subclasses."""
 	return null
 

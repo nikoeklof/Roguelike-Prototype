@@ -57,7 +57,7 @@ func _process(delta):
 	"BeamTicks: %d" % beam_ticks
 
 
-func _on_damage(amount, source):
+func _on_damage(amount, _source):
 
 	var now = Time.get_ticks_msec() / 1000.0
 

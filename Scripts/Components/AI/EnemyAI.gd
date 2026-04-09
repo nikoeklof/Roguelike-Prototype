@@ -368,7 +368,7 @@ func _process_combat(delta: float) -> void:
 # LOST (Awareness.LOST)
 # =========================================
 
-func _process_lost(delta: float) -> void:
+func _process_lost(_delta: float) -> void:
 	"""Move toward last known player position, then give up."""
 	if _target != null and is_instance_valid(_target) and _control != null:
 		var dir: Vector2 = (_target.global_position - _entity.global_position).normalized()

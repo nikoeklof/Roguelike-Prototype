@@ -40,7 +40,7 @@ func _ready() -> void:
 	# Use override if enabled, else default to 0 for sandbox.
 	spawn()
 
-static func roll_preview(bt: BaseItemType, seed: int) -> ItemInstance:
+static func roll_preview(bt: BaseItemType, _seed: int) -> ItemInstance:
 	if bt == null or bt.item_def == null:
 		return null
 
@@ -52,14 +52,14 @@ static func roll_preview(bt: BaseItemType, seed: int) -> ItemInstance:
 	var spawner := ItemSpawner.new()
 	spawner._apply_starting_stat_levels(inst, bt)
 
-	var attr_count: int = spawner._roll_attr_count(seed, bt.min_attribute_count, bt.max_attribute_count)
+	var attr_count: int = spawner._roll_attr_count(_seed, bt.min_attribute_count, bt.max_attribute_count)
 
 	var chosen_mode: int = -1
 	if int(bt.item_def.category) == ItemDef.Category.RANGED and bt.use_ranged_mode_roll:
-		chosen_mode = spawner._roll_ranged_mode(seed, bt)
+		chosen_mode = spawner._roll_ranged_mode(_seed, bt)
 		inst.ranged_mode = chosen_mode
 
-	spawner._roll_attributes(inst, bt, seed, attr_count, chosen_mode)
+	spawner._roll_attributes(inst, bt, _seed, attr_count, chosen_mode)
 	return inst
 
 
@@ -193,13 +193,13 @@ func _make_drop_seed(run_seed: int, id: StringName, idx: int) -> int:
 	return s
 
 
-func _roll_attr_count(seed: int, min_c: int, max_c: int) -> int:
+func _roll_attr_count(item_seed: int, min_c: int, max_c: int) -> int:
 	var lo: int = mini(min_c, max_c)
 	var hi: int = maxi(min_c, max_c)
 	if hi <= lo:
 		return lo
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	rng.seed = seed
+	rng.seed = item_seed
 	return rng.randi_range(lo, hi)
 
 
@@ -211,12 +211,12 @@ func _apply_starting_stat_levels(inst: ItemInstance, bt: BaseItemType) -> void:
 		inst.stat_levels[key] = int(bt.start_stat_levels[k])
 
 
-func _roll_ranged_mode(seed: int, bt: BaseItemType) -> int:
+func _roll_ranged_mode(_seed: int, bt: BaseItemType) -> int:
 	if bt.locked_ranged_mode >= 0:
 		return bt.locked_ranged_mode
 
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	rng.seed = int((seed * 2246822519 + 3266489917) & 0x7fffffff)
+	rng.seed = int((_seed * 2246822519 + 3266489917) & 0x7fffffff)
 
 	var w_proj: float = maxf(0.0, bt.weight_projectile)
 	var w_hit: float = maxf(0.0, bt.weight_hitscan)
@@ -235,7 +235,7 @@ func _roll_ranged_mode(seed: int, bt: BaseItemType) -> int:
 	return RangedShotData.ShotMode.BEAM
 
 
-func _roll_attributes(inst: ItemInstance, bt: BaseItemType, seed: int, count: int, chosen_mode: int) -> void:
+func _roll_attributes(inst: ItemInstance, bt: BaseItemType, _seed: int, count: int, chosen_mode: int) -> void:
 	if count <= 0:
 		return
 
@@ -271,7 +271,7 @@ func _roll_attributes(inst: ItemInstance, bt: BaseItemType, seed: int, count: in
 	var remaining_budget: int = mini(count, pool.size())
 
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-	rng.seed = int((seed * 1664525 + 1013904223) & 0x7fffffff)
+	rng.seed = int((_seed * 1664525 + 1013904223) & 0x7fffffff)
 
 	while inst.attributes.size() < count and pool.size() > 0 and remaining_budget > 0:
 		var pick_i: int = rng.randi_range(0, pool.size() - 1)

@@ -9,7 +9,7 @@ class_name ProjectileSpec
 @export_range(1.0, 256.0, 1.0) var radius: float = 6.0
 
 @export_range(0.0, 1.0, 0.01) var inherit_owner_velocity: float = 0.0
-@export_range(0.0, 5000.0, 1.0) var range: float = 0.0
+@export_range(0.0, 5000.0, 1.0) var max_range: float = 0.0
 
 @export var collision_mask: int = 0x7FFFFFFF
 
