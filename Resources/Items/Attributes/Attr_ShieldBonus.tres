@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ShieldBonusAttribute" format=3 uid="uid://shield_bonus"]
+[gd_resource type="Resource" script_class="ShieldBonusAttribute" format=3]
 
-[ext_resource type="Script" path="res://Scripts/Items/Attributes/Shields/Attr_ShieldBonus.gd" id="script"]
+[ext_resource type="Script" uid="uid://iynllwy4bkcr" path="res://Scripts/Items/Attributes/Shields/Attr_ShieldGlobal_ShieldBonus.gd" id="script"]
 
 [resource]
 script = ExtResource("script")

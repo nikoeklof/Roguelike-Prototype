@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="3_rcbjt"]
 [ext_resource type="Script" uid="uid://bo58hs72paoxt" path="res://Scripts/Items/AttributePoolDef.gd" id="4_lhs4p"]
 [ext_resource type="Script" uid="uid://bpuehw5boe5kp" path="res://Scripts/Items/Attributes/Shields/Attr_ActiveShield_Fortify.gd" id="5_x8cc1"]
-[ext_resource type="Script" uid="uid://iynllwy4bkcr" path="res://Scripts/Items/Attributes/Shields/Attr_ShieldBonus.gd" id="7_lhs4p"]
+[ext_resource type="Script" uid="uid://iynllwy4bkcr" path="res://Scripts/Items/Attributes/Shields/Attr_ShieldGlobal_ShieldBonus.gd" id="7_lhs4p"]
 [ext_resource type="Script" uid="uid://chuv51kaj1jd3" path="res://Scripts/Items/Attributes/Shields/Attr_ActiveShield_Reflection.gd" id="7_x8cc1"]
 
 [sub_resource type="Resource" id="Resource_2kkbu"]

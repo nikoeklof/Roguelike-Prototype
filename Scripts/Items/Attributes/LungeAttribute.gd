@@ -20,14 +20,14 @@ func on_attack_start(context: CombatContext, _item_instance: ItemInstance) -> vo
 	if context == null:
 		return
 
-	var owner: Node = context.owner
-	if owner == null:
+	var owner_entity: Node = context.owner
+	if owner_entity == null:
 		return
 
-	if not owner is CharacterBody2D:
+	if not owner_entity is CharacterBody2D:
 		return
 
-	var body: CharacterBody2D = owner as CharacterBody2D
+	var body: CharacterBody2D = owner_entity as CharacterBody2D
 
 	# Direction
 	var dir: Vector2 = context.aim_dir
@@ -36,11 +36,12 @@ func on_attack_start(context: CombatContext, _item_instance: ItemInstance) -> vo
 	dir = dir.normalized()
 
 	# Cancel previous lunge if active
-	var prev: Variant = body.get_meta(_META_TWEEN, null)
-	if prev is Tween:
-		var prev_tween: Tween = prev
-		if is_instance_valid(prev_tween):
-			prev_tween.kill()
+	if body.has_meta(_META_TWEEN):
+		var prev: Variant = body.get_meta(_META_TWEEN)
+		if prev is Tween:
+			var prev_tween: Tween = prev
+			if is_instance_valid(prev_tween):
+				prev_tween.kill()
 
 	body.set_meta(_META_LAST, 0.0)
 
@@ -68,8 +69,7 @@ func _lunge_step(traveled: float, body: CharacterBody2D, dir: Vector2) -> void:
 	if body == null or not is_instance_valid(body):
 		return
 
-	var last_variant: Variant = body.get_meta(_META_LAST, 0.0)
-	var last: float = float(last_variant)
+	var last: float = float(body.get_meta(_META_LAST)) if body.has_meta(_META_LAST) else 0.0
 
 	var step: float = traveled - last
 	if step <= 0.0:
@@ -79,11 +79,12 @@ func _lunge_step(traveled: float, body: CharacterBody2D, dir: Vector2) -> void:
 
 	var collision: KinematicCollision2D = body.move_and_collide(dir * step)
 	if collision != null and stop_on_hit:
-		var tw_variant: Variant = body.get_meta(_META_TWEEN, null)
-		if tw_variant is Tween:
-			var tw: Tween = tw_variant
-			if is_instance_valid(tw):
-				tw.kill()
+		if body.has_meta(_META_TWEEN):
+			var tw_variant: Variant = body.get_meta(_META_TWEEN)
+			if tw_variant is Tween:
+				var tw: Tween = tw_variant
+				if is_instance_valid(tw):
+					tw.kill()
 		_clear_lunge_meta(body)
 
 
@@ -138,5 +139,7 @@ func _clear_lunge_meta(body: CharacterBody2D) -> void:
 	if body == null or not is_instance_valid(body):
 		return
 
-	body.set_meta(_META_TWEEN, null)
-	body.set_meta(_META_LAST, null)
+	if body.has_meta(_META_TWEEN):
+		body.remove_meta(_META_TWEEN)
+	if body.has_meta(_META_LAST):
+		body.remove_meta(_META_LAST)

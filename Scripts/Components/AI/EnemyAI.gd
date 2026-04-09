@@ -12,6 +12,10 @@ enum Awareness { IDLE, ALERT, LOST }
 @export var deaggro_range: float = 400.0
 @export_range(0.0, 0.2, 0.01) var decision_interval: float = 0.1
 
+# Damage aggro boost — after being hit, ranges are multiplied for this duration
+@export var damage_aggro_duration: float = 8.0
+@export var damage_aggro_range_mult: float = 2.0
+
 # Patrol parameters
 @export var patrol_speed_mult: float = 0.4
 @export var patrol_direction_change_min: float = 1.5
@@ -45,6 +49,9 @@ var _update_timer: float = 0.0
 var _awareness: int = Awareness.IDLE
 var _player_scan_timer: float = 0.0
 var _lost_timer: float = 0.0
+
+# Damage aggro boost state
+var _damage_aggro_timer: float = 0.0
 
 # Patrol state
 var _patrol_dir: Vector2 = Vector2.ZERO
@@ -106,6 +113,10 @@ func _full_init() -> void:
 	if not can_attack:
 		print("[EnemyAI] WARNING: Entity cannot attack (no can_attack capability)")
 	
+	# Hook into damage signal so we aggro when hit
+	if _health != null and not _health.damaged.is_connected(_on_damaged):
+		_health.damaged.connect(_on_damaged)
+	
 	# Try to find player before creating modules
 	_try_acquire_target()
 	
@@ -130,6 +141,61 @@ func _full_init() -> void:
 		"OK" if _combat != null else "NULL",
 		"OK" if _control != null else "NULL"
 	])
+
+
+# =========================================
+# DAMAGE AGGRO
+# =========================================
+
+func _on_damaged(_amount: float, source: Node) -> void:
+	"""When hit, immediately aggro toward the damage source and boost ranges."""
+	# Reset the damage aggro boost timer
+	_damage_aggro_timer = damage_aggro_duration
+
+	# Try to use the damage source as the target
+	var aggro_target: Node2D = null
+
+	if source is Node2D and source.is_in_group("player"):
+		aggro_target = source as Node2D
+
+	# If source isn't the player directly (e.g. a projectile), find the player
+	if aggro_target == null:
+		aggro_target = get_tree().get_first_node_in_group("player") as Node2D
+
+	if aggro_target == null:
+		return
+
+	# Force-acquire target if we don't have one or it changed
+	if _target != aggro_target:
+		_target = aggro_target
+		target_changed.emit(_target)
+		for module: AIBehaviorModule in _behavior_modules:
+			module.set_target(_target)
+		print("[EnemyAI] Damage aggro! Target set to %s" % _target.name)
+
+	# Force into ALERT regardless of distance
+	if _awareness != Awareness.ALERT:
+		_set_awareness(Awareness.ALERT)
+		print("[EnemyAI] Took damage — forced ALERT (boosted ranges for %.1fs)" % damage_aggro_duration)
+
+
+func _is_damage_aggro_active() -> bool:
+	"""Returns true while the post-damage aggro boost is active."""
+	return _damage_aggro_timer > 0.0
+
+
+func _effective_aggro_range() -> float:
+	"""Aggro range, boosted after taking damage."""
+	if _is_damage_aggro_active():
+		return aggro_range * damage_aggro_range_mult
+	return aggro_range
+
+
+func _effective_deaggro_range() -> float:
+	"""Deaggro range, boosted after taking damage."""
+	if _is_damage_aggro_active():
+		return deaggro_range * damage_aggro_range_mult
+	return deaggro_range
 
 
 func _try_acquire_target() -> void:
@@ -239,6 +305,10 @@ func _physics_process(delta: float) -> void:
 	if _entity == null:
 		return
 	
+	# Tick down damage aggro boost
+	if _damage_aggro_timer > 0.0:
+		_damage_aggro_timer = maxf(_damage_aggro_timer - delta, 0.0)
+	
 	# Always scan for player periodically
 	_player_scan_timer += delta
 	if _player_scan_timer >= player_scan_interval:
@@ -257,13 +327,14 @@ func _physics_process(delta: float) -> void:
 			dist = _entity.global_position.distance_to(_target.global_position)
 		var state_names := ["IDLE", "ALERT", "LOST"]
 		var decision_str: String = _current_decision.state if _current_decision != null else "null"
-		print("[EnemyAI] STATUS: awareness=%s, decision=%s, dist=%.1f, target=%s, modules=%d, control=%s" % [
+		var boost_str: String = " [BOOSTED %.1fs]" % _damage_aggro_timer if _is_damage_aggro_active() else ""
+		print("[EnemyAI] STATUS: awareness=%s, decision=%s, dist=%.1f, target=%s, modules=%d%s" % [
 			state_names[_awareness],
 			decision_str,
 			dist,
 			"OK" if _target != null else "NULL",
 			_behavior_modules.size(),
-			"OK" if _control != null else "NULL"
+			boost_str
 		])
 	
 	# Route to appropriate behavior based on awareness
@@ -286,19 +357,21 @@ func _update_awareness(delta: float) -> void:
 		return
 	
 	var distance: float = _entity.global_position.distance_to(_target.global_position)
+	var eff_aggro: float = _effective_aggro_range()
+	var eff_deaggro: float = _effective_deaggro_range()
 	
 	match _awareness:
 		Awareness.IDLE:
-			if distance <= aggro_range:
+			if distance <= eff_aggro:
 				_set_awareness(Awareness.ALERT)
 		
 		Awareness.ALERT:
-			if distance > deaggro_range:
+			if distance > eff_deaggro:
 				_lost_timer = 0.0
 				_set_awareness(Awareness.LOST)
 		
 		Awareness.LOST:
-			if distance <= aggro_range:
+			if distance <= eff_aggro:
 				_set_awareness(Awareness.ALERT)
 			else:
 				_lost_timer += delta
@@ -546,7 +619,7 @@ func _build_context() -> Dictionary:
 		"ranged_cooldown": ranged_cooldown,
 		"spell_cooldown": spell_cooldown,
 		"target": _target,
-		"aggro_range": aggro_range,
+		"aggro_range": _effective_aggro_range(),
 		"awareness": _awareness
 	}
 

@@ -32,10 +32,10 @@ func on_unequip(context: CombatContext, _item_instance: ItemInstance) -> void:
 	_stop_tracking(context.owner)
 
 
-func _start_tracking(owner: Node) -> void:
+func _start_tracking(owner_entity: Node) -> void:
 	"""Attach a tracker node that monitors damage and manages regen."""
 	# Clean up any existing tracker
-	_stop_tracking(owner)
+	_stop_tracking(owner_entity)
 
 	var tracker := RegenTracker.new()
 	tracker.name = "PassiveShieldRegenTracker"
@@ -43,30 +43,30 @@ func _start_tracking(owner: Node) -> void:
 	tracker.hp_per_tick = hp_per_tick
 	tracker.combat_cooldown = combat_cooldown_sec
 	tracker.attribute_ref = self
-	owner.add_child(tracker)
-	owner.set_meta(META_REGEN_TRACKER, tracker)
+	owner_entity.add_child(tracker)
+	owner_entity.set_meta(META_REGEN_TRACKER, tracker)
 
 	print("[ShieldRegen] Tracking started on %s (%.1f HP/%.1fs, combat cooldown %.1fs)" % [
-		owner.name, hp_per_tick, tick_interval_sec, combat_cooldown_sec
+		owner_entity.name, hp_per_tick, tick_interval_sec, combat_cooldown_sec
 	])
 
 
-func _stop_tracking(owner: Node) -> void:
+func _stop_tracking(owner_entity: Node) -> void:
 	"""Remove the tracker and regen timer."""
-	if owner == null:
+	if owner_entity == null:
 		return
 
-	var tracker: Variant = owner.get_meta(META_REGEN_TRACKER, null)
-	if tracker is Node and is_instance_valid(tracker):
-		tracker.queue_free()
-	if owner.has_meta(META_REGEN_TRACKER):
-		owner.remove_meta(META_REGEN_TRACKER)
+	if owner_entity.has_meta(META_REGEN_TRACKER):
+		var tracker: Variant = owner_entity.get_meta(META_REGEN_TRACKER)
+		if tracker is Node and is_instance_valid(tracker):
+			tracker.queue_free()
+		owner_entity.remove_meta(META_REGEN_TRACKER)
 
-	var timer: Variant = owner.get_meta(META_REGEN_TIMER, null)
-	if timer is Timer and is_instance_valid(timer):
-		timer.queue_free()
-	if owner.has_meta(META_REGEN_TIMER):
-		owner.remove_meta(META_REGEN_TIMER)
+	if owner_entity.has_meta(META_REGEN_TIMER):
+		var timer: Variant = owner_entity.get_meta(META_REGEN_TIMER)
+		if timer is Timer and is_instance_valid(timer):
+			timer.queue_free()
+		owner_entity.remove_meta(META_REGEN_TIMER)
 
 	print("[ShieldRegen] Tracking stopped")
 
