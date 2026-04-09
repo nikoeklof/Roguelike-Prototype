@@ -499,5 +499,8 @@ metadata/_custom_type_script = "uid://cwbkt1ur6316g"
 script = ExtResource("34_mo1ti")
 metadata/_custom_type_script = "uid://0dxcoac7x0wu"
 
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=797994576]
+avoidance_enabled = true
+
 [editable path="Equipment"]
 [editable path="StateHandler"]

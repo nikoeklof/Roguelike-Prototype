@@ -19,10 +19,8 @@ enum Awareness { IDLE, ALERT, LOST }
 # LOS check interval (don't raycast every frame)
 @export_range(0.05, 0.5, 0.05) var los_check_interval: float = 0.1
 
-# Obstacle avoidance — wall-following ray count and arc
-@export_range(3, 12, 1) var avoidance_ray_count: int = 8
-@export_range(90.0, 360.0, 10.0) var avoidance_arc_degrees: float = 270.0
-@export var avoidance_ray_length: float = 60.0
+# Navigation repath interval
+@export_range(0.1, 1.0, 0.05) var nav_repath_interval: float = 0.25
 
 # Patrol parameters
 @export var patrol_speed_mult: float = 0.4
@@ -65,6 +63,10 @@ var _damage_aggro_timer: float = 0.0
 var _has_los: bool = false
 var _los_timer: float = 0.0
 
+# Navigation
+var _nav_agent: NavigationAgent2D = null
+var _nav_repath_timer: float = 0.0
+
 # Patrol state
 var _patrol_dir: Vector2 = Vector2.ZERO
 var _patrol_timer: float = 0.0
@@ -81,6 +83,21 @@ func _ready() -> void:
 	if _entity == null:
 		print("[EnemyAI] ERROR: Parent is not Entity")
 		return
+
+	# Find or create NavigationAgent2D on the entity
+	_nav_agent = _entity.get_node_or_null("NavigationAgent2D") as NavigationAgent2D
+	if _nav_agent == null:
+		_nav_agent = NavigationAgent2D.new()
+		_nav_agent.name = "NavigationAgent2D"
+		_entity.add_child(_nav_agent)
+		print("[EnemyAI] Created NavigationAgent2D")
+
+	# Configure nav agent
+	_nav_agent.path_desired_distance = 8.0
+	_nav_agent.target_desired_distance = 16.0
+	_nav_agent.path_max_distance = 600.0
+	_nav_agent.avoidance_enabled = false  # We handle movement ourselves
+	_nav_agent.debug_enabled = false
 
 	# Double-defer: LoadoutAssigner uses call_deferred once,
 	# so we defer twice to guarantee we run after items are equipped.
@@ -148,10 +165,11 @@ func _full_init() -> void:
 		_set_awareness(Awareness.IDLE)
 		print("[EnemyAI] No player found yet — starting patrol")
 
-	print("[EnemyAI] Ready with %d behavior modules, combat=%s, control=%s" % [
+	print("[EnemyAI] Ready with %d behavior modules, combat=%s, control=%s, nav=%s" % [
 		_behavior_modules.size(),
 		"OK" if _combat != null else "NULL",
-		"OK" if _control != null else "NULL"
+		"OK" if _control != null else "NULL",
+		"OK" if _nav_agent != null else "NULL"
 	])
 
 
@@ -174,63 +192,36 @@ func has_los() -> bool:
 
 
 # =========================================
-# OBSTACLE AVOIDANCE
+# NAVIGATION
 # =========================================
 
-func _compute_avoidance_direction(desired_dir: Vector2) -> Vector2:
-	"""When direct path is blocked, cast rays in a fan to find a clear direction.
-	Returns the best unobstructed direction, or desired_dir if all blocked."""
-	if _entity == null:
-		return desired_dir
+func _get_nav_direction_to_target() -> Vector2:
+	"""Use NavigationAgent2D to get the next path direction toward the target.
+	Falls back to direct direction if no nav mesh is available."""
+	if _target == null or _entity == null:
+		return Vector2.ZERO
 
-	var space_state: PhysicsDirectSpaceState2D = _entity.get_world_2d().direct_space_state
-	if space_state == null:
-		return desired_dir
+	if _nav_agent == null or not _nav_agent.is_inside_tree():
+		# No nav agent — fall back to direct direction
+		return (_target.global_position - _entity.global_position).normalized()
 
-	var origin: Vector2 = _entity.global_position
-	var arc_rad: float = deg_to_rad(avoidance_arc_degrees)
-	var _half_arc: float = arc_rad * 0.5
-	var step: float = arc_rad / float(max(avoidance_ray_count - 1, 1))
-	var base_angle: float = desired_dir.angle()
+	# Periodically update the target position on the nav agent
+	_nav_repath_timer -= 0.0  # Timer is managed in _physics_process
+	_nav_agent.target_position = _target.global_position
 
-	# Cast rays from center outward, alternating left/right
-	# Order: 0, +1, -1, +2, -2, ... so we prefer directions closest to desired
-	var best_dir: Vector2 = desired_dir
-	var found: bool = false
+	if _nav_agent.is_navigation_finished():
+		return Vector2.ZERO
 
-	for i in range(avoidance_ray_count):
-		var offset_index: float
-		if i == 0:
-			offset_index = 0
-		elif i % 2 == 1:
-			offset_index = (i + 1.0) / 2.0
-		else:
-			offset_index = -(i / 2.0)
+	var next_point: Vector2 = _nav_agent.get_next_path_position()
+	var direction: Vector2 = (next_point - _entity.global_position).normalized()
+	return direction
 
-		var angle: float = base_angle + float(offset_index) * step
-		var ray_dir: Vector2 = Vector2(cos(angle), sin(angle))
-		var ray_end: Vector2 = origin + ray_dir * avoidance_ray_length
 
-		var query := PhysicsRayQueryParameters2D.new()
-		query.from = origin
-		query.to = ray_end
-		query.collision_mask = AILineOfSight.WORLD_COLLISION_LAYER
-		query.collide_with_areas = false
-		query.collide_with_bodies = true
-		query.exclude = [_entity.get_rid()]
-
-		var result: Dictionary = space_state.intersect_ray(query)
-		if result.is_empty():
-			# This direction is clear
-			best_dir = ray_dir
-			found = true
-			break
-
-	if not found:
-		# All rays blocked — just keep going toward target and let physics handle it
-		return desired_dir
-
-	return best_dir.normalized()
+func _update_nav_target() -> void:
+	"""Update the NavigationAgent2D target position."""
+	if _nav_agent == null or _target == null:
+		return
+	_nav_agent.target_position = _target.global_position
 
 
 # =========================================
@@ -405,6 +396,12 @@ func _physics_process(delta: float) -> void:
 		_los_timer = 0.0
 		_update_los()
 
+	# Periodically repath navigation
+	_nav_repath_timer += delta
+	if _nav_repath_timer >= nav_repath_interval:
+		_nav_repath_timer = 0.0
+		_update_nav_target()
+
 	# Always scan for player periodically
 	_player_scan_timer += delta
 	if _player_scan_timer >= player_scan_interval:
@@ -540,11 +537,9 @@ func _process_combat(delta: float) -> void:
 # =========================================
 
 func _process_lost(_delta: float) -> void:
-	"""Move toward last known player position, then give up."""
+	"""Move toward last known player position using navigation, then give up."""
 	if _target != null and is_instance_valid(_target) and _control != null:
-		var dir: Vector2 = (_target.global_position - _entity.global_position).normalized()
-		# Use avoidance when navigating toward lost target
-		var move_dir: Vector2 = _compute_avoidance_direction(dir)
+		var move_dir: Vector2 = _get_nav_direction_to_target()
 		_control.set_move_intent(move_dir * 0.6)
 		_control.set_block_intent(false)
 
@@ -630,12 +625,8 @@ func _execute_decision() -> void:
 			elif dist < 20.0:
 				_control.set_move_intent(-dir_to_target * 0.5)
 			else:
-				# Use obstacle avoidance when chasing without LOS
-				var move_dir: Vector2
-				if _has_los:
-					move_dir = dir_to_target
-				else:
-					move_dir = _compute_avoidance_direction(dir_to_target)
+				# Use NavigationAgent2D to pathfind around obstacles
+				var move_dir: Vector2 = _get_nav_direction_to_target()
 				_control.set_move_intent(move_dir)
 			if _control.attack_is_down():
 				_control.release_attack()

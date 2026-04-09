@@ -8,8 +8,8 @@
 size = Vector2(1169, 29.33334)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_tj7c2"]
-vertices = PackedVector2Array(1136.0625, -459, 1142.9297, 692.0078, 800, 110, 799, 93, -65.96875, -459, 353, 94, -63.023438, 693.97656, 354, 109, 580, 109)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 0, 3, 5), PackedInt32Array(6, 4, 5, 7), PackedInt32Array(2, 1, 6, 7, 8)])
+vertices = PackedVector2Array(1136.0625, -459, 1142.9297, 692.0078, 813, 112, 812, 89, -65.96875, -459, 347, 86, -63.023438, 693.97656, 341, 114)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 0, 3, 5), PackedInt32Array(6, 4, 5, 7), PackedInt32Array(1, 6, 7, 2)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(-73, 704, 1153, 702, 1146, -469, -76, -469)])
 
 [node name="test_scene" type="Node2D" unique_id=391386651]
@@ -87,7 +87,6 @@ navigation_polygon = SubResource("NavigationPolygon_tj7c2")
 [node name="NavigationObstacle2D" type="NavigationObstacle2D" parent="NavigationRegion2D" unique_id=1170045039]
 position = Vector2(577, 101.5)
 scale = Vector2(0.375, 0.375)
-radius = 38.46
-vertices = PackedVector2Array(8, 20, 594.66675, 22.666656, 592, -22.666687, -597.3334, -20.000015, -594.66675, 20)
+vertices = PackedVector2Array(629.33325, 28, 626.66675, -33.333344, -613.3334, -41.333344, -629.3334, 33.333313)
 affect_navigation_mesh = true
 carve_navigation_mesh = true
