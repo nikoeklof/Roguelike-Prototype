@@ -160,7 +160,7 @@ func _on_weapon_action_finished(_item: Node) -> void:
 
 
 func _on_spell_slot_changed(_new_item: Node, _old_item: Node) -> void:
-	print("[SpellCastingManager] Spell slot changed - new spell: %s" % (_new_item.name if _new_item else "none"))
+	print("[SpellCastingManager] Spell slot changed - new spell: %s" % (str(_new_item.name) if _new_item else "none"))
 
 
 func _find_owner_entity() -> Node:

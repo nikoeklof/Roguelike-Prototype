@@ -28,7 +28,7 @@ func _ready() -> void:
 
 	_instance = ItemInstance.new()
 	_instance.def = item_def
-	_instance.seed = item_seed
+	_instance.item_seed = item_seed
 	_instance.ensure_initialized()
 	if editor_attribute_count > 0:
 		_instance.roll_attributes(editor_attribute_count)
@@ -42,7 +42,7 @@ func set_item_instance(inst: ItemInstance) -> void:
 	_instance = inst
 	if _instance != null and _instance.def != null:
 		item_def = _instance.def
-		item_seed = _instance.seed
+		item_seed = _instance.item_seed
 
 
 func can_cast() -> bool:

@@ -62,7 +62,7 @@ func set_item_instance(inst: ItemInstance) -> void:
 	_instance = inst
 	if _instance != null and _instance.def != null:
 		item_def = _instance.def
-		item_seed = _instance.seed
+		item_seed = _instance.item_seed
 
 
 func get_ranged_profile() -> RangedAttackProfile:
@@ -103,7 +103,7 @@ func get_attack_variant(ctx: CombatContext) -> AttackVariant:
 		variant.default_mode = profile.default_mode
 
 	if int(_instance.ranged_mode) >= 0:
-		variant.default_mode = int(_instance.ranged_mode)
+		variant.default_mode = _instance.ranged_mode as RangedShotData.ShotMode
 
 	if profile != null:
 		variant.spread_degrees = profile.spread_degrees

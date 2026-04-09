@@ -41,11 +41,11 @@ func can_attack(item: Node) -> bool:
 
 
 func can_attack_kind(kind: int) -> bool:
-	var owner: Node = _resolve_owner_entity()
-	if owner == null:
+	var owner_entity: Node = _resolve_owner_entity()
+	if owner_entity == null:
 		return false
 
-	var item: Node = _resolve_item_for_kind(owner, kind)
+	var item: Node = _resolve_item_for_kind(owner_entity, kind)
 	if item == null:
 		return false
 
@@ -53,11 +53,11 @@ func can_attack_kind(kind: int) -> bool:
 
 
 func allows_movement_for(kind: int) -> bool:
-	var owner: Node = _resolve_owner_entity()
-	if owner == null:
+	var owner_entity: Node = _resolve_owner_entity()
+	if owner_entity == null:
 		return false
 
-	var item: Node = _resolve_item_for_kind(owner, kind)
+	var item: Node = _resolve_item_for_kind(owner_entity, kind)
 	if item == null:
 		return false
 
@@ -71,11 +71,11 @@ func try_attack(kind: int, aim_dir: Vector2 = Vector2.RIGHT) -> bool:
 	if kind == AttackKind.NONE:
 		return false
 
-	var owner: Node = _resolve_owner_entity()
-	if owner == null:
+	var owner_entity: Node = _resolve_owner_entity()
+	if owner_entity == null:
 		return false
 
-	var item: Node = _resolve_item_for_kind(owner, kind)
+	var item: Node = _resolve_item_for_kind(owner_entity, kind)
 	if item == null:
 		return false
 
@@ -168,12 +168,12 @@ func _resolve_owner_entity() -> Node:
 	return null
 
 
-func _resolve_equipment(owner: Node) -> Equipment:
-	if owner == null:
+func _resolve_equipment(owner_entity: Node) -> Equipment:
+	if owner_entity == null:
 		return null
 
-	if owner is Entity:
-		var eq_component: Node = (owner as Entity).get_component(&"Equipment")
+	if owner_entity is Entity:
+		var eq_component: Node = (owner_entity as Entity).get_component(&"Equipment")
 		if eq_component is Equipment:
 			return eq_component as Equipment
 
@@ -184,31 +184,31 @@ func _resolve_equipment(owner: Node) -> Equipment:
 	return null
 
 
-func _resolve_item_for_kind(owner: Node, kind: int) -> Node:
-	var equipment: Equipment = _resolve_equipment(owner)
+func _resolve_item_for_kind(owner_entity: Node, kind: int) -> Node:
+	var equipment: Equipment = _resolve_equipment(owner_entity)
 	if equipment == null:
 		return null
 	return equipment.get_item_for_kind(kind)
 
 
-func _resolve_component(owner: Node, class_name_value: StringName) -> Node:
-	if owner == null:
+func _resolve_component(owner_entity: Node, class_name_value: StringName) -> Node:
+	if owner_entity == null:
 		return null
 
-	if owner is Entity:
-		return (owner as Entity).get_component(class_name_value)
+	if owner_entity is Entity:
+		return (owner_entity as Entity).get_component(class_name_value)
 
 	return owner.get_node_or_null(String(class_name_value))
 
 
-func _resolve_executor_parent(owner: Node) -> Node:
+func _resolve_executor_parent(owner_entity: Node) -> Node:
 	if attack_executor_root_path != NodePath():
 		var explicit: Node = get_node_or_null(attack_executor_root_path)
 		if explicit != null:
 			return explicit
 
-	if owner != null and owner.get_parent() != null:
-		return owner.get_parent()
+	if owner_entity != null and owner_entity.get_parent() != null:
+		return owner_entity.get_parent()
 
 	return self
 

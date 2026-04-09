@@ -48,7 +48,7 @@ func set_item_instance(inst: ItemInstance) -> void:
 	_instance = inst
 	if _instance != null and _instance.def != null:
 		item_def = _instance.def
-		item_seed = _instance.seed
+		item_seed = _instance.item_seed
 
 
 func get_attack_variant(_ctx: CombatContext) -> AttackVariant:

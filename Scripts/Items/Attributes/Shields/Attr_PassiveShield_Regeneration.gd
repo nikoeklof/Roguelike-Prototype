@@ -86,24 +86,20 @@ class RegenTracker:
 	var _health: Health = null
 
 	func _ready() -> void:
-		var owner: Node = get_parent()
-		if owner == null:
+		var owner_entity: Node = get_parent()
+		if owner_entity == null:
 			return
-
 		# Find Health component
-		if owner is Entity:
-			_health = (owner as Entity).find_component(&"Health") as Health
+		if owner_entity is Entity:
+			_health = (owner_entity as Entity).find_component(&"Health") as Health
 		else:
-			_health = owner.get_node_or_null("Health") as Health
-
+			_health = owner_entity.get_node_or_null("Health") as Health
 		if _health == null:
-			print("[ShieldRegen] WARNING: No Health component on %s" % owner.name)
+			print("[ShieldRegen] WARNING: No Health component on %s" % owner_entity.name)
 			return
-
 		# Listen for damage
 		if not _health.damaged.is_connected(_on_damaged):
 			_health.damaged.connect(_on_damaged)
-
 		# If already at full HP, don't start regen
 		_time_since_damage = combat_cooldown + 1.0  # Treat as already out of combat
 		_check_regen_state()

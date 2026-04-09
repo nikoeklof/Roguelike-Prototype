@@ -8,7 +8,7 @@ class_name MapSection
 @export var player_root_path: NodePath
 
 @onready var minimap: MinimapControl = %Minimap
-@onready var map_label: Label = %MapLabel
+@onready var map_label: Label = %Label
 
 var _floor_spawner: Node = null
 var _player: Node2D = null

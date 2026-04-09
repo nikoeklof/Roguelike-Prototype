@@ -23,7 +23,7 @@ func _ready() -> void:
 	if _instance == null and item_def != null:
 		_instance = ItemInstance.new()
 		_instance.def = item_def
-		_instance.seed = item_seed
+		_instance.item_seed = item_seed
 		_instance.ensure_initialized()
 		if editor_attribute_count > 0:
 			_instance.roll_attributes(editor_attribute_count)
@@ -49,7 +49,7 @@ func set_item_instance(inst: ItemInstance) -> void:
 	_instance = inst
 	if _instance != null and _instance.def != null:
 		item_def = _instance.def
-		item_seed = _instance.seed
+		item_seed = _instance.item_seed
 	else:
 		print("[Shield] WARNING: set_item_instance called with null instance or def")
 		return
@@ -111,7 +111,7 @@ func _refresh_key() -> void:
 	var def_id := "none"
 	if _instance != null and _instance.def != null and _instance.def.id != &"":
 		def_id = String(_instance.def.id)
-	_key = StringName("shield_%s_%d" % [def_id, int(_instance.seed) if _instance != null else 0])
+	_key = StringName("shield_%s_%d" % [def_id, int(_instance.item_seed) if _instance != null else 0])
 
 
 func _apply_passives(owner_entity: Node) -> void:

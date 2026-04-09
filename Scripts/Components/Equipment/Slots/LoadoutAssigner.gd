@@ -140,7 +140,7 @@ func _roll_instance(base_type: BaseItemType, item_seed: int, rng: RandomNumberGe
 	"""Roll a complete ItemInstance from a BaseItemType — mirrors ItemSpawner logic."""
 	var inst := ItemInstance.new()
 	inst.def = base_type.item_def
-	inst.seed = item_seed
+	inst.item_seed = item_seed
 	inst.ensure_initialized()
 	
 	# Apply starting stat levels from the BaseItemType
@@ -161,7 +161,7 @@ func _roll_instance(base_type: BaseItemType, item_seed: int, rng: RandomNumberGe
 	return inst
 
 
-func _make_equipment_item(inst: ItemInstance, base_type: BaseItemType) -> Node:
+func _make_equipment_item(inst: ItemInstance, _base_type: BaseItemType) -> Node:
 	"""Create the correct scene node and inject the ItemInstance — mirrors ItemSpawner logic."""
 	if inst == null or inst.def == null:
 		return null
