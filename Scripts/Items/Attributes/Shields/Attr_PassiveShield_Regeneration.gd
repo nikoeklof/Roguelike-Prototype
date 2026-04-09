@@ -59,12 +59,14 @@ func _stop_tracking(owner: Node) -> void:
 	var tracker: Variant = owner.get_meta(META_REGEN_TRACKER, null)
 	if tracker is Node and is_instance_valid(tracker):
 		tracker.queue_free()
-	owner.remove_meta(META_REGEN_TRACKER)
+	if owner.has_meta(META_REGEN_TRACKER):
+		owner.remove_meta(META_REGEN_TRACKER)
 
 	var timer: Variant = owner.get_meta(META_REGEN_TIMER, null)
 	if timer is Timer and is_instance_valid(timer):
 		timer.queue_free()
-	owner.remove_meta(META_REGEN_TIMER)
+	if owner.has_meta(META_REGEN_TIMER):
+		owner.remove_meta(META_REGEN_TIMER)
 
 	print("[ShieldRegen] Tracking stopped")
 
