@@ -8,23 +8,22 @@ class_name RangedAIModule
 
 
 func decide(context: Dictionary) -> AIDecision:
-	"""Decide ranged action based on positioning and cooldown"""
 	if _target == null or _combat == null:
 		return null
 
 	var distance: float = context.get("distance", INF)
 	var ranged_cooldown: float = context.get("ranged_cooldown", 0.0)
 	var is_ready: bool = ranged_cooldown <= 0.0
+
 	var has_los: bool = context.get("has_los", false)
+	var invuln: bool = context.get("target_invulnerable", false)
+	var repositioning: bool = context.get("repositioning", false)
 
-	# Priority 95: Attack if ready, in optimal range, AND have line of sight
-	if is_ready and distance <= max_distance and distance >= min_distance and has_los:
-		return AIDecision.new("ranged_attack", 95, {
-			"ready": true,
-			"distance": distance
-		})
+	# Attack only if LOS, not invuln, not repositioning
+	if is_ready and distance <= max_distance and distance >= min_distance and has_los and (not invuln) and (not repositioning):
+		return AIDecision.new("ranged_attack", 95, {"ready": true, "distance": distance})
 
-	# Priority 80: Kite to get into range / reposition (regardless of LOS)
+	# Otherwise kite to get in range / reposition (even without LOS)
 	if distance <= context.get("aggro_range", 300.0):
 		return AIDecision.new("kite", 80, {
 			"ready": is_ready,

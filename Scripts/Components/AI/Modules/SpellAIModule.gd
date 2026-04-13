@@ -6,23 +6,22 @@ class_name SpellAIModule
 
 
 func decide(context: Dictionary) -> AIDecision:
-	"""Decide spell action based on positioning and cooldown"""
 	if _target == null or _combat == null:
 		return null
 
 	var distance: float = context.get("distance", INF)
 	var spell_cooldown: float = context.get("spell_cooldown", 0.0)
 	var is_ready: bool = spell_cooldown <= 0.0
+
 	var has_los: bool = context.get("has_los", false)
+	var invuln: bool = context.get("target_invulnerable", false)
+	var repositioning: bool = context.get("repositioning", false)
 
-	# Priority 90: Cast if ready, in range, AND have line of sight
-	if is_ready and distance <= spell_range and has_los:
-		return AIDecision.new("cast_spell", 90, {
-			"ready": true,
-			"distance": distance
-		})
+	# Cast only if LOS, not invuln, not repositioning
+	if is_ready and distance <= spell_range and has_los and (not invuln) and (not repositioning):
+		return AIDecision.new("cast_spell", 90, {"ready": true, "distance": distance})
 
-	# Priority 60: Move to optimal spell distance (regardless of LOS)
+	# Otherwise move to optimal spell distance
 	if distance <= context.get("aggro_range", 300.0):
 		return AIDecision.new("spell_position", 60, {
 			"ready": is_ready,

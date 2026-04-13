@@ -22,6 +22,20 @@ enum Awareness { IDLE, ALERT, LOST }
 # Navigation repath interval
 @export_range(0.1, 1.0, 0.05) var nav_repath_interval: float = 0.25
 
+# --- Attack pacing / anti-stunlock ---
+@export var ranged_burst_count: int = 2
+@export var ranged_reposition_sec: float = 0.6
+@export var spell_burst_count: int = 2
+@export var spell_reposition_sec: float = 0.6
+
+# Optional: melee pacing (usually not needed)
+@export var melee_burst_count: int = 999
+@export var melee_reposition_sec: float = 0.0
+
+# Reposition movement tuning
+@export_range(0.2, 1.5, 0.05) var reposition_speed_mult: float = 0.8
+@export_range(0.0, 1.0, 0.05) var reposition_backstep_mult: float = 0.15
+
 # Patrol parameters
 @export var patrol_speed_mult: float = 0.4
 @export var patrol_direction_change_min: float = 1.5
@@ -63,9 +77,21 @@ var _damage_aggro_timer: float = 0.0
 var _has_los: bool = false
 var _los_timer: float = 0.0
 
+# Target health / invulnerability (cached)
+var _target_health: Health = null
+var _target_invulnerable: bool = false
+
 # Navigation
 var _nav_agent: NavigationAgent2D = null
 var _nav_repath_timer: float = 0.0
+
+# Attack pacing state
+var _reposition_timer: float = 0.0
+var _recent_attacks: Dictionary = {
+	Combat.AttackKind.MELEE: 0,
+	Combat.AttackKind.RANGED: 0,
+	Combat.AttackKind.SPELL: 0,
+}
 
 # Patrol state
 var _patrol_dir: Vector2 = Vector2.ZERO
@@ -137,6 +163,10 @@ func _full_init() -> void:
 	if _combat == null:
 		print("[EnemyAI] WARNING: No Combat component - AI cannot attack")
 
+	# Connect combat signal to pace attacks (anti-stunlock)
+	if _combat != null and not _combat.attack_finished.is_connected(_on_attack_finished):
+		_combat.attack_finished.connect(_on_attack_finished)
+
 	# Check if entity can attack
 	var can_attack: bool = _capabilities.is_enabled(Capabilities.CAN_ATTACK)
 	if not can_attack:
@@ -174,6 +204,18 @@ func _full_init() -> void:
 
 
 # =========================================
+# TARGET HELPERS
+# =========================================
+
+func _bind_target_health() -> void:
+	_target_health = null
+	_target_invulnerable = false
+	if _target == null or not is_instance_valid(_target):
+		return
+	_target_health = _target.get_node_or_null("Health") as Health
+
+
+# =========================================
 # LINE OF SIGHT
 # =========================================
 
@@ -187,7 +229,6 @@ func _update_los() -> void:
 
 
 func has_los() -> bool:
-	"""Public getter for cached LOS state."""
 	return _has_los
 
 
@@ -195,33 +236,31 @@ func has_los() -> bool:
 # NAVIGATION
 # =========================================
 
+func _update_nav_target() -> void:
+	if _nav_agent == null or _target == null:
+		return
+	_nav_agent.target_position = _target.global_position
+
+
 func _get_nav_direction_to_target() -> Vector2:
 	"""Use NavigationAgent2D to get the next path direction toward the target.
-	Falls back to direct direction if no nav mesh is available."""
+	Falls back to direct direction if nav isn't available."""
 	if _target == null or _entity == null:
 		return Vector2.ZERO
 
-	if _nav_agent == null or not _nav_agent.is_inside_tree():
-		# No nav agent — fall back to direct direction
-		return (_target.global_position - _entity.global_position).normalized()
+	var direct: Vector2 = (_target.global_position - _entity.global_position).normalized()
 
-	# Periodically update the target position on the nav agent
-	_nav_repath_timer -= 0.0  # Timer is managed in _physics_process
-	_nav_agent.target_position = _target.global_position
+	if _nav_agent == null or not _nav_agent.is_inside_tree():
+		return direct
 
 	if _nav_agent.is_navigation_finished():
 		return Vector2.ZERO
 
 	var next_point: Vector2 = _nav_agent.get_next_path_position()
 	var direction: Vector2 = (next_point - _entity.global_position).normalized()
+	if direction.length() < 0.001:
+		return direct
 	return direction
-
-
-func _update_nav_target() -> void:
-	"""Update the NavigationAgent2D target position."""
-	if _nav_agent == null or _target == null:
-		return
-	_nav_agent.target_position = _target.global_position
 
 
 # =========================================
@@ -230,78 +269,62 @@ func _update_nav_target() -> void:
 
 func _on_damaged(_amount: float, source: Node) -> void:
 	"""When hit, immediately aggro toward the damage source and boost ranges."""
-	# Reset the damage aggro boost timer
 	_damage_aggro_timer = damage_aggro_duration
 
-	# Try to use the damage source as the target
 	var aggro_target: Node2D = null
-
 	if source is Node2D and source.is_in_group("player"):
 		aggro_target = source as Node2D
 
-	# If source isn't the player directly (e.g. a projectile), find the player
 	if aggro_target == null:
 		aggro_target = get_tree().get_first_node_in_group("player") as Node2D
 
 	if aggro_target == null:
 		return
 
-	# Force-acquire target if we don't have one or it changed
 	if _target != aggro_target:
 		_target = aggro_target
+		_bind_target_health()
 		target_changed.emit(_target)
 		for module: AIBehaviorModule in _behavior_modules:
 			module.set_target(_target)
 		print("[EnemyAI] Damage aggro! Target set to %s" % _target.name)
 
-	# Force into ALERT regardless of distance
 	if _awareness != Awareness.ALERT:
 		_set_awareness(Awareness.ALERT)
 		print("[EnemyAI] Took damage — forced ALERT (boosted ranges for %.1fs)" % damage_aggro_duration)
 
 
 func _is_damage_aggro_active() -> bool:
-	"""Returns true while the post-damage aggro boost is active."""
 	return _damage_aggro_timer > 0.0
 
 
 func _effective_aggro_range() -> float:
-	"""Aggro range, boosted after taking damage."""
 	if _is_damage_aggro_active():
 		return aggro_range * damage_aggro_range_mult
 	return aggro_range
 
 
 func _effective_deaggro_range() -> float:
-	"""Deaggro range, boosted after taking damage."""
 	if _is_damage_aggro_active():
 		return deaggro_range * damage_aggro_range_mult
 	return deaggro_range
 
 
 func _try_acquire_target() -> void:
-	"""Try to find a player. Updates all modules if target changes."""
 	var player: Node2D = get_tree().get_first_node_in_group("player") as Node2D
 	if player == null:
 		return
 
 	if _target == player:
-		return  # Already tracking this target
+		return
 
 	_target = player
+	_bind_target_health()
 	target_changed.emit(_target)
 	print("[EnemyAI] Target acquired: %s" % _target.name)
 
-	# Update target on ALL modules using the proper method
 	for module: AIBehaviorModule in _behavior_modules:
 		module.set_target(_target)
-
-
-func _is_valid_target(target: Node2D) -> bool:
-	"""Check if a target is valid (exists, alive, in range)."""
-	if target == null or not is_instance_valid(target):
-		return false
-	return true
 
 
 func _set_awareness(new_state: int) -> void:
@@ -316,34 +339,19 @@ func _set_awareness(new_state: int) -> void:
 
 
 func _initialize_behavior_modules() -> void:
-	"""Create behavior modules based on actual equipped items, not capabilities"""
 	_behavior_modules.clear()
-
 	if _equipment == null:
 		return
 
-	# Check inventory slots for actual items
 	var melee_slot: Node = _equipment.get_node_or_null("MeleeSlot")
 	var ranged_slot: Node = _equipment.get_node_or_null("RangedSlot")
 	var spell_slot: Node = _equipment.get_node_or_null("SpellSlot")
 	var shield_slot: ShieldSlot = _equipment.get_node_or_null("ShieldSlot") as ShieldSlot
 
-	var has_melee: bool = false
-	var has_ranged: bool = false
-	var has_spell: bool = false
-	var has_shield: bool = false
-
-	if melee_slot != null and melee_slot.has_method("get_item"):
-		has_melee = melee_slot.call("get_item") != null
-
-	if ranged_slot != null and ranged_slot.has_method("get_item"):
-		has_ranged = ranged_slot.call("get_item") != null
-
-	if spell_slot != null and spell_slot.has_method("get_item"):
-		has_spell = spell_slot.call("get_item") != null
-
-	if shield_slot != null:
-		has_shield = shield_slot.get_item() != null
+	var has_melee := melee_slot != null and melee_slot.has_method("get_item") and melee_slot.call("get_item") != null
+	var has_ranged := ranged_slot != null and ranged_slot.has_method("get_item") and ranged_slot.call("get_item") != null
+	var has_spell := spell_slot != null and spell_slot.has_method("get_item") and spell_slot.call("get_item") != null
+	var has_shield := shield_slot != null and shield_slot.get_item() != null
 
 	print("[EnemyAI] Inventory check: melee=%s ranged=%s spell=%s shield=%s" % [has_melee, has_ranged, has_spell, has_shield])
 
@@ -352,43 +360,86 @@ func _initialize_behavior_modules() -> void:
 		melee_module._setup(_entity, _target, _combat, _mover, _stats, _health, _equipment)
 		add_child(melee_module)
 		_behavior_modules.append(melee_module)
-		print("[EnemyAI] Added MeleeAIModule (target=%s, combat=%s)" % [
-			"OK" if _target != null else "NULL",
-			"OK" if _combat != null else "NULL"
-		])
 
 	if has_ranged:
 		var ranged_module = RangedAIModule.new()
 		ranged_module._setup(_entity, _target, _combat, _mover, _stats, _health, _equipment)
 		add_child(ranged_module)
 		_behavior_modules.append(ranged_module)
-		print("[EnemyAI] Added RangedAIModule (ranged equipped)")
 
 	if has_spell:
 		var spell_module = SpellAIModule.new()
 		spell_module._setup(_entity, _target, _combat, _mover, _stats, _health, _equipment)
 		add_child(spell_module)
 		_behavior_modules.append(spell_module)
-		print("[EnemyAI] Added SpellAIModule (spell equipped)")
 
 	if has_shield:
 		var defense_module = DefenseAIModule.new()
 		defense_module._setup(_entity, _target, _combat, _mover, _stats, _health, _equipment)
 		add_child(defense_module)
 		_behavior_modules.append(defense_module)
-		print("[EnemyAI] Added DefenseAIModule (shield equipped)")
 
 	if _behavior_modules.is_empty():
 		print("[EnemyAI] WARNING: No items equipped, no behavior modules created")
 
 
+# =========================================
+# ATTACK PACING
+# =========================================
+
+func _on_attack_finished(kind: int) -> void:
+	if not _recent_attacks.has(kind):
+		_recent_attacks[kind] = 0
+	_recent_attacks[kind] = int(_recent_attacks[kind]) + 1
+
+	if kind == Combat.AttackKind.RANGED and int(_recent_attacks[kind]) >= ranged_burst_count:
+		_recent_attacks[kind] = 0
+		_reposition_timer = maxf(_reposition_timer, ranged_reposition_sec)
+
+	elif kind == Combat.AttackKind.SPELL and int(_recent_attacks[kind]) >= spell_burst_count:
+		_recent_attacks[kind] = 0
+		_reposition_timer = maxf(_reposition_timer, spell_reposition_sec)
+
+	elif kind == Combat.AttackKind.MELEE and int(_recent_attacks[kind]) >= melee_burst_count:
+		_recent_attacks[kind] = 0
+		_reposition_timer = maxf(_reposition_timer, melee_reposition_sec)
+
+
+func _reposition_move_dir(dir_to_target: Vector2) -> Vector2:
+	# Strafe left or right deterministically per entity
+	var strafe := Vector2(-dir_to_target.y, dir_to_target.x)
+	if int(hash(str(_entity.get_instance_id()))) % 2 == 0:
+		strafe = -strafe
+
+	# Add a small backstep component so ranged doesn't just orbit in-place
+	var backstep := -dir_to_target * reposition_backstep_mult
+	var move := (strafe + backstep)
+	if move.length() < 0.001:
+		move = strafe
+	return move.normalized()
+
+
+# =========================================
+# MAIN LOOP
+# =========================================
+
 func _physics_process(delta: float) -> void:
 	if _entity == null:
 		return
 
-	# Tick down damage aggro boost
+	# Tick damage aggro boost
 	if _damage_aggro_timer > 0.0:
 		_damage_aggro_timer = maxf(_damage_aggro_timer - delta, 0.0)
+
+	# Tick reposition
+	if _reposition_timer > 0.0:
+		_reposition_timer = maxf(_reposition_timer - delta, 0.0)
+
+	# Update target invuln (cheap)
+	if _target_health != null and is_instance_valid(_target_health):
+		_target_invulnerable = _target_health.is_invulnerable()
+	else:
+		_target_invulnerable = false
 
 	# Periodically update LOS
 	_los_timer += delta
@@ -411,27 +462,6 @@ func _physics_process(delta: float) -> void:
 	# Update awareness state based on target distance
 	_update_awareness(delta)
 
-	# Periodic debug
-	_debug_timer += delta
-	if _debug_timer >= DEBUG_INTERVAL:
-		_debug_timer = 0.0
-		var dist: float = INF
-		if _target != null and _entity != null:
-			dist = _entity.global_position.distance_to(_target.global_position)
-		var state_names := ["IDLE", "ALERT", "LOST"]
-		var decision_str: String = _current_decision.state if _current_decision != null else "null"
-		var boost_str: String = " [BOOSTED %.1fs]" % _damage_aggro_timer if _is_damage_aggro_active() else ""
-		var los_str: String = " [LOS]" if _has_los else " [NO LOS]"
-		print("[EnemyAI] STATUS: awareness=%s, decision=%s, dist=%.1f, target=%s, modules=%d%s%s" % [
-			state_names[_awareness],
-			decision_str,
-			dist,
-			"OK" if _target != null else "NULL",
-			_behavior_modules.size(),
-			boost_str,
-			los_str
-		])
-
 	# Route to appropriate behavior based on awareness
 	match _awareness:
 		Awareness.IDLE:
@@ -443,9 +473,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _update_awareness(delta: float) -> void:
-	"""Transition between awareness states based on target proximity."""
 	var has_target: bool = _target != null and is_instance_valid(_target)
-
 	if not has_target:
 		if _awareness != Awareness.IDLE:
 			_set_awareness(Awareness.IDLE)
@@ -475,31 +503,22 @@ func _update_awareness(delta: float) -> void:
 
 
 # =========================================
-# PATROL (Awareness.IDLE)
+# PATROL / COMBAT / LOST
 # =========================================
 
 func _process_patrol(delta: float) -> void:
-	"""Wander randomly when no target is detected."""
 	_patrol_timer -= delta
-
 	if _patrol_timer <= 0.0:
 		_pick_new_patrol_direction()
 
 	if _control != null:
 		_control.set_block_intent(false)
-		if _patrol_idle:
-			_control.set_move_intent(Vector2.ZERO)
-		else:
-			_control.set_move_intent(_patrol_dir * patrol_speed_mult)
+		_control.set_move_intent(Vector2.ZERO if _patrol_idle else _patrol_dir * patrol_speed_mult)
 
-	if _patrol_idle:
-		_current_decision = AIDecision.new("patrol_idle", 0)
-	else:
-		_current_decision = AIDecision.new("patrol", 10)
+	_current_decision = AIDecision.new("patrol_idle", 0) if _patrol_idle else AIDecision.new("patrol", 10)
 
 
 func _pick_new_patrol_direction() -> void:
-	"""Choose a new random patrol direction or idle pause."""
 	if _patrol_rng.randf() < patrol_idle_chance:
 		_patrol_idle = true
 		_patrol_timer = _patrol_rng.randf_range(patrol_idle_duration_min, patrol_idle_duration_max)
@@ -510,12 +529,7 @@ func _pick_new_patrol_direction() -> void:
 		_patrol_timer = _patrol_rng.randf_range(patrol_direction_change_min, patrol_direction_change_max)
 
 
-# =========================================
-# COMBAT (Awareness.ALERT)
-# =========================================
-
 func _process_combat(delta: float) -> void:
-	"""Full combat AI — modules decide what to do."""
 	if _behavior_modules.is_empty():
 		return
 
@@ -526,18 +540,12 @@ func _process_combat(delta: float) -> void:
 
 	_execute_decision()
 
-	# Let modules do continuous updates
 	for module in _behavior_modules:
 		if module.has_method("physics_update"):
 			module.physics_update(delta, _current_decision)
 
 
-# =========================================
-# LOST (Awareness.LOST)
-# =========================================
-
 func _process_lost(_delta: float) -> void:
-	"""Move toward last known player position using navigation, then give up."""
 	if _target != null and is_instance_valid(_target) and _control != null:
 		var move_dir: Vector2 = _get_nav_direction_to_target()
 		_control.set_move_intent(move_dir * 0.6)
@@ -547,13 +555,11 @@ func _process_lost(_delta: float) -> void:
 
 
 # =========================================
-# COMBAT DECISION MAKING
+# DECISION MAKING
 # =========================================
 
 func _make_decision() -> void:
-	"""Gather context and ask modules for best action, with conflict resolution"""
 	var context := _build_context()
-
 	var candidate_decisions: Array[AIDecision] = []
 
 	for module in _behavior_modules:
@@ -561,89 +567,101 @@ func _make_decision() -> void:
 			continue
 
 		var decision: AIDecision = module.decide(context)
-		if decision == null:
-			continue
-
-		candidate_decisions.append(decision)
+		if decision != null:
+			candidate_decisions.append(decision)
 
 	if candidate_decisions.is_empty():
 		_current_decision = AIDecision.new("chase", 50)
 		return
 
 	var best_decision := _resolve_conflicts(candidate_decisions, context)
-
 	if _current_decision == null or best_decision.state != _current_decision.state:
 		behavior_changed.emit(best_decision.state)
-		print("[EnemyAI] Decision: %s (priority: %d)" % [best_decision.state, best_decision.priority])
-
 	_current_decision = best_decision
 
 
 func _execute_decision() -> void:
-	"""Bridge between AI decisions and the EnemyControl/Combat systems"""
 	if _current_decision == null or _control == null:
 		return
 
 	var dir_to_target := Vector2.ZERO
-	if _target != null:
+	if _target != null and is_instance_valid(_target):
 		dir_to_target = (_target.global_position - _entity.global_position).normalized()
 
-	# Default: not blocking
+	# Global attack suppression:
+	# - during reposition window (anti-stunlock)
+	# - while target is invulnerable (respect player invuln)
+	var suppress_attacks: bool = (_reposition_timer > 0.0) or _target_invulnerable
+
 	_control.set_block_intent(false)
 
-	match _current_decision.state:
+	# If we must suppress attacks, never keep attack held.
+	if suppress_attacks and _control.attack_is_down():
+		_control.release_attack()
+
+	# Force reposition decision when the timer is active
+	var state := _current_decision.state
+	if _reposition_timer > 0.0:
+		state = "reposition"
+
+	match state:
+		"reposition":
+			if dir_to_target != Vector2.ZERO:
+				var move_dir := _reposition_move_dir(dir_to_target)
+				_control.set_move_intent(move_dir * reposition_speed_mult)
+			else:
+				_control.set_move_intent(Vector2.ZERO)
+
 		"melee_attack":
-			if _combat != null:
+			if suppress_attacks:
+				# fall back to chase movement
+				_control.set_move_intent(_get_nav_direction_to_target())
+			elif _combat != null:
 				_equipment.set_active_slot_melee("ai_melee")
 				_control.set_move_intent(dir_to_target)
 				if not _control.attack_is_down():
-					print("[EnemyAI] EXEC: press_attack MELEE dir=%s" % dir_to_target)
 					_control.press_attack(dir_to_target, Combat.AttackKind.MELEE)
-				else:
-					print("[EnemyAI] EXEC: melee_attack but attack already down, waiting for auto-release")
+
 		"ranged_attack":
-			if _combat != null:
+			if suppress_attacks:
+				# hold position or slight strafe is handled by reposition timer; otherwise kite module may decide
+				_control.set_move_intent(Vector2.ZERO)
+			elif _combat != null:
 				_equipment.set_active_slot_ranged("ai_ranged")
 				_control.set_move_intent(Vector2.ZERO)
 				if not _control.attack_is_down():
-					print("[EnemyAI] EXEC: press_attack RANGED dir=%s" % dir_to_target)
 					_control.press_attack(dir_to_target, Combat.AttackKind.RANGED)
+
 		"cast_spell":
-			if _combat != null:
+			if suppress_attacks:
+				_control.set_move_intent(Vector2.ZERO)
+			elif _combat != null:
 				_equipment.set_active_slot_spell("ai_spell")
 				_control.set_move_intent(Vector2.ZERO)
 				if not _control.attack_is_down():
 					_control.press_attack(dir_to_target, Combat.AttackKind.SPELL)
+
 		"shield_block":
 			_control.set_block_intent(true)
-			if _control.attack_is_down():
-				_control.release_attack()
+
 		"chase":
-			var dist: float = _entity.global_position.distance_to(_target.global_position) if _target != null else INF
-			if dist < 1.0:
-				_control.set_move_intent(Vector2.DOWN)
-			elif dist < 20.0:
-				_control.set_move_intent(-dir_to_target * 0.5)
-			else:
-				# Use NavigationAgent2D to pathfind around obstacles
-				var move_dir: Vector2 = _get_nav_direction_to_target()
-				_control.set_move_intent(move_dir)
-			if _control.attack_is_down():
-				_control.release_attack()
-		"kite":
-			if _control.attack_is_down():
-				_control.release_attack()
+			var move_dir: Vector2 = _get_nav_direction_to_target()
+			_control.set_move_intent(move_dir)
+
+		# NOTE: kite/spell_position are handled in module physics_update right now,
+		# but we ensure we never keep attack held while suppressing.
+		"kite", "spell_position":
+			if suppress_attacks:
+				_control.set_move_intent(Vector2.ZERO)
+
 		"idle", "patrol", "patrol_idle":
 			_control.set_move_intent(Vector2.ZERO)
-			if _control.attack_is_down():
-				_control.release_attack()
+
 		_:
-			if _control.attack_is_down():
-				_control.release_attack()
+			_control.set_move_intent(Vector2.ZERO)
 
 
 func _resolve_conflicts(decisions: Array[AIDecision], context: Dictionary) -> AIDecision:
-	"""Resolve conflicts between multiple module decisions using smart logic"""
 	if decisions.size() == 1:
 		return decisions[0]
 
@@ -670,9 +688,9 @@ func _resolve_conflicts(decisions: Array[AIDecision], context: Dictionary) -> AI
 	if not attack_decisions.is_empty():
 		attack_decisions.sort_custom(func(a, b): return a.priority > b.priority)
 		if attack_decisions.size() > 1:
-			for decision in attack_decisions:
-				if decision.data.get("ready", false):
-					return decision
+			for d in attack_decisions:
+				if d.data.get("ready", false):
+					return d
 		return attack_decisions[0]
 
 	if not spell_decisions.is_empty():
@@ -687,9 +705,8 @@ func _resolve_conflicts(decisions: Array[AIDecision], context: Dictionary) -> AI
 
 
 func _build_context() -> Dictionary:
-	"""Build decision context from all systems"""
 	var distance_to_target: float = INF
-	if _target != null:
+	if _target != null and is_instance_valid(_target):
 		distance_to_target = _entity.global_position.distance_to(_target.global_position)
 
 	var health_percent: float = 1.0
@@ -719,20 +736,6 @@ func _build_context() -> Dictionary:
 		"aggro_range": _effective_aggro_range(),
 		"awareness": _awareness,
 		"has_los": _has_los,
+		"target_invulnerable": _target_invulnerable,
+		"repositioning": _reposition_timer > 0.0,
 	}
-
-
-func get_current_decision() -> AIDecision:
-	return _current_decision
-
-
-func get_entity() -> Entity:
-	return _entity
-
-
-func get_target() -> Node2D:
-	return _target
-
-
-func get_awareness() -> int:
-	return _awareness

@@ -11,34 +11,26 @@ const DEBUG_INTERVAL: float = 1.0
 
 
 func decide(context: Dictionary) -> AIDecision:
-	"""Decide melee action based on context"""
 	if _target == null:
-		print("[MeleeAI] decide: _target is NULL — cannot decide")
 		return null
 	if _combat == null:
-		print("[MeleeAI] decide: _combat is NULL — cannot decide")
 		return null
 
 	var distance: float = context.get("distance", INF)
 	var melee_cooldown: float = context.get("melee_cooldown", 0.0)
 	var is_ready: bool = melee_cooldown <= 0.0
+
 	var has_los: bool = context.get("has_los", false)
+	var invuln: bool = context.get("target_invulnerable", false)
+	var repositioning: bool = context.get("repositioning", false)
 
-	# Priority 100: Attack if ready, in range, AND have line of sight
-	if distance <= attack_range and is_ready and has_los:
-		print("[MeleeAI] decide: MELEE_ATTACK (dist=%.1f, range=%.1f, cd=%.2f, LOS=true)" % [distance, attack_range, melee_cooldown])
-		return AIDecision.new("melee_attack", 100, {
-			"ready": true,
-			"distance": distance
-		})
+	# Attack only if LOS, not invuln, not repositioning
+	if distance <= attack_range and is_ready and has_los and (not invuln) and (not repositioning):
+		return AIDecision.new("melee_attack", 100, {"ready": true, "distance": distance})
 
-	# Priority 70: Chase if in aggro range (chase regardless of LOS — need to navigate to target)
+	# Otherwise chase if within aggro range
 	if distance <= context.get("aggro_range", 300.0):
-		return AIDecision.new("chase", 70, {
-			"ready": is_ready,
-			"distance": distance,
-			"cooldown": melee_cooldown
-		})
+		return AIDecision.new("chase", 70, {"ready": is_ready, "distance": distance, "cooldown": melee_cooldown})
 
 	return null
 

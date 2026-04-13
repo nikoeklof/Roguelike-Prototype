@@ -33,6 +33,13 @@ func is_dead() -> bool:
 func can_take_damage() -> bool:
 	return _invuln_t <= 0.0 and not is_dead()
 
+# --- NEW: public invuln helpers (for AI + VFX + UI) ---
+func invuln_remaining() -> float:
+	return _invuln_t
+
+func is_invulnerable() -> bool:
+	return _invuln_t > 0.0
+
 func take_damage(amount: float, source: Node = null) -> bool:
 	if amount <= 0.0:
 		return false
