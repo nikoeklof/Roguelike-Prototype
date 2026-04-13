@@ -478,6 +478,8 @@ script = ExtResource("22_7r15b")
 [node name="EnemyAI" type="Node" parent="." unique_id=539114663]
 script = ExtResource("23_ai001")
 decision_interval = 0.15
+ranged_windup_sec = 0.0
+spell_windup_sec = 0.0
 
 [node name="ControlSource" type="Node" parent="." unique_id=1952024130]
 script = ExtResource("22_2fryh")

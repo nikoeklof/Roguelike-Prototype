@@ -356,6 +356,7 @@ func _set_awareness(new_state: int) -> void:
 func _initialize_behavior_modules() -> void:
 	_behavior_modules.clear()
 	if _equipment == null:
+		print("[EnemyAI] No Equipment for ", _entity)
 		return
 
 	var melee_slot: Node = _equipment.get_node_or_null("MeleeSlot")
@@ -368,30 +369,33 @@ func _initialize_behavior_modules() -> void:
 	var has_spell := spell_slot != null and spell_slot.has_method("get_item") and spell_slot.call("get_item") != null
 	var has_shield := shield_slot != null and shield_slot.get_item() != null
 
+	print("[EnemyAI] Adding AI Modules for Entity:", _entity)
+	print("-- has_melee:", has_melee, " has_ranged:", has_ranged, " has_spell:", has_spell, " has_shield:", has_shield)
+
 	if has_melee:
 		var melee_module = MeleeAIModule.new()
 		melee_module._setup(_entity, _target, _combat, _mover, _stats, _health, _equipment)
 		add_child(melee_module)
 		_behavior_modules.append(melee_module)
-
+		print("    [AI MODULE] MeleeAIModule ADDED")
 	if has_ranged:
 		var ranged_module = RangedAIModule.new()
 		ranged_module._setup(_entity, _target, _combat, _mover, _stats, _health, _equipment)
 		add_child(ranged_module)
 		_behavior_modules.append(ranged_module)
-
+		print("    [AI MODULE] RangedAIModule ADDED")
 	if has_spell:
 		var spell_module = SpellAIModule.new()
 		spell_module._setup(_entity, _target, _combat, _mover, _stats, _health, _equipment)
 		add_child(spell_module)
 		_behavior_modules.append(spell_module)
-
+		print("    [AI MODULE] SpellAIModule ADDED")
 	if has_shield:
 		var defense_module = DefenseAIModule.new()
 		defense_module._setup(_entity, _target, _combat, _mover, _stats, _health, _equipment)
 		add_child(defense_module)
 		_behavior_modules.append(defense_module)
-
+		print("    [AI MODULE] DefenseAIModule ADDED")
 
 # =========================================
 # ATTACK PACING
@@ -657,8 +661,6 @@ func _execute_decision() -> void:
 		dir_to_target = (_target.global_position - _entity.global_position).normalized()
 
 	# Global attack suppression:
-	# - during reposition window (anti-stunlock)
-	# - while target is invulnerable (respect player invuln)
 	var suppress_attacks: bool = (_reposition_timer > 0.0) or _target_invulnerable
 
 	_control.set_block_intent(false)
@@ -686,7 +688,11 @@ func _execute_decision() -> void:
 				_control.set_move_intent(_get_nav_direction_to_target())
 				return
 
-			_start_attack_windup(Combat.AttackKind.MELEE)
+			# ---- PATCH STARTS HERE ----
+			# Only start windup if not already winding up for this kind or timer is done (not every frame!)
+			if _pending_attack_kind != Combat.AttackKind.MELEE or _pending_attack_timer <= 0.0:
+				_start_attack_windup(Combat.AttackKind.MELEE)
+
 			if _pending_attack_kind == Combat.AttackKind.MELEE and _pending_attack_timer <= 0.0:
 				_cancel_attack_windup()
 				if _combat != null:
@@ -697,6 +703,7 @@ func _execute_decision() -> void:
 			else:
 				# Keep chasing while winding up
 				_control.set_move_intent(_get_nav_direction_to_target())
+			# ---- PATCH ENDS HERE ----
 
 		"ranged_attack":
 			if suppress_attacks or not _has_recent_los():
@@ -704,7 +711,9 @@ func _execute_decision() -> void:
 				_control.set_move_intent(Vector2.ZERO)
 				return
 
-			_start_attack_windup(Combat.AttackKind.RANGED)
+			if _pending_attack_kind != Combat.AttackKind.RANGED or _pending_attack_timer <= 0.0:
+				_start_attack_windup(Combat.AttackKind.RANGED)
+
 			if _pending_attack_kind == Combat.AttackKind.RANGED and _pending_attack_timer <= 0.0:
 				_cancel_attack_windup()
 				if _combat != null:
@@ -721,7 +730,9 @@ func _execute_decision() -> void:
 				_control.set_move_intent(Vector2.ZERO)
 				return
 
-			_start_attack_windup(Combat.AttackKind.SPELL)
+			if _pending_attack_kind != Combat.AttackKind.SPELL or _pending_attack_timer <= 0.0:
+				_start_attack_windup(Combat.AttackKind.SPELL)
+
 			if _pending_attack_kind == Combat.AttackKind.SPELL and _pending_attack_timer <= 0.0:
 				_cancel_attack_windup()
 				if _combat != null:

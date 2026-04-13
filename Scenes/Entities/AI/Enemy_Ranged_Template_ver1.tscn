@@ -364,7 +364,6 @@ size = Vector2(11, 8)
 [node name="EnemyRangedTemplateVer1" type="CharacterBody2D" unique_id=1052976507]
 script = ExtResource("1_5d5dm")
 initial_faction = 2
-initial_friendly_fire = true
 metadata/_custom_type_script = "uid://csm6mhenieg4s"
 
 [node name="EntityComponents" type="Node" parent="." unique_id=715530497]
@@ -476,10 +475,12 @@ script = ExtResource("20_dj205")
 
 [node name="EnemyAI" type="Node" parent="." unique_id=430433494]
 script = ExtResource("21_wucoh")
-aggro_range = 500.0
-deaggro_range = 700.0
+aggro_range = 400.0
+deaggro_range = 600.0
 decision_interval = 0.15
-ranged_burst_count = 4
+los_memory_sec = 0.5
+ranged_burst_count = 3
+melee_windup_sec = 0.0
 
 [node name="ControlSource" type="Node" parent="." unique_id=1920222032]
 script = ExtResource("22_cv08k")
