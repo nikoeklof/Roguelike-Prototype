@@ -552,7 +552,6 @@ func _update_awareness(delta: float) -> void:
 				_set_awareness(Awareness.ALERT)
 
 		Awareness.ALERT:
-			# If we require LOS to stay aggro, we can transition to LOST when far OR long time no LOS.
 			if distance > eff_deaggro:
 				_lost_timer = 0.0
 				_set_awareness(Awareness.LOST)
@@ -682,7 +681,6 @@ func _execute_decision() -> void:
 				_control.set_move_intent(Vector2.ZERO)
 
 		"melee_attack":
-			# Must have recent LOS to execute attacks (modules already check has_los, but this is extra safety)
 			if suppress_attacks or not _has_recent_los():
 				_cancel_attack_windup()
 				_control.set_move_intent(_get_nav_direction_to_target())
@@ -744,7 +742,6 @@ func _execute_decision() -> void:
 			_control.set_move_intent(move_dir)
 
 		"kite", "spell_position":
-			# These are handled by module physics_update; don't cancel windup here, just don't force attack.
 			if suppress_attacks:
 				_cancel_attack_windup()
 				_control.set_move_intent(Vector2.ZERO)
@@ -832,7 +829,7 @@ func _build_context() -> Dictionary:
 		"target": _target,
 		"aggro_range": _effective_aggro_range(),
 		"awareness": _awareness,
-		"has_los": _has_los,
+		"has_los": _has_recent_los(),  # FIX: use memory-aware LOS, not raw per-interval sample
 		"target_invulnerable": _target_invulnerable,
 		"repositioning": _reposition_timer > 0.0,
 	}
