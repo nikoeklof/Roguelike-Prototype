@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://b0eb7ryv2foaw" path="res://Scenes/Templates/Entities/Player_Entity_Template.tscn" id="1_kyx5t"]
 [ext_resource type="PackedScene" uid="uid://wj0aehlmsmj3" path="res://Scenes/UI/DebugHUD.tscn" id="2_tiaw2"]
+[ext_resource type="PackedScene" uid="uid://clncndcdq5t7c" path="res://Scenes/Entities/AI/Enemy_Ranged_Template_ver1.tscn" id="3_tj7c2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
 size = Vector2(1169, 29.33334)
@@ -53,7 +54,7 @@ scale = Vector2(0.375, 0.375)
 shape = SubResource("RectangleShape2D_3dogw")
 
 [node name="Player" parent="." unique_id=423000657 groups=["player"] instance=ExtResource("1_kyx5t")]
-position = Vector2(179, 164)
+position = Vector2(330, 345)
 
 [node name="DebugHud" parent="." unique_id=1698329193 instance=ExtResource("2_tiaw2")]
 visible = false
@@ -69,3 +70,15 @@ scale = Vector2(0.375, 0.375)
 vertices = PackedVector2Array(629.33325, 28, 626.66675, -33.333344, -613.3334, -41.333344, -629.3334, 33.333313)
 affect_navigation_mesh = true
 carve_navigation_mesh = true
+
+[node name="EnemyRangedTemplateVer1" parent="." unique_id=1052976507 instance=ExtResource("3_tj7c2")]
+position = Vector2(471, 16)
+
+[node name="EnemyRangedTemplateVer2" parent="." unique_id=1178627320 instance=ExtResource("3_tj7c2")]
+position = Vector2(1030, -26)
+
+[node name="EnemyRangedTemplateVer3" parent="." unique_id=2121172118 instance=ExtResource("3_tj7c2")]
+position = Vector2(710, -20)
+
+[node name="EnemyRangedTemplateVer4" parent="." unique_id=121211549 instance=ExtResource("3_tj7c2")]
+position = Vector2(851, -28)

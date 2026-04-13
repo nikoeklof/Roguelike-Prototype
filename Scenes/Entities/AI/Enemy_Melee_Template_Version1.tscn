@@ -384,6 +384,7 @@ script = ExtResource("5_14ypb")
 script = ExtResource("6_j5qy7")
 base_move_speed = 150.0
 base_friction = 1300.0
+base_attack_speed_mult = 0.7
 
 [node name="Health" type="Node" parent="." unique_id=689961032]
 script = ExtResource("7_554au")
