@@ -14,7 +14,7 @@ var _is_down := false
 
 # Ensures press survives across Idle → Attack state transition
 var _press_consumed_count: int = 0
-const PRESS_CONSUME_LIMIT: int = 2  # Idle reads it, then Attack.enter reads it
+const PRESS_CONSUME_LIMIT: int = 3  # Idle reads it, then Attack.enter reads it
 
 # Auto-release: how many physics frames to hold the press before releasing
 var _hold_frames_remaining: int = 0
@@ -81,7 +81,7 @@ func attack_is_down() -> bool:
 
 # --- Kind-based semantics ---
 func attack_kind_peek() -> int:
-	return _attack_kind if _is_down else Combat.AttackKind.NONE
+	return _attack_kind if (_is_down or _pressed_frame) else Combat.AttackKind.NONE
 
 func attack_kind_pressed() -> int:
 	if attack_pressed():
