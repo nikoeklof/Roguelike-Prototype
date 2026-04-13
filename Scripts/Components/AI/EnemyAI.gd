@@ -22,11 +22,22 @@ enum Awareness { IDLE, ALERT, LOST }
 # Navigation repath interval
 @export_range(0.1, 1.0, 0.05) var nav_repath_interval: float = 0.25
 
+# If true, enemies only aggro when the player is in LOS.
+@export var require_los_to_aggro: bool = true
+# Once LOS is acquired, keep "seen" for this many seconds (prevents flicker drop / windup cancel spam).
+@export_range(0.0, 2.0, 0.05) var los_memory_sec: float = 0.35
+
 # --- Attack pacing / anti-stunlock ---
 @export var ranged_burst_count: int = 2
 @export var ranged_reposition_sec: float = 0.6
 @export var spell_burst_count: int = 2
 @export var spell_reposition_sec: float = 0.6
+
+# Attack wind-up (reaction time). Adds a delay between "in range" and actual press_attack.
+@export_range(0.0, 1.0, 0.01) var melee_windup_sec: float = 0.05
+@export_range(0.0, 1.0, 0.01) var ranged_windup_sec: float = 0.18
+@export_range(0.0, 1.0, 0.01) var spell_windup_sec: float = 0.15
+@export_range(0.0, 0.5, 0.01) var windup_jitter_sec: float = 0.10
 
 # Optional: melee pacing (usually not needed)
 @export var melee_burst_count: int = 999
@@ -76,6 +87,8 @@ var _damage_aggro_timer: float = 0.0
 # LOS state (cached, updated periodically)
 var _has_los: bool = false
 var _los_timer: float = 0.0
+var _los_seen_timer: float = 0.0
+var _los_has_fresh_sample: bool = false # becomes true after we raycast at least once
 
 # Target health / invulnerability (cached)
 var _target_health: Health = null
@@ -86,6 +99,8 @@ var _nav_agent: NavigationAgent2D = null
 var _nav_repath_timer: float = 0.0
 
 # Attack pacing state
+var _pending_attack_kind: int = Combat.AttackKind.NONE
+var _pending_attack_timer: float = 0.0
 var _reposition_timer: float = 0.0
 var _recent_attacks: Dictionary = {
 	Combat.AttackKind.MELEE: 0,
@@ -100,6 +115,7 @@ var _patrol_idle: bool = false
 var _patrol_rng: RandomNumberGenerator = RandomNumberGenerator.new()
 
 # Debug
+@warning_ignore("unused_private_class_variable")
 var _debug_timer: float = 0.0
 const DEBUG_INTERVAL: float = 2.0
 
@@ -115,10 +131,10 @@ func _ready() -> void:
 	if _nav_agent == null:
 		_nav_agent = NavigationAgent2D.new()
 		_nav_agent.name = "NavigationAgent2D"
-		_entity.add_child(_nav_agent)
+		_entity.add_child.call_deferred(_nav_agent)
 		print("[EnemyAI] Created NavigationAgent2D")
 
-	# Configure nav agent
+	# Configure nav agent (also configured in _full_init, but safe defaults here)
 	_nav_agent.path_desired_distance = 8.0
 	_nav_agent.target_desired_distance = 16.0
 	_nav_agent.path_max_distance = 600.0
@@ -135,7 +151,6 @@ func _deferred_init() -> void:
 
 
 func _full_init() -> void:
-	# Get all required components
 	_equipment = _entity.find_component(&"Equipment") as Equipment
 	_combat = _entity.find_component(&"Combat") as Combat
 	_mover = _entity.find_component(&"Mover") as Mover
@@ -148,59 +163,42 @@ func _full_init() -> void:
 	if _capabilities == null:
 		print("[EnemyAI] ERROR: No Capabilities component")
 		return
-
 	if _equipment == null:
 		print("[EnemyAI] ERROR: No Equipment component")
 		return
-
 	if _mover == null:
 		print("[EnemyAI] ERROR: No Mover component")
 		return
-
 	if _control == null:
 		print("[EnemyAI] WARNING: No ControlSource component - AI cannot execute actions")
-
 	if _combat == null:
 		print("[EnemyAI] WARNING: No Combat component - AI cannot attack")
 
-	# Connect combat signal to pace attacks (anti-stunlock)
 	if _combat != null and not _combat.attack_finished.is_connected(_on_attack_finished):
 		_combat.attack_finished.connect(_on_attack_finished)
 
-	# Check if entity can attack
 	var can_attack: bool = _capabilities.is_enabled(Capabilities.CAN_ATTACK)
 	if not can_attack:
 		print("[EnemyAI] WARNING: Entity cannot attack (no can_attack capability)")
 
-	# Hook into damage signal so we aggro when hit
 	if _health != null and not _health.damaged.is_connected(_on_damaged):
 		_health.damaged.connect(_on_damaged)
 
-	# Try to find player before creating modules
+	_configure_nav_agent()
 	_try_acquire_target()
-
-	# Initialize behavior modules based on inventory
 	_initialize_behavior_modules()
 
-	# Initialize default decision
 	_current_decision = AIDecision.new("idle", 0)
 
-	# Initialize patrol RNG from entity path for determinism
 	_patrol_rng.seed = hash(str(_entity.get_path()))
 	_pick_new_patrol_direction()
 
 	if _target != null:
-		_set_awareness(Awareness.ALERT)
+		# Force an immediate LOS sample next frame so we don't stay "blind" early.
+		_los_timer = los_check_interval
+		_set_awareness(Awareness.IDLE)
 	else:
 		_set_awareness(Awareness.IDLE)
-		print("[EnemyAI] No player found yet — starting patrol")
-
-	print("[EnemyAI] Ready with %d behavior modules, combat=%s, control=%s, nav=%s" % [
-		_behavior_modules.size(),
-		"OK" if _combat != null else "NULL",
-		"OK" if _control != null else "NULL",
-		"OK" if _nav_agent != null else "NULL"
-	])
 
 
 # =========================================
@@ -220,12 +218,23 @@ func _bind_target_health() -> void:
 # =========================================
 
 func _update_los() -> void:
-	"""Periodically update cached LOS state via raycast."""
 	if _entity == null or _target == null or not is_instance_valid(_target):
 		_has_los = false
+		_los_has_fresh_sample = true
 		return
 
 	_has_los = AILineOfSight.has_los_to_target(_entity, _target)
+	_los_has_fresh_sample = true
+
+	if _has_los:
+		_los_seen_timer = los_memory_sec
+
+
+func _has_recent_los() -> bool:
+	# If we haven't sampled yet, assume false.
+	if not _los_has_fresh_sample:
+		return false
+	return _has_los or _los_seen_timer > 0.0
 
 
 func has_los() -> bool:
@@ -242,9 +251,23 @@ func _update_nav_target() -> void:
 	_nav_agent.target_position = _target.global_position
 
 
+func _configure_nav_agent() -> void:
+	if _nav_agent == null:
+		_nav_agent = _entity.get_node_or_null("NavigationAgent2D") as NavigationAgent2D
+	if _nav_agent == null:
+		return
+	if not _nav_agent.is_inside_tree():
+		call_deferred("_configure_nav_agent")
+		return
+
+	_nav_agent.path_desired_distance = 8.0
+	_nav_agent.target_desired_distance = 16.0
+	_nav_agent.path_max_distance = 600.0
+	_nav_agent.avoidance_enabled = false
+	_nav_agent.debug_enabled = false
+
+
 func _get_nav_direction_to_target() -> Vector2:
-	"""Use NavigationAgent2D to get the next path direction toward the target.
-	Falls back to direct direction if nav isn't available."""
 	if _target == null or _entity == null:
 		return Vector2.ZERO
 
@@ -268,16 +291,13 @@ func _get_nav_direction_to_target() -> Vector2:
 # =========================================
 
 func _on_damaged(_amount: float, source: Node) -> void:
-	"""When hit, immediately aggro toward the damage source and boost ranges."""
 	_damage_aggro_timer = damage_aggro_duration
 
 	var aggro_target: Node2D = null
 	if source is Node2D and source.is_in_group("player"):
 		aggro_target = source as Node2D
-
 	if aggro_target == null:
 		aggro_target = get_tree().get_first_node_in_group("player") as Node2D
-
 	if aggro_target == null:
 		return
 
@@ -287,11 +307,10 @@ func _on_damaged(_amount: float, source: Node) -> void:
 		target_changed.emit(_target)
 		for module: AIBehaviorModule in _behavior_modules:
 			module.set_target(_target)
-		print("[EnemyAI] Damage aggro! Target set to %s" % _target.name)
 
-	if _awareness != Awareness.ALERT:
-		_set_awareness(Awareness.ALERT)
-		print("[EnemyAI] Took damage — forced ALERT (boosted ranges for %.1fs)" % damage_aggro_duration)
+	# Taking damage should always alert (even without LOS), but still won't attack without LOS.
+	_set_awareness(Awareness.ALERT)
+	_los_timer = los_check_interval # force LOS sample soon
 
 
 func _is_damage_aggro_active() -> bool:
@@ -314,27 +333,23 @@ func _try_acquire_target() -> void:
 	var player: Node2D = get_tree().get_first_node_in_group("player") as Node2D
 	if player == null:
 		return
-
 	if _target == player:
 		return
 
 	_target = player
 	_bind_target_health()
 	target_changed.emit(_target)
-	print("[EnemyAI] Target acquired: %s" % _target.name)
-
 	for module: AIBehaviorModule in _behavior_modules:
 		module.set_target(_target)
+
+	# Force early LOS sample next frame
+	_los_timer = los_check_interval
 
 
 func _set_awareness(new_state: int) -> void:
 	if _awareness == new_state:
 		return
-	var old := _awareness
 	_awareness = new_state
-
-	var state_names := ["IDLE", "ALERT", "LOST"]
-	print("[EnemyAI] Awareness: %s → %s" % [state_names[old], state_names[new_state]])
 	awareness_changed.emit(new_state)
 
 
@@ -352,8 +367,6 @@ func _initialize_behavior_modules() -> void:
 	var has_ranged := ranged_slot != null and ranged_slot.has_method("get_item") and ranged_slot.call("get_item") != null
 	var has_spell := spell_slot != null and spell_slot.has_method("get_item") and spell_slot.call("get_item") != null
 	var has_shield := shield_slot != null and shield_slot.get_item() != null
-
-	print("[EnemyAI] Inventory check: melee=%s ranged=%s spell=%s shield=%s" % [has_melee, has_ranged, has_spell, has_shield])
 
 	if has_melee:
 		var melee_module = MeleeAIModule.new()
@@ -379,9 +392,6 @@ func _initialize_behavior_modules() -> void:
 		add_child(defense_module)
 		_behavior_modules.append(defense_module)
 
-	if _behavior_modules.is_empty():
-		print("[EnemyAI] WARNING: No items equipped, no behavior modules created")
-
 
 # =========================================
 # ATTACK PACING
@@ -406,17 +416,60 @@ func _on_attack_finished(kind: int) -> void:
 
 
 func _reposition_move_dir(dir_to_target: Vector2) -> Vector2:
-	# Strafe left or right deterministically per entity
 	var strafe := Vector2(-dir_to_target.y, dir_to_target.x)
 	if int(hash(str(_entity.get_instance_id()))) % 2 == 0:
 		strafe = -strafe
 
-	# Add a small backstep component so ranged doesn't just orbit in-place
 	var backstep := -dir_to_target * reposition_backstep_mult
 	var move := (strafe + backstep)
 	if move.length() < 0.001:
 		move = strafe
 	return move.normalized()
+
+
+# =========================================
+# ATTACK WINDUP HELPERS
+# =========================================
+
+func _windup_for_kind(kind: int) -> float:
+	match kind:
+		Combat.AttackKind.RANGED:
+			return ranged_windup_sec
+		Combat.AttackKind.SPELL:
+			return spell_windup_sec
+		Combat.AttackKind.MELEE:
+			return melee_windup_sec
+		_:
+			return 0.0
+
+
+func _start_attack_windup(kind: int) -> void:
+	if kind == Combat.AttackKind.NONE:
+		return
+
+	# If already winding up the same kind, keep it.
+	if _pending_attack_kind == kind and _pending_attack_timer > 0.0:
+		return
+
+	_pending_attack_kind = kind
+
+	var salt := hash("%s|%d" % [str(_entity.get_instance_id()), kind])
+	var rng := RandomNumberGenerator.new()
+	rng.seed = salt
+	var jitter := rng.randf_range(0.0, windup_jitter_sec)
+
+	_pending_attack_timer = _windup_for_kind(kind) + jitter
+
+
+func _cancel_attack_windup() -> void:
+	_pending_attack_kind = Combat.AttackKind.NONE
+	_pending_attack_timer = 0.0
+
+
+func _tick_attack_windup(delta: float) -> void:
+	if _pending_attack_timer <= 0.0:
+		return
+	_pending_attack_timer = maxf(_pending_attack_timer - delta, 0.0)
 
 
 # =========================================
@@ -427,6 +480,8 @@ func _physics_process(delta: float) -> void:
 	if _entity == null:
 		return
 
+	_tick_attack_windup(delta)
+
 	# Tick damage aggro boost
 	if _damage_aggro_timer > 0.0:
 		_damage_aggro_timer = maxf(_damage_aggro_timer - delta, 0.0)
@@ -435,11 +490,19 @@ func _physics_process(delta: float) -> void:
 	if _reposition_timer > 0.0:
 		_reposition_timer = maxf(_reposition_timer - delta, 0.0)
 
+	# Tick LOS memory
+	if _los_seen_timer > 0.0:
+		_los_seen_timer = maxf(_los_seen_timer - delta, 0.0)
+
 	# Update target invuln (cheap)
 	if _target_health != null and is_instance_valid(_target_health):
 		_target_invulnerable = _target_health.is_invulnerable()
 	else:
 		_target_invulnerable = false
+
+	# If player becomes invulnerable, cancel pending windups immediately
+	if _target_invulnerable:
+		_cancel_attack_windup()
 
 	# Periodically update LOS
 	_los_timer += delta
@@ -459,10 +522,9 @@ func _physics_process(delta: float) -> void:
 		_player_scan_timer = 0.0
 		_try_acquire_target()
 
-	# Update awareness state based on target distance
+	# Update awareness state based on target distance + LOS
 	_update_awareness(delta)
 
-	# Route to appropriate behavior based on awareness
 	match _awareness:
 		Awareness.IDLE:
 			_process_patrol(delta)
@@ -482,19 +544,24 @@ func _update_awareness(delta: float) -> void:
 	var distance: float = _entity.global_position.distance_to(_target.global_position)
 	var eff_aggro: float = _effective_aggro_range()
 	var eff_deaggro: float = _effective_deaggro_range()
+	var has_recent_los := _has_recent_los()
 
 	match _awareness:
 		Awareness.IDLE:
-			if distance <= eff_aggro:
+			if distance <= eff_aggro and (not require_los_to_aggro or has_recent_los):
 				_set_awareness(Awareness.ALERT)
 
 		Awareness.ALERT:
+			# If we require LOS to stay aggro, we can transition to LOST when far OR long time no LOS.
 			if distance > eff_deaggro:
+				_lost_timer = 0.0
+				_set_awareness(Awareness.LOST)
+			elif require_los_to_aggro and not has_recent_los:
 				_lost_timer = 0.0
 				_set_awareness(Awareness.LOST)
 
 		Awareness.LOST:
-			if distance <= eff_aggro:
+			if distance <= eff_aggro and (not require_los_to_aggro or has_recent_los):
 				_set_awareness(Awareness.ALERT)
 			else:
 				_lost_timer += delta
@@ -546,6 +613,8 @@ func _process_combat(delta: float) -> void:
 
 
 func _process_lost(_delta: float) -> void:
+	_cancel_attack_windup()
+
 	if _target != null and is_instance_valid(_target) and _control != null:
 		var move_dir: Vector2 = _get_nav_direction_to_target()
 		_control.set_move_intent(move_dir * 0.6)
@@ -595,7 +664,6 @@ func _execute_decision() -> void:
 
 	_control.set_block_intent(false)
 
-	# If we must suppress attacks, never keep attack held.
 	if suppress_attacks and _control.attack_is_down():
 		_control.release_attack()
 
@@ -606,6 +674,7 @@ func _execute_decision() -> void:
 
 	match state:
 		"reposition":
+			_cancel_attack_windup()
 			if dir_to_target != Vector2.ZERO:
 				var move_dir := _reposition_move_dir(dir_to_target)
 				_control.set_move_intent(move_dir * reposition_speed_mult)
@@ -613,51 +682,79 @@ func _execute_decision() -> void:
 				_control.set_move_intent(Vector2.ZERO)
 
 		"melee_attack":
-			if suppress_attacks:
-				# fall back to chase movement
+			# Must have recent LOS to execute attacks (modules already check has_los, but this is extra safety)
+			if suppress_attacks or not _has_recent_los():
+				_cancel_attack_windup()
 				_control.set_move_intent(_get_nav_direction_to_target())
-			elif _combat != null:
-				_equipment.set_active_slot_melee("ai_melee")
-				_control.set_move_intent(dir_to_target)
-				if not _control.attack_is_down():
-					_control.press_attack(dir_to_target, Combat.AttackKind.MELEE)
+				return
+
+			_start_attack_windup(Combat.AttackKind.MELEE)
+			if _pending_attack_kind == Combat.AttackKind.MELEE and _pending_attack_timer <= 0.0:
+				_cancel_attack_windup()
+				if _combat != null:
+					_equipment.set_active_slot_melee("ai_melee")
+					_control.set_move_intent(dir_to_target)
+					if not _control.attack_is_down():
+						_control.press_attack(dir_to_target, Combat.AttackKind.MELEE)
+			else:
+				# Keep chasing while winding up
+				_control.set_move_intent(_get_nav_direction_to_target())
 
 		"ranged_attack":
-			if suppress_attacks:
-				# hold position or slight strafe is handled by reposition timer; otherwise kite module may decide
+			if suppress_attacks or not _has_recent_los():
+				_cancel_attack_windup()
 				_control.set_move_intent(Vector2.ZERO)
-			elif _combat != null:
-				_equipment.set_active_slot_ranged("ai_ranged")
+				return
+
+			_start_attack_windup(Combat.AttackKind.RANGED)
+			if _pending_attack_kind == Combat.AttackKind.RANGED and _pending_attack_timer <= 0.0:
+				_cancel_attack_windup()
+				if _combat != null:
+					_equipment.set_active_slot_ranged("ai_ranged")
+					_control.set_move_intent(Vector2.ZERO)
+					if not _control.attack_is_down():
+						_control.press_attack(dir_to_target, Combat.AttackKind.RANGED)
+			else:
 				_control.set_move_intent(Vector2.ZERO)
-				if not _control.attack_is_down():
-					_control.press_attack(dir_to_target, Combat.AttackKind.RANGED)
 
 		"cast_spell":
-			if suppress_attacks:
+			if suppress_attacks or not _has_recent_los():
+				_cancel_attack_windup()
 				_control.set_move_intent(Vector2.ZERO)
-			elif _combat != null:
-				_equipment.set_active_slot_spell("ai_spell")
+				return
+
+			_start_attack_windup(Combat.AttackKind.SPELL)
+			if _pending_attack_kind == Combat.AttackKind.SPELL and _pending_attack_timer <= 0.0:
+				_cancel_attack_windup()
+				if _combat != null:
+					_equipment.set_active_slot_spell("ai_spell")
+					_control.set_move_intent(Vector2.ZERO)
+					if not _control.attack_is_down():
+						_control.press_attack(dir_to_target, Combat.AttackKind.SPELL)
+			else:
 				_control.set_move_intent(Vector2.ZERO)
-				if not _control.attack_is_down():
-					_control.press_attack(dir_to_target, Combat.AttackKind.SPELL)
 
 		"shield_block":
+			_cancel_attack_windup()
 			_control.set_block_intent(true)
 
 		"chase":
+			_cancel_attack_windup()
 			var move_dir: Vector2 = _get_nav_direction_to_target()
 			_control.set_move_intent(move_dir)
 
-		# NOTE: kite/spell_position are handled in module physics_update right now,
-		# but we ensure we never keep attack held while suppressing.
 		"kite", "spell_position":
+			# These are handled by module physics_update; don't cancel windup here, just don't force attack.
 			if suppress_attacks:
+				_cancel_attack_windup()
 				_control.set_move_intent(Vector2.ZERO)
 
 		"idle", "patrol", "patrol_idle":
+			_cancel_attack_windup()
 			_control.set_move_intent(Vector2.ZERO)
 
 		_:
+			_cancel_attack_windup()
 			_control.set_move_intent(Vector2.ZERO)
 
 
@@ -739,3 +836,17 @@ func _build_context() -> Dictionary:
 		"target_invulnerable": _target_invulnerable,
 		"repositioning": _reposition_timer > 0.0,
 	}
+
+
+# Getter functions (for DebugHUD)
+func get_current_decision() -> AIDecision:
+	return _current_decision
+
+func get_entity() -> Entity:
+	return _entity
+
+func get_target() -> Node2D:
+	return _target
+
+func get_awareness() -> int:
+	return _awareness

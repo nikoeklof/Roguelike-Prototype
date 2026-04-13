@@ -363,6 +363,8 @@ size = Vector2(11, 8)
 
 [node name="EnemyRangedTemplateVer1" type="CharacterBody2D" unique_id=1052976507]
 script = ExtResource("1_5d5dm")
+initial_faction = 2
+initial_friendly_fire = true
 metadata/_custom_type_script = "uid://csm6mhenieg4s"
 
 [node name="EntityComponents" type="Node" parent="." unique_id=715530497]
@@ -477,6 +479,7 @@ script = ExtResource("21_wucoh")
 aggro_range = 500.0
 deaggro_range = 700.0
 decision_interval = 0.15
+ranged_burst_count = 4
 
 [node name="ControlSource" type="Node" parent="." unique_id=1920222032]
 script = ExtResource("22_cv08k")
@@ -499,6 +502,9 @@ metadata/_custom_type_script = "uid://cwbkt1ur6316g"
 [node name="EntityHealthBar" type="Node2D" parent="." unique_id=2042111176]
 script = ExtResource("34_c2rqt")
 metadata/_custom_type_script = "uid://0dxcoac7x0wu"
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=1558527039]
+avoidance_enabled = true
 
 [editable path="Equipment"]
 [editable path="StateHandler"]

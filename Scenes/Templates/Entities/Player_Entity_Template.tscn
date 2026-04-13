@@ -388,7 +388,7 @@ base_friction = 1300.0
 [node name="Health" type="Node" parent="." unique_id=175137403]
 script = ExtResource("7_554au")
 max_hp = 100.0
-invuln_sec_on_hit = 0.5
+invuln_sec_on_hit = 1.0
 
 [node name="FacingPointer" type="Node2D" parent="." unique_id=1170378246]
 script = ExtResource("8_5sc0j")
@@ -452,6 +452,10 @@ root_node = NodePath("")
 [node name="PlayerCamera" type="Camera2D" parent="." unique_id=1757673326]
 
 [node name="StateHandler" parent="." unique_id=1266186412 instance=ExtResource("18_p0go8")]
+
+[node name="Hurt" parent="StateHandler" index="3" unique_id=209892331]
+duration_sec = 0.0
+stop_movement = false
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=555033056]
 visible = false

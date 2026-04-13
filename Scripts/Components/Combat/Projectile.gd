@@ -169,17 +169,21 @@ func _try_hit(other: Node) -> void:
 			if _remaining_hits <= 0:
 				queue_free()
 			return
-
 	# Legacy fallback.
 	var hp: Health = CombatQuery.find_health(victim_root)
-	if hp != null and (_owner == null or CombatQuery.can_damage(_owner, victim_root)):
+
+	# If the projectile owner was freed (e.g. shooter died), treat source as null.
+	var src: Node = _owner
+	if src != null and not is_instance_valid(src):
+		src = null
+
+	if hp != null and (src == null or CombatQuery.can_damage(src, victim_root)):
 		_hit_ids[victim_id] = true
-		hp.take_damage(damage, _owner)
+		hp.take_damage(damage, src)
 		_remaining_hits -= 1
 		if _remaining_hits <= 0:
 			queue_free()
 		return
-
 	# If it was not a valid victim, treat solid world as an impact.
 	if other is PhysicsBody2D or other is TileMap:
 		queue_free()
