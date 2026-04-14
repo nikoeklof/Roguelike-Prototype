@@ -51,6 +51,7 @@ func enter(_msg: Dictionary = {}) -> void:
 	var active_shield: ActiveShield = entity.find_component(&"ActiveShield") as ActiveShield
 	if active_shield != null:
 		active_shield.on_block_start()
+		ShieldBlockExecutor.execute_block_start(entity, _shield, _shield_instance)
 
 
 func exit() -> void:
@@ -66,6 +67,7 @@ func exit() -> void:
 	var active_shield: ActiveShield = entity.find_component(&"ActiveShield") as ActiveShield
 	if active_shield != null:
 		active_shield.on_block_end()
+	ShieldBlockExecutor.execute_block_end(entity, _shield, _shield_instance)
 
 
 func physics_update(delta: float) -> void:

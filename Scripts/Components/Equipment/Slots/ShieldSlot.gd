@@ -90,6 +90,7 @@ func _on_item_changed(new_item: Node, old_item: Node) -> void:
 		ShieldItemDef.ShieldType.ACTIVE:
 			print("[ShieldSlot] Setting up ACTIVE shield")
 			_active_shield.set_shield_def(shield_def)
+			_active_shield.set_shield_instance(shield_instance)
 			_passive_shield.set_shield_def(null)  # FIXED: null instead of None
 		
 		ShieldItemDef.ShieldType.PASSIVE:

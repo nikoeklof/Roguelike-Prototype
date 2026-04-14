@@ -260,7 +260,7 @@ func _collect_ray_hits(
 		# _build_owner_exclude_list(), so no extra faction check is needed.
 		var parry: ParryCollider = _find_parry_collider(collider_node)
 		if parry != null:
-			parry.on_shot_blocked(shot_damage)
+			parry.on_shot_blocked(shot_damage, source_entity)
 			break
 
 		var victim_root: Node = CombatQuery.resolve_victim_root(collider_node)

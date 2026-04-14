@@ -20,6 +20,7 @@ var _shield_hp: float = 0.0
 var _shield_max_hp: float = 0.0
 var _regen_timer: float = 0.0
 var _is_broken: bool = false
+var _shield_instance: ItemInstance = null
 
 
 func _ready() -> void:
@@ -78,11 +79,17 @@ func set_shield_def(def: ShieldItemDef) -> void:
 	"""Set the shield definition when equipped"""
 	if def == null or def.shield_type != ShieldItemDef.ShieldType.ACTIVE:
 		_shield_def = null
+		_shield_instance = null
 		return
 
 	print("[ActiveShield] Shield equipped: %s" % def.display_name)
 	_shield_def = def
 	_init_shield_hp()
+
+
+func set_shield_instance(inst: ItemInstance) -> void:
+	"""Store the full item instance so _create_blocking_collider can read attributes."""
+	_shield_instance = inst
 
 
 func on_block_start() -> void:
@@ -203,25 +210,36 @@ func _create_blocking_collider() -> void:
 	if parent == null:
 		parent = _entity as Node2D
 	
+	# Check if the equipped instance has a reflection attribute.
+	var reflect_attr: ProjectileReflectionAttribute = null
+	if _shield_instance != null:
+		for attr: ItemAttribute in _shield_instance.attributes:
+			if attr is ProjectileReflectionAttribute:
+				reflect_attr = attr as ProjectileReflectionAttribute
+				break
+
+	var should_reflect: bool = reflect_attr != null
+	var speed_mult: float = reflect_attr.reflect_speed_mult if reflect_attr != null else 1.0
+
 	var pc := ParryCollider.new()
 	pc.name = "ActiveShieldBlockCollider"
-	pc.reflect = false
-	pc.reflect_speed_mult = 1.0
-	
+	pc.reflect = should_reflect
+	pc.reflect_speed_mult = speed_mult
+
 	parent.add_child(pc)
 	pc.position = Vector2.ZERO
 	pc.rotation = 0.0
-	
-	# Use VERY LONG duration so it lasts as long as block is held
-	# It will be removed in on_block_end()
+
+	# Use VERY LONG duration so it lasts as long as block is held.
+	# It will be removed in on_block_end().
 	var long_duration: float = 999999.0
 	pc.setup(
 		_entity,
 		_shield_def.blocking_collider_size,
 		_shield_def.blocking_collider_offset,
 		long_duration,
-		false
+		should_reflect
 	)
-	
+
 	_active_blocking_collider = pc
-	print("[ActiveShield] Blocking collider created (persistent)")
+	print("[ActiveShield] Blocking collider created (persistent, reflect=%s)" % str(should_reflect))

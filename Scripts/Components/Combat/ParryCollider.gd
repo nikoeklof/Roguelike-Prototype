@@ -46,9 +46,11 @@ func get_owner_entity() -> Node:
 	return _owner
 
 
-func on_shot_blocked(damage: float) -> void:
-	print("[ParryCollider] Hitscan/beam blocked by shield (%.1f dmg)" % damage)
+func on_shot_blocked(damage: float, attacker: Node = null) -> void:
+	print("[ParryCollider] Hitscan blocked by shield (%.1f dmg, reflect=%s)" % [damage, str(reflect)])
 	_notify_shield_damage(damage)
+	if reflect and attacker != null:
+		_reflect_damage_to_attacker(damage, attacker)
 
 
 func _on_lifetime_timeout() -> void:
@@ -84,3 +86,14 @@ func _notify_shield_damage(damage: float) -> void:
 		active_shield = _owner.get_node_or_null("ActiveShield") as ActiveShield
 	if active_shield != null:
 		active_shield.consume_shield_hp(damage)
+
+
+func _reflect_damage_to_attacker(damage: float, attacker: Node) -> void:
+	var health: Health = null
+	if attacker is Entity:
+		health = (attacker as Entity).find_component(&"Health") as Health
+	else:
+		health = attacker.get_node_or_null("Health") as Health
+	if health != null:
+		health.take_damage(damage, _owner)
+		print("[ParryCollider] Reflected %.1f hitscan damage back to %s" % [damage, attacker.name])

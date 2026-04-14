@@ -9,36 +9,7 @@ class_name ProjectileReflectionAttribute
 func default_domains() -> PackedStringArray:
 	return PackedStringArray(["block_start"])
 
-func on_block_start(context: CombatContext, _item_instance: ItemInstance) -> void:
-	"""Create reflection collider when blocking starts"""
-	if context == null or context.owner == null:
-		return
-	
-	_create_reflection_collider(context.owner)
-
-
-func on_block_end(_context: CombatContext, _item_instance: ItemInstance) -> void:
-	"""Cleanup handled automatically when collider times out"""
+func on_block_start(_context: CombatContext, _item_instance: ItemInstance) -> void:
+	# Collider creation is handled by ActiveShield._create_blocking_collider(),
+	# which reads this attribute to set reflect=true on the persistent collider.
 	pass
-
-
-func _create_reflection_collider(owner: Node) -> void:
-	"""Create the projectile reflection collider"""
-	if not (owner is Node2D):
-		return
-	
-	var parent := owner.get_node_or_null("FacingPointer/AimRay") as Node2D
-	if parent == null:
-		parent = owner as Node2D
-	
-	var pc := ParryCollider.new()
-	pc.name = "ProjectileReflector"
-	pc.reflect = true
-	pc.reflect_speed_mult = reflect_speed_mult
-	
-	parent.add_child(pc)
-	pc.position = Vector2.ZERO
-	pc.rotation = 0.0
-	pc.setup(owner, reflector_size, reflector_offset, reflection_window_sec, true)
-	
-	print("[ProjectileReflectionAttribute] Reflection collider created")
