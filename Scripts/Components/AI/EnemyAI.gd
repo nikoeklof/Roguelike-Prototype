@@ -431,6 +431,8 @@ func _physics_process(delta: float) -> void:
 	if _entity == null:
 		return
 
+
+
 	# Tick damage aggro boost
 	if _damage_aggro_timer > 0.0:
 		_damage_aggro_timer = maxf(_damage_aggro_timer - delta, 0.0)
@@ -448,6 +450,7 @@ func _physics_process(delta: float) -> void:
 		_target_invulnerable = _target_health.is_invulnerable()
 	else:
 		_target_invulnerable = false
+
 
 	# Periodically update LOS
 	_los_timer += delta
@@ -769,7 +772,6 @@ func _build_context() -> Dictionary:
 		"target_invulnerable": _target_invulnerable,
 		"repositioning": _reposition_timer > 0.0,
 	}
-
 
 # Getter functions (for DebugHUD)
 func get_current_decision() -> AIDecision:
