@@ -36,7 +36,7 @@ func _find_stats(root: Node) -> Stats:
 func _make_key(item_instance: ItemInstance, suffix: String) -> StringName:
 	var item_seed: int = 0
 	if item_instance != null:
-		item_seed = item_instance.seed
+		item_seed = WorldSeed.current_seed
 	return StringName("spell_%s_%d" % [suffix, item_seed])
 
 

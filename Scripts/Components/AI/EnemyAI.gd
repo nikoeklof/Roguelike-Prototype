@@ -27,6 +27,13 @@ enum Awareness { IDLE, ALERT, LOST }
 # Once LOS is acquired, keep "seen" for this many seconds (prevents flicker drop / windup cancel spam).
 @export_range(0.0, 2.0, 0.05) var los_memory_sec: float = 0.35
 
+# --- Beam / hitscan attack telegraphing ---
+# Delay before a beam or hitscan attack fires. During this window the enemy
+# visibly tracks the player, giving them a chance to dodge.
+@export_range(0.0, 2.0, 0.05) var beam_hitscan_prefire_delay: float = 0.35
+# Max angular inaccuracy (degrees) applied at the moment of firing.
+@export_range(0.0, 45.0, 0.5) var beam_hitscan_inaccuracy_degrees: float = 8.0
+
 # --- Attack pacing / anti-stunlock ---
 @export var ranged_burst_count: int = 2
 @export var ranged_reposition_sec: float = 0.6
@@ -94,6 +101,10 @@ var _nav_repath_timer: float = 0.0
 
 # Attack pacing state - windup removed, immediate-attack behavior
 var _reposition_timer: float = 0.0
+# Beam/hitscan telegraph: seconds remaining before the shot fires. -1 = inactive.
+var _ranged_prefire_timer: float = -1.0
+# Aim direction locked at the moment the prefire window opens.
+var _ranged_prefire_aim: Vector2 = Vector2.ZERO
 var _recent_attacks: Dictionary = {
 	Combat.AttackKind.MELEE: 0,
 	Combat.AttackKind.RANGED: 0,
@@ -441,6 +452,10 @@ func _physics_process(delta: float) -> void:
 	if _reposition_timer > 0.0:
 		_reposition_timer = maxf(_reposition_timer - delta, 0.0)
 
+	# Tick beam/hitscan prefire telegraph
+	if _ranged_prefire_timer > 0.0:
+		_ranged_prefire_timer = maxf(_ranged_prefire_timer - delta, 0.0)
+
 	# Tick LOS memory
 	if _los_seen_timer > 0.0:
 		_los_seen_timer = maxf(_los_seen_timer - delta, 0.0)
@@ -595,6 +610,34 @@ func _make_decision() -> void:
 	_current_decision = best_decision
 
 
+func _get_ranged_shot_mode() -> RangedShotData.ShotMode:
+	if _equipment == null:
+		return RangedShotData.ShotMode.PROJECTILE
+	var ranged_slot: Node = _equipment.get_node_or_null("RangedSlot")
+	if ranged_slot == null or not ranged_slot.has_method("get_item"):
+		return RangedShotData.ShotMode.PROJECTILE
+	var weapon: Node = ranged_slot.call("get_item")
+	if weapon == null or not weapon is RangedWeapon:
+		return RangedShotData.ShotMode.PROJECTILE
+	var rw: RangedWeapon = weapon as RangedWeapon
+	# Mirror the priority chain from RangedWeapon.get_attack_variant()
+	var mode: RangedShotData.ShotMode = rw.default_mode
+	var profile: RangedAttackProfile = rw.get_ranged_profile()
+	if profile != null:
+		mode = profile.default_mode
+	var inst: ItemInstance = rw.get_item_instance()
+	if inst != null and int(inst.ranged_mode) >= 0:
+		mode = inst.ranged_mode as RangedShotData.ShotMode
+	return mode
+
+
+func _apply_aim_inaccuracy(dir: Vector2, max_degrees: float) -> Vector2:
+	if max_degrees <= 0.0:
+		return dir
+	var offset_rad: float = deg_to_rad(randf_range(-max_degrees, max_degrees))
+	return dir.rotated(offset_rad)
+
+
 func _execute_decision() -> void:
 	if _current_decision == null or _control == null:
 		return
@@ -615,6 +658,10 @@ func _execute_decision() -> void:
 	var state := _current_decision.state
 	if _reposition_timer > 0.0:
 		state = "reposition"
+
+	# Cancel any pending beam/hitscan telegraph if we're no longer committing to a ranged attack
+	if state != "ranged_attack" or suppress_attacks:
+		_ranged_prefire_timer = -1.0
 
 	match state:
 		"reposition":
@@ -644,20 +691,51 @@ func _execute_decision() -> void:
 
 		"ranged_attack":
 			if suppress_attacks or not _has_recent_los():
+				_ranged_prefire_timer = -1.0
 				_control.set_move_intent(Vector2.ZERO)
 				return
 
 			if _combat != null:
+				var shot_mode: RangedShotData.ShotMode = _get_ranged_shot_mode()
+				var is_telegraphed: bool = (shot_mode == RangedShotData.ShotMode.BEAM or shot_mode == RangedShotData.ShotMode.HITSCAN)
+
 				_equipment.set_active_slot_ranged("ai_ranged")
 				_control.set_move_intent(Vector2.ZERO)
-				if not _control.attack_is_down():
-					_control.press_attack(dir_to_target, Combat.AttackKind.RANGED)
-				var sh2 := _entity.get_node_or_null("StateHandler") as StateHandler
-				if sh2 != null:
-					sh2.change_state("Attack", {"attack_kind": Combat.AttackKind.RANGED, "from_ai": true})
-					print("[EnemyAI] AI forced Attack state (RANGED) for entity=", _entity)
+
+				if is_telegraphed:
+					if _ranged_prefire_timer < 0.0:
+						# Lock aim at this moment and start the telegraph window
+						_ranged_prefire_aim = dir_to_target
+						_ranged_prefire_timer = beam_hitscan_prefire_delay
+						_control.set_aim_dir(_ranged_prefire_aim)
+						return
+
+					if _ranged_prefire_timer > 0.0:
+						# Still counting down — hold the locked aim, don't fire yet
+						_control.set_aim_dir(_ranged_prefire_aim)
+						return
+
+					# Timer reached 0: fire with inaccuracy applied to the locked aim
+					_ranged_prefire_timer = -1.0
+					var final_aim: Vector2 = _apply_aim_inaccuracy(_ranged_prefire_aim, beam_hitscan_inaccuracy_degrees)
+					if not _control.attack_is_down():
+						_control.press_attack(final_aim, Combat.AttackKind.RANGED)
+					var sh2 := _entity.get_node_or_null("StateHandler") as StateHandler
+					if sh2 != null:
+						sh2.change_state("Attack", {"attack_kind": Combat.AttackKind.RANGED, "from_ai": true})
+						print("[EnemyAI] AI forced Attack state (RANGED/telegraphed) for entity=", _entity)
+					else:
+						print("[EnemyAI] Warning: no StateHandler node found on entity=", _entity)
 				else:
-					print("[EnemyAI] Warning: no StateHandler node found on entity=", _entity)
+					# Projectile — fire immediately (no delay, no inaccuracy added)
+					if not _control.attack_is_down():
+						_control.press_attack(dir_to_target, Combat.AttackKind.RANGED)
+					var sh2 := _entity.get_node_or_null("StateHandler") as StateHandler
+					if sh2 != null:
+						sh2.change_state("Attack", {"attack_kind": Combat.AttackKind.RANGED, "from_ai": true})
+						print("[EnemyAI] AI forced Attack state (RANGED) for entity=", _entity)
+					else:
+						print("[EnemyAI] Warning: no StateHandler node found on entity=", _entity)
 
 		"cast_spell":
 			if suppress_attacks or not _has_recent_los():

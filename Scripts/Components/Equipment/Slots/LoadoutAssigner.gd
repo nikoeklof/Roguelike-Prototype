@@ -35,6 +35,8 @@ class_name LoadoutAssigner
 
 @export var equipment_path: NodePath = NodePath("../Equipment")
 
+signal loadout_assigned
+
 # Scene templates — same ones ItemSpawner uses
 const MELEE_TEMPLATE: PackedScene = preload("res://Scenes/Templates/EquipmentItems/Melee_Weapon_Template.tscn")
 const RANGED_TEMPLATE: PackedScene = preload("res://Scenes/Templates/EquipmentItems/Ranged_Weapon_template.tscn")
@@ -75,6 +77,7 @@ func _assign_loadout() -> void:
 	_try_assign_slot(equipment, "ShieldSlot", shield_pool, guarantee_shield, shield_chance, rng)
 	
 	print("[LoadoutAssigner] Loadout assigned for %s" % get_parent().name)
+	loadout_assigned.emit()
 
 
 func _try_assign_slot(

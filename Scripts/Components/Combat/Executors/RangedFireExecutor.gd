@@ -161,6 +161,16 @@ func _resolve_muzzle(source_entity: Node) -> Node2D:
 	return source_entity as Node2D
 
 
+func _find_parry_collider(node: Node) -> ParryCollider:
+	# The raycast may return the CollisionShape2D child, so check both the node
+	# and its immediate parent.
+	if node is ParryCollider:
+		return node as ParryCollider
+	if node != null and node.get_parent() is ParryCollider:
+		return node.get_parent() as ParryCollider
+	return null
+
+
 func _fire_projectile(shot: RangedShotData, snap: AttackSnapshot, inst: ItemInstance) -> void:
 	var proj_scene: PackedScene = shot.projectile_scene
 	if proj_scene == null and shot.projectile_spec != null:
@@ -215,7 +225,8 @@ func _collect_ray_hits(
 	origin: Vector2,
 	to: Vector2,
 	source_entity: Node2D,
-	max_targets: int
+	max_targets: int,
+	shot_damage: float = 0.0
 ) -> Dictionary:
 	var space: PhysicsDirectSpaceState2D = source_entity.get_world_2d().direct_space_state
 	var exclude: Array[RID] = _build_owner_exclude_list(source_entity)
@@ -242,6 +253,14 @@ func _collect_ray_hits(
 		final_pos = hit_pos
 
 		if collider_node == null:
+			break
+
+		# Shield block — stop the ray here without damaging anyone.
+		# The source entity's own ParryCollider is already excluded by
+		# _build_owner_exclude_list(), so no extra faction check is needed.
+		var parry: ParryCollider = _find_parry_collider(collider_node)
+		if parry != null:
+			parry.on_shot_blocked(shot_damage)
 			break
 
 		var victim_root: Node = CombatQuery.resolve_victim_root(collider_node)
@@ -302,7 +321,7 @@ func _fire_hitscan(
 	var to: Vector2 = origin + dir * range_value
 	var max_targets: int = max(1, pierce + 1)
 
-	var result: Dictionary = _collect_ray_hits(origin, to, source_entity, max_targets)
+	var result: Dictionary = _collect_ray_hits(origin, to, source_entity, max_targets, damage)
 	var victims: Array[Dictionary] = result.get("victims", []) as Array[Dictionary]
 	var final_pos: Vector2 = result.get("final_pos", to) as Vector2
 
@@ -388,7 +407,7 @@ func _beam_tick(
 	var to: Vector2 = origin + dir * range_value
 	var max_targets: int = max(1, pierce + 1)
 
-	var result: Dictionary = _collect_ray_hits(origin, to, source_entity, max_targets)
+	var result: Dictionary = _collect_ray_hits(origin, to, source_entity, max_targets, damage)
 	var victims: Array[Dictionary] = result.get("victims", []) as Array[Dictionary]
 	var final_pos: Vector2 = result.get("final_pos", to) as Vector2
 

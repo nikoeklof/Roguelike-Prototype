@@ -511,6 +511,7 @@ metadata/_custom_type_script = "uid://cwbkt1ur6316g"
 
 [node name="EntityHealthBar" type="Node2D" parent="." unique_id=962369043]
 script = ExtResource("35_s8hwr")
+bar_height = 5.0
 hide_when_full = false
 metadata/_custom_type_script = "uid://0dxcoac7x0wu"
 

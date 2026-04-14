@@ -9,6 +9,12 @@ enum ShieldType { ACTIVE, PASSIVE }
 @export var block_damage_reduction: float = 0.7
 @export var movement_speed_mult_while_blocking: float = 0.65
 
+# Shield health (active shields only). Set max_hp to 0 to disable (infinite block).
+@export_group("Active Shield Health")
+@export_range(0.0, 1000.0, 1.0) var shield_max_hp: float = 100.0
+@export_range(0.0, 200.0, 0.5) var shield_regen_rate: float = 20.0
+@export_range(0.0, 10.0, 0.1) var shield_regen_delay: float = 3.0
+
 # Blocking collider configuration (only for ACTIVE shields)
 @export_group("Active Shield Blocking Collider")
 @export var blocking_collider_size: Vector2 = Vector2(60, 40)

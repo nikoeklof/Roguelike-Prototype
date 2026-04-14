@@ -32,3 +32,5 @@ Thumbs.db
 node_modules/
 # Ignore archive files
 _Archive/
+.claude/settings.local.json
+CLAUDE.md

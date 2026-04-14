@@ -53,6 +53,10 @@ func release_attack() -> void:
 	_hold_frames_remaining = 0
 
 
+func set_aim_dir(dir: Vector2) -> void:
+	_attack_dir = dir
+
+
 func set_block_intent(value: bool) -> void:
 	_block_intent = value
 

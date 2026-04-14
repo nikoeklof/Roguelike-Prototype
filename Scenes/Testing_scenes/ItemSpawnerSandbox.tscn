@@ -58,7 +58,6 @@ shape = SubResource("RectangleShape2D_3dogw")
 position = Vector2(330, 345)
 
 [node name="DebugHud" parent="." unique_id=1698329193 instance=ExtResource("2_tiaw2")]
-visible = false
 player_root_path = NodePath("../Player")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="." unique_id=2065425086]
