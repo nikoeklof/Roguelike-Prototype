@@ -33,12 +33,6 @@ enum Awareness { IDLE, ALERT, LOST }
 @export var spell_burst_count: int = 2
 @export var spell_reposition_sec: float = 0.6
 
-# Attack wind-up (reaction time). Adds a delay between "in range" and actual press_attack.
-@export_range(0.0, 1.0, 0.01) var melee_windup_sec: float = 0.05
-@export_range(0.0, 1.0, 0.01) var ranged_windup_sec: float = 0.18
-@export_range(0.0, 1.0, 0.01) var spell_windup_sec: float = 0.15
-@export_range(0.0, 0.5, 0.01) var windup_jitter_sec: float = 0.10
-
 # Optional: melee pacing (usually not needed)
 @export var melee_burst_count: int = 999
 @export var melee_reposition_sec: float = 0.0
@@ -98,9 +92,7 @@ var _target_invulnerable: bool = false
 var _nav_agent: NavigationAgent2D = null
 var _nav_repath_timer: float = 0.0
 
-# Attack pacing state
-var _pending_attack_kind: int = Combat.AttackKind.NONE
-var _pending_attack_timer: float = 0.0
+# Attack pacing state - windup removed, immediate-attack behavior
 var _reposition_timer: float = 0.0
 var _recent_attacks: Dictionary = {
 	Combat.AttackKind.MELEE: 0,
@@ -432,59 +424,12 @@ func _reposition_move_dir(dir_to_target: Vector2) -> Vector2:
 
 
 # =========================================
-# ATTACK WINDUP HELPERS
-# =========================================
-
-func _windup_for_kind(kind: int) -> float:
-	match kind:
-		Combat.AttackKind.RANGED:
-			return ranged_windup_sec
-		Combat.AttackKind.SPELL:
-			return spell_windup_sec
-		Combat.AttackKind.MELEE:
-			return melee_windup_sec
-		_:
-			return 0.0
-
-
-func _start_attack_windup(kind: int) -> void:
-	if kind == Combat.AttackKind.NONE:
-		return
-
-	# If already winding up the same kind, keep it.
-	if _pending_attack_kind == kind and _pending_attack_timer > 0.0:
-		return
-
-	_pending_attack_kind = kind
-
-	var salt := hash("%s|%d" % [str(_entity.get_instance_id()), kind])
-	var rng := RandomNumberGenerator.new()
-	rng.seed = salt
-	var jitter := rng.randf_range(0.0, windup_jitter_sec)
-
-	_pending_attack_timer = _windup_for_kind(kind) + jitter
-
-
-func _cancel_attack_windup() -> void:
-	_pending_attack_kind = Combat.AttackKind.NONE
-	_pending_attack_timer = 0.0
-
-
-func _tick_attack_windup(delta: float) -> void:
-	if _pending_attack_timer <= 0.0:
-		return
-	_pending_attack_timer = maxf(_pending_attack_timer - delta, 0.0)
-
-
-# =========================================
 # MAIN LOOP
 # =========================================
 
 func _physics_process(delta: float) -> void:
 	if _entity == null:
 		return
-
-	_tick_attack_windup(delta)
 
 	# Tick damage aggro boost
 	if _damage_aggro_timer > 0.0:
@@ -503,10 +448,6 @@ func _physics_process(delta: float) -> void:
 		_target_invulnerable = _target_health.is_invulnerable()
 	else:
 		_target_invulnerable = false
-
-	# If player becomes invulnerable, cancel pending windups immediately
-	if _target_invulnerable:
-		_cancel_attack_windup()
 
 	# Periodically update LOS
 	_los_timer += delta
@@ -616,8 +557,7 @@ func _process_combat(delta: float) -> void:
 
 
 func _process_lost(_delta: float) -> void:
-	_cancel_attack_windup()
-
+	# No windup to cancel anymore
 	if _target != null and is_instance_valid(_target) and _control != null:
 		var move_dir: Vector2 = _get_nav_direction_to_target()
 		_control.set_move_intent(move_dir * 0.6)
@@ -675,7 +615,6 @@ func _execute_decision() -> void:
 
 	match state:
 		"reposition":
-			_cancel_attack_windup()
 			if dir_to_target != Vector2.ZERO:
 				var move_dir := _reposition_move_dir(dir_to_target)
 				_control.set_move_intent(move_dir * reposition_speed_mult)
@@ -684,85 +623,71 @@ func _execute_decision() -> void:
 
 		"melee_attack":
 			if suppress_attacks or not _has_recent_los():
-				_cancel_attack_windup()
 				_control.set_move_intent(_get_nav_direction_to_target())
 				return
 
-			# ---- PATCH STARTS HERE ----
-			# Only start windup if not already winding up for this kind or timer is done (not every frame!)
-			if _pending_attack_kind != Combat.AttackKind.MELEE or _pending_attack_timer <= 0.0:
-				_start_attack_windup(Combat.AttackKind.MELEE)
-
-			if _pending_attack_kind == Combat.AttackKind.MELEE and _pending_attack_timer <= 0.0:
-				_cancel_attack_windup()
-				if _combat != null:
-					_equipment.set_active_slot_melee("ai_melee")
-					_control.set_move_intent(dir_to_target)
-					if not _control.attack_is_down():
-						_control.press_attack(dir_to_target, Combat.AttackKind.MELEE)
-			else:
-				# Keep chasing while winding up
-				_control.set_move_intent(_get_nav_direction_to_target())
-			# ---- PATCH ENDS HERE ----
+			# Immediate attack (no windup): activate slot, move/toward, press, and force Attack state with message
+			if _combat != null:
+				_equipment.set_active_slot_melee("ai_melee")
+				_control.set_move_intent(dir_to_target)
+				if not _control.attack_is_down():
+					_control.press_attack(dir_to_target, Combat.AttackKind.MELEE)
+				var sh := _entity.get_node_or_null("StateHandler") as StateHandler
+				if sh != null:
+					sh.change_state("Attack", {"attack_kind": Combat.AttackKind.MELEE, "from_ai": true})
+					print("[EnemyAI] AI forced Attack state (MELEE) for entity=", _entity)
+				else:
+					print("[EnemyAI] Warning: no StateHandler node found on entity=", _entity)
 
 		"ranged_attack":
 			if suppress_attacks or not _has_recent_los():
-				_cancel_attack_windup()
 				_control.set_move_intent(Vector2.ZERO)
 				return
 
-			if _pending_attack_kind != Combat.AttackKind.RANGED or _pending_attack_timer <= 0.0:
-				_start_attack_windup(Combat.AttackKind.RANGED)
-
-			if _pending_attack_kind == Combat.AttackKind.RANGED and _pending_attack_timer <= 0.0:
-				_cancel_attack_windup()
-				if _combat != null:
-					_equipment.set_active_slot_ranged("ai_ranged")
-					_control.set_move_intent(Vector2.ZERO)
-					if not _control.attack_is_down():
-						_control.press_attack(dir_to_target, Combat.AttackKind.RANGED)
-			else:
+			if _combat != null:
+				_equipment.set_active_slot_ranged("ai_ranged")
 				_control.set_move_intent(Vector2.ZERO)
+				if not _control.attack_is_down():
+					_control.press_attack(dir_to_target, Combat.AttackKind.RANGED)
+				var sh2 := _entity.get_node_or_null("StateHandler") as StateHandler
+				if sh2 != null:
+					sh2.change_state("Attack", {"attack_kind": Combat.AttackKind.RANGED, "from_ai": true})
+					print("[EnemyAI] AI forced Attack state (RANGED) for entity=", _entity)
+				else:
+					print("[EnemyAI] Warning: no StateHandler node found on entity=", _entity)
 
 		"cast_spell":
 			if suppress_attacks or not _has_recent_los():
-				_cancel_attack_windup()
 				_control.set_move_intent(Vector2.ZERO)
 				return
 
-			if _pending_attack_kind != Combat.AttackKind.SPELL or _pending_attack_timer <= 0.0:
-				_start_attack_windup(Combat.AttackKind.SPELL)
-
-			if _pending_attack_kind == Combat.AttackKind.SPELL and _pending_attack_timer <= 0.0:
-				_cancel_attack_windup()
-				if _combat != null:
-					_equipment.set_active_slot_spell("ai_spell")
-					_control.set_move_intent(Vector2.ZERO)
-					if not _control.attack_is_down():
-						_control.press_attack(dir_to_target, Combat.AttackKind.SPELL)
-			else:
+			if _combat != null:
+				_equipment.set_active_slot_spell("ai_spell")
 				_control.set_move_intent(Vector2.ZERO)
+				if not _control.attack_is_down():
+					_control.press_attack(dir_to_target, Combat.AttackKind.SPELL)
+				var sh3 := _entity.get_node_or_null("StateHandler") as StateHandler
+				if sh3 != null:
+					sh3.change_state("Attack", {"attack_kind": Combat.AttackKind.SPELL, "from_ai": true})
+					print("[EnemyAI] AI forced Attack state (SPELL) for entity=", _entity)
+				else:
+					print("[EnemyAI] Warning: no StateHandler node found on entity=", _entity)
 
 		"shield_block":
-			_cancel_attack_windup()
 			_control.set_block_intent(true)
 
 		"chase":
-			_cancel_attack_windup()
 			var move_dir: Vector2 = _get_nav_direction_to_target()
 			_control.set_move_intent(move_dir)
 
 		"kite", "spell_position":
 			if suppress_attacks:
-				_cancel_attack_windup()
 				_control.set_move_intent(Vector2.ZERO)
 
 		"idle", "patrol", "patrol_idle":
-			_cancel_attack_windup()
 			_control.set_move_intent(Vector2.ZERO)
 
 		_:
-			_cancel_attack_windup()
 			_control.set_move_intent(Vector2.ZERO)
 
 
@@ -840,7 +765,7 @@ func _build_context() -> Dictionary:
 		"target": _target,
 		"aggro_range": _effective_aggro_range(),
 		"awareness": _awareness,
-		"has_los": _has_recent_los(),  # FIX: use memory-aware LOS, not raw per-interval sample
+		"has_los": _has_recent_los(),  # use memory-aware LOS
 		"target_invulnerable": _target_invulnerable,
 		"repositioning": _reposition_timer > 0.0,
 	}

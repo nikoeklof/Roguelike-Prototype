@@ -477,10 +477,6 @@ script = ExtResource("20_dj205")
 script = ExtResource("21_wucoh")
 aggro_range = 400.0
 deaggro_range = 600.0
-decision_interval = 0.15
-los_memory_sec = 0.5
-ranged_burst_count = 3
-melee_windup_sec = 0.0
 
 [node name="ControlSource" type="Node" parent="." unique_id=1920222032]
 script = ExtResource("22_cv08k")
