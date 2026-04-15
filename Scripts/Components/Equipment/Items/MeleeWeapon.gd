@@ -15,6 +15,12 @@ class_name MeleeWeapon
 @export_range(0.0, 2.0, 0.01) var default_windup: float = 0.0
 @export_range(0.0, 2.0, 0.01) var default_recovery: float = 0.10
 
+@export_group("Melee Style Defaults")
+@export var default_swing_style: MeleeSlashVariant.SwingStyle = MeleeSlashVariant.SwingStyle.SWING
+@export_range(30.0, 270.0, 5.0) var default_arc_degrees: float = 160.0
+@export_range(0.0, 1.0, 0.05) var default_shield_penetration: float = 0.0
+@export_range(0.0, 800.0, 10.0) var default_lunge_speed: float = 0.0
+
 var _instance: ItemInstance = null
 
 
@@ -58,6 +64,10 @@ func get_attack_variant(_ctx: CombatContext) -> AttackVariant:
 		_ready()
 	if _instance == null:
 		return null
+
+	# Prefer MeleeItemDef values; fall back to per-node defaults.
+	var melee_def: MeleeItemDef = item_def as MeleeItemDef
+
 	var variant: MeleeSlashVariant = MeleeSlashVariant.new()
 	variant.executor_scene = melee_executor_scene
 	variant.offset = default_hitbox_offset
@@ -65,6 +75,10 @@ func get_attack_variant(_ctx: CombatContext) -> AttackVariant:
 	variant.one_hit_per_target = true
 	variant.windup_time = default_windup
 	variant.recovery_time = default_recovery
+	variant.swing_style = melee_def.swing_style if melee_def != null else default_swing_style
+	variant.arc_degrees = melee_def.arc_degrees if melee_def != null else default_arc_degrees
+	variant.shield_penetration = melee_def.shield_penetration if melee_def != null else default_shield_penetration
+	variant.lunge_speed = melee_def.lunge_speed if melee_def != null else default_lunge_speed
 	return variant
 
 

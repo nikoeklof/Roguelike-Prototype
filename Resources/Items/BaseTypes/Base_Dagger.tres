@@ -2,13 +2,32 @@
 
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="1"]
 [ext_resource type="Resource" uid="uid://chpxjgwd0dnl8" path="res://Resources/Items/Weapons/Dagger.tres" id="2"]
-[ext_resource type="Resource" uid="uid://bwwk2boawn1bh" path="res://Resources/Items/Pools/Pool_Melee_All.tres" id="3"]
+[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="2_up3vb"]
+[ext_resource type="Script" uid="uid://xexiflbe5mdw" path="res://Scripts/Items/Attributes/BonusDamageOnHitAttribute.gd" id="3_up3vb"]
+[ext_resource type="Script" uid="uid://dddt5iljwqqmo" path="res://Scripts/Items/Attributes/LungeAttribute.gd" id="4_hh080"]
+[ext_resource type="Script" uid="uid://bo58hs72paoxt" path="res://Scripts/Items/AttributePoolDef.gd" id="5_pd1ok"]
+
+[sub_resource type="Resource" id="Resource_kky6w"]
+script = ExtResource("3_up3vb")
+display_name = "Bonus damage on hit"
+metadata/_custom_type_script = "uid://bt2f52k5ydybm"
+
+[sub_resource type="Resource" id="Resource_hh080"]
+script = ExtResource("4_hh080")
+display_name = "Lunge"
+editor_description = "Adds a lunge to melee attacks"
+metadata/_custom_type_script = "uid://dddt5iljwqqmo"
+
+[sub_resource type="Resource" id="Resource_pd1ok"]
+script = ExtResource("5_pd1ok")
+global_attributes = Array[ExtResource("2_up3vb")]([SubResource("Resource_kky6w")])
+melee_common = Array[ExtResource("2_up3vb")]([SubResource("Resource_hh080")])
 
 [resource]
 script = ExtResource("1")
 id = &"base_dagger"
 item_def = ExtResource("2")
-pool_def = ExtResource("3")
+pool_def = SubResource("Resource_pd1ok")
 min_attribute_count = 1
 max_attribute_count = 3
 auto_weapon_token = "Dagger"

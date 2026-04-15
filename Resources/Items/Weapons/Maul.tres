@@ -1,23 +1,21 @@
 [gd_resource type="Resource" script_class="MeleeItemDef" format=3 uid="uid://uv71ihvbvfa7"]
 
+[ext_resource type="Script" uid="uid://45e0mc8hgetk" path="res://Scripts/Items/MeleeItemStats.gd" id="1_6i7ij"]
 [ext_resource type="Script" uid="uid://v53hpunax3jt" path="res://Scripts/Items/MeleeItemDef.gd" id="2_6i7ij"]
-[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="2_8psvq"]
 
-[sub_resource type="Resource" id="Resource_0jo7v"]
-script = ExtResource("2_8psvq")
-damage = 18.0
-cooldown_sec = 1.2
-windup_time = 0.2
-recovery_time = 0.2
-active_time = 0.2
-knockback = 2.5
-hitbox_offset = Vector2(60, 0)
-hitbox_size = Vector2(60, 28)
-metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+[sub_resource type="Resource" id="Resource_6i7ij"]
+script = ExtResource("1_6i7ij")
+damage = 40.0
+cooldown_sec = 1.5
+hitbox_size = Vector2(20, 60)
+metadata/_custom_type_script = "uid://45e0mc8hgetk"
 
 [resource]
 script = ExtResource("2_6i7ij")
+swing_style = 1
+arc_degrees = 100.0
+shield_penetration = 0.2
 id = &"maul"
 display_name = "Maul"
-base_stats = SubResource("Resource_0jo7v")
+base_stats = SubResource("Resource_6i7ij")
 metadata/_custom_type_script = "uid://bhof2rvqrnl7f"

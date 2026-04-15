@@ -1,23 +1,21 @@
 [gd_resource type="Resource" script_class="MeleeItemDef" format=3 uid="uid://chpxjgwd0dnl8"]
 
-[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="2_8rske"]
+[ext_resource type="Script" uid="uid://45e0mc8hgetk" path="res://Scripts/Items/MeleeItemStats.gd" id="1_umjp4"]
 [ext_resource type="Script" uid="uid://v53hpunax3jt" path="res://Scripts/Items/MeleeItemDef.gd" id="2_umjp4"]
 
-[sub_resource type="Resource" id="Resource_gg1vu"]
-script = ExtResource("2_8rske")
-damage = 6.0
-cooldown_sec = 0.25
-windup_time = 0.03
-recovery_time = 0.05
-active_time = 0.2
-knockback = 0.4
-hitbox_offset = Vector2(20, 0)
-hitbox_size = Vector2(32, 16)
-metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+[sub_resource type="Resource" id="Resource_umjp4"]
+script = ExtResource("1_umjp4")
+damage = 15.0
+cooldown_sec = 0.3
+hitbox_offset = Vector2(0, 20)
+hitbox_size = Vector2(5, 20)
+metadata/_custom_type_script = "uid://45e0mc8hgetk"
 
 [resource]
 script = ExtResource("2_umjp4")
+swing_style = 2
+arc_degrees = 110.0
 id = &"dagger"
 display_name = "Dagger"
-base_stats = SubResource("Resource_gg1vu")
+base_stats = SubResource("Resource_umjp4")
 metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
