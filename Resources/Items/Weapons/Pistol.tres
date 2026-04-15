@@ -1,21 +1,16 @@
 [gd_resource type="Resource" script_class="RangedItemDef" format=3 uid="uid://bovg38x0nqxmj"]
 
-[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_dndog"]
+[ext_resource type="Script" uid="uid://vb45gvi2vybc" path="res://Scripts/Items/RangedItemStats.gd" id="1_lwg0m"]
 [ext_resource type="Script" uid="uid://bmkfvpy6i2foi" path="res://Scenes/Items/RangedAttackProfile.gd" id="2_bqfws"]
 [ext_resource type="Script" uid="uid://bh78d171gbwqx" path="res://Scripts/Items/RangedItemDef.gd" id="2_dndog"]
 
-[sub_resource type="Resource" id="Resource_lwg0m"]
-script = ExtResource("1_dndog")
-damage = 8.0
-cooldown_sec = 0.45
-windup_time = 0.05
-recovery_time = 0.05
-is_automatic = true
-spread_degrees = 10.0
-spread_pattern_degrees = 8.0
-knockback = 0.8
-hitbox_size = Vector2(1, 1)
-metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+[sub_resource type="Resource" id="Resource_ns355"]
+script = ExtResource("1_lwg0m")
+damage = 20.0
+cooldown_sec = 0.8
+spread_degrees = 3.0
+spread_pattern_degrees = 2.0
+metadata/_custom_type_script = "uid://vb45gvi2vybc"
 
 [sub_resource type="Resource" id="Resource_bqfws"]
 script = ExtResource("2_bqfws")
@@ -27,5 +22,5 @@ ranged_attack_profile = SubResource("Resource_bqfws")
 id = &"pistol"
 display_name = "Pistol"
 category = 1
-base_stats = SubResource("Resource_lwg0m")
+base_stats = SubResource("Resource_ns355")
 metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
