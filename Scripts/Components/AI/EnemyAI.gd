@@ -10,6 +10,13 @@ enum Awareness { IDLE, ALERT, LOST }
 # Global aggro parameters
 @export var aggro_range: float = 300.0
 @export var deaggro_range: float = 400.0
+
+# Vision cone — secondary aggro trigger while in IDLE state.
+# If the target enters this forward-facing cone, the enemy aggroes even outside
+# the normal range check (subject to LOS if require_los_to_aggro is true).
+@export var vision_cone_enabled: bool = true
+@export_range(10.0, 180.0, 5.0) var vision_cone_deg: float = 90.0
+@export var vision_cone_range: float = 450.0
 @export_range(0.0, 0.2, 0.01) var decision_interval: float = 0.1
 
 # Damage aggro boost — after being hit, ranges are multiplied for this duration
@@ -513,6 +520,8 @@ func _update_awareness(delta: float) -> void:
 		Awareness.IDLE:
 			if distance <= eff_aggro and (not require_los_to_aggro or has_recent_los):
 				_set_awareness(Awareness.ALERT)
+			elif vision_cone_enabled and _is_target_in_vision_cone() and (not require_los_to_aggro or has_recent_los):
+				_set_awareness(Awareness.ALERT)
 
 		Awareness.ALERT:
 			if distance > eff_deaggro:
@@ -529,6 +538,23 @@ func _update_awareness(delta: float) -> void:
 				_lost_timer += delta
 				if _lost_timer >= lost_search_duration:
 					_set_awareness(Awareness.IDLE)
+
+
+func _is_target_in_vision_cone() -> bool:
+	if _target == null or _entity == null:
+		return false
+	var dist: float = _entity.global_position.distance_to(_target.global_position)
+	if dist > vision_cone_range:
+		return false
+	# Use FacingPointer for the forward direction; fall back to direction-to-target.
+	var forward: Vector2
+	var fp: FacingPointer = _entity.get_node_or_null("FacingPointer") as FacingPointer
+	if fp != null:
+		forward = fp.get_facing_vector()
+	else:
+		forward = (_target.global_position - _entity.global_position).normalized()
+	var dir_to_target: Vector2 = (_target.global_position - _entity.global_position).normalized()
+	return forward.dot(dir_to_target) >= cos(deg_to_rad(vision_cone_deg * 0.5))
 
 
 # =========================================
@@ -756,6 +782,9 @@ func _execute_decision() -> void:
 
 		"shield_block":
 			_control.set_block_intent(true)
+			# Advance toward the target with shield raised instead of standing still.
+			var move_dir: Vector2 = _get_nav_direction_to_target()
+			_control.set_move_intent(move_dir * 0.65)
 
 		"chase":
 			var move_dir: Vector2 = _get_nav_direction_to_target()
@@ -791,13 +820,20 @@ func _resolve_conflicts(decisions: Array[AIDecision], context: Dictionary) -> AI
 		else:
 			movement_decisions.append(decision)
 
+	# Defense uses pure priority comparison — the module itself gates when blocking
+	# is appropriate (range check, player-aim check, cooldown, etc.).
 	if not defense_decisions.is_empty():
-		var health_percent: float = context.get("health_percent", 1.0)
-		if health_percent < 0.3:
-			return defense_decisions[0]
+		defense_decisions.sort_custom(func(a, b): return a.priority > b.priority)
+		var best_defense: AIDecision = defense_decisions[0]
+		attack_decisions.sort_custom(func(a, b): return a.priority > b.priority)
+		var best_attack_priority: int = attack_decisions[0].priority if not attack_decisions.is_empty() else 0
+		if best_defense.priority >= best_attack_priority:
+			return best_defense
 
 	if not attack_decisions.is_empty():
-		attack_decisions.sort_custom(func(a, b): return a.priority > b.priority)
+		# Already sorted above if defense ran; sort here if defense list was empty.
+		if defense_decisions.is_empty():
+			attack_decisions.sort_custom(func(a, b): return a.priority > b.priority)
 		if attack_decisions.size() > 1:
 			for d in attack_decisions:
 				if d.data.get("ready", false):
@@ -837,6 +873,13 @@ func _build_context() -> Dictionary:
 	if _stats != null:
 		spell_cooldown = _stats.get_spell_cooldown_remaining()
 
+	# Melee attack range — read from MeleeAIModule if present, else 0.
+	var melee_range: float = 0.0
+	for mod: AIBehaviorModule in _behavior_modules:
+		if mod is MeleeAIModule:
+			melee_range = (mod as MeleeAIModule).attack_range
+			break
+
 	return {
 		"distance": distance_to_target,
 		"health_percent": health_percent,
@@ -845,8 +888,9 @@ func _build_context() -> Dictionary:
 		"spell_cooldown": spell_cooldown,
 		"target": _target,
 		"aggro_range": _effective_aggro_range(),
+		"melee_range": melee_range,
 		"awareness": _awareness,
-		"has_los": _has_recent_los(),  # use memory-aware LOS
+		"has_los": _has_recent_los(),
 		"target_invulnerable": _target_invulnerable,
 		"repositioning": _reposition_timer > 0.0,
 	}

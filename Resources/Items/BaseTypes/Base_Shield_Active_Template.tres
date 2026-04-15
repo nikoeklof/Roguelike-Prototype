@@ -15,7 +15,9 @@ metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [sub_resource type="Resource" id="Resource_6g5pj"]
 script = ExtResource("2_shield")
-blocking_collider_size = Vector2(10, 60)
+shield_max_hp = 50.0
+blocking_collider_size = Vector2(5, 35)
+blocking_collider_offset = Vector2(20, 0)
 id = &"shield_active_template"
 display_name = "Active Shield"
 category = 3

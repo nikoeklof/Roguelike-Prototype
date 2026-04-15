@@ -48,6 +48,9 @@ static func resolve(ctx: CombatContext, variant: AttackVariant) -> AttackSnapsho
 				snap.cooldown_sec /= attack_speed_mult
 				snap.windup_time /= attack_speed_mult
 				snap.recovery_time /= attack_speed_mult
+				# Beam tick interval scales with attack speed so faster attackers
+				# get more ticks per second (more DPS from the beam).
+				snap.beam_tick_sec /= attack_speed_mult
 	
 	return snap
 

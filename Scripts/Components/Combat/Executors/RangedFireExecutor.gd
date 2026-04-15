@@ -8,8 +8,12 @@ const DEFAULT_PROJECTILE_SCENE: PackedScene = preload("res://Scenes/Templates/Eq
 @export_range(0.01, 2.0, 0.01) var debug_beam_life_pad_sec: float = 0.05
 @export_range(1.0, 16.0, 0.5) var debug_line_width: float = 2.0
 
-var _beam_tween: Tween = null
-var _beam_line: Line2D = null
+## Damage multiplier applied per beam tick. Keeps sustained beam DPS balanced
+## relative to projectile/hitscan bursts (beam fires many ticks per second).
+@export_range(0.05, 2.0, 0.05) var beam_damage_per_tick_mult: float = 0.4
+
+## One Line2D per beam index (supports multi-shot beam spread).
+var _beam_lines: Dictionary = {}
 
 
 func execute() -> void:
@@ -19,13 +23,128 @@ func execute() -> void:
 	if snap.windup_time > 0.0:
 		await wait_seconds(snap.windup_time)
 
-	_fire(snap)
-
-	if snap.recovery_time > 0.0:
-		await wait_seconds(snap.recovery_time)
+	if _is_beam_mode(snap):
+		await _execute_beam_continuous(snap)
+		# Release the sentinel cooldown so the weapon can fire again immediately.
+		_clear_cooldown_on_owner()
+	else:
+		_fire(snap)
+		if snap.recovery_time > 0.0:
+			await wait_seconds(snap.recovery_time)
 
 	finish(true)
 
+
+# ---------------------------------------------------------------------------
+# Beam — continuous path
+# ---------------------------------------------------------------------------
+
+func _is_beam_mode(snap: AttackSnapshot) -> bool:
+	if snap.ranged_mode == RangedShotData.ShotMode.BEAM:
+		return true
+	if context == null or context.item_instance == null:
+		return false
+	for attr: ItemAttribute in context.item_instance.attributes:
+		if attr is BeamModeAttribute:
+			return true
+	return false
+
+
+func _execute_beam_continuous(snap: AttackSnapshot) -> void:
+	var tick_sec: float = maxf(0.02, snap.beam_tick_sec)
+
+	# Fire first tick immediately, then loop while the attack button is held.
+	_fire_beam_tick_all(snap)
+
+	while true:
+		await wait_seconds(tick_sec)
+
+		if not _is_attack_held():
+			break
+
+		_update_context_aim()
+		_fire_beam_tick_all(snap)
+
+	_kill_beam()
+
+
+func _fire_beam_tick_all(snap: AttackSnapshot) -> void:
+	if context == null or context.owner == null:
+		return
+	if not (context.owner is Node2D):
+		return
+
+	var owner_entity: Node2D = context.owner as Node2D
+	var muzzle: Node2D = _resolve_muzzle(owner_entity)
+	var inst: ItemInstance = context.item_instance
+	var count: int = maxi(1, snap.projectile_count)
+
+	var base_dir: Vector2 = context.aim_dir
+	if base_dir.length() < 0.001:
+		base_dir = Vector2.RIGHT
+	else:
+		base_dir = base_dir.normalized()
+
+	# Vary spread_roll each tick so random spread shifts frame-to-frame.
+	snap.spread_roll = (snap.spread_roll + 1) % 64
+
+	for i: int in range(count):
+		var shot: RangedShotData = _build_base_shot(snap, muzzle, base_dir, i, count, inst)
+		_dispatch_modify_shot(shot, inst)
+
+		# Enforce beam mode and apply per-tick damage multiplier.
+		shot.mode = RangedShotData.ShotMode.BEAM
+		var tick_damage: float = shot.damage * beam_damage_per_tick_mult
+
+		var origin: Vector2 = shot.origin
+		var dir: Vector2 = shot.direction.normalized()
+		var range_val: float = maxf(1.0, shot.max_range)
+		var to: Vector2 = origin + dir * range_val
+		var max_targets: int = maxi(1, shot.pierce + 1)
+
+		var result: Dictionary = _collect_ray_hits(origin, to, owner_entity, max_targets, tick_damage)
+		var victims: Array[Dictionary] = result.get("victims", []) as Array[Dictionary]
+		var final_pos: Vector2 = result.get("final_pos", to) as Vector2
+
+		_debug_set_beam_line_indexed(i, origin, final_pos)
+
+		for entry: Dictionary in victims:
+			var victim_root: Node = entry["victim_root"] as Node
+			var collider_node: Node = entry["collider_node"] as Node
+			AttackImpactResolver.apply_hit(context, snap, victim_root, collider_node, dir, tick_damage)
+
+
+func _is_attack_held() -> bool:
+	if context == null or context.owner == null:
+		return false
+	var control: ControlSource = context.owner.get_node_or_null("ControlSource") as ControlSource
+	if control == null:
+		return false
+	return control.attack_is_down()
+
+
+func _update_context_aim() -> void:
+	if context == null or context.owner == null:
+		return
+	var control: ControlSource = context.owner.get_node_or_null("ControlSource") as ControlSource
+	if control == null:
+		return
+	var dir: Vector2 = control.aim_dir(Vector2.RIGHT)
+	if dir.length() > 0.001:
+		context.aim_dir = dir.normalized()
+
+
+func _clear_cooldown_on_owner() -> void:
+	if context == null or context.owner == null:
+		return
+	var combat: Combat = context.owner.get_node_or_null("Combat") as Combat
+	if combat != null:
+		combat.clear_cooldown(context.item)
+
+
+# ---------------------------------------------------------------------------
+# Projectile / hitscan fire path (unchanged)
+# ---------------------------------------------------------------------------
 
 func _fire(snap: AttackSnapshot) -> void:
 	if context == null or context.owner == null:
@@ -111,7 +230,9 @@ func _execute_shot(
 		RangedShotData.ShotMode.HITSCAN:
 			_fire_hitscan(shot, snap, combat_context)
 		RangedShotData.ShotMode.BEAM:
-			_start_beam(shot, snap, combat_context)
+			# Continuous beam is handled by _execute_beam_continuous().
+			# This branch is a safety fallback — treat as hitscan.
+			_fire_hitscan(shot, snap, combat_context)
 
 
 func _compute_shot_dir(
@@ -162,8 +283,6 @@ func _resolve_muzzle(source_entity: Node) -> Node2D:
 
 
 func _find_parry_collider(node: Node) -> ParryCollider:
-	# The raycast may return the CollisionShape2D child, so check both the node
-	# and its immediate parent.
 	if node is ParryCollider:
 		return node as ParryCollider
 	if node != null and node.get_parent() is ParryCollider:
@@ -255,9 +374,7 @@ func _collect_ray_hits(
 		if collider_node == null:
 			break
 
-		# Shield block — stop the ray here without damaging anyone.
-		# The source entity's own ParryCollider is already excluded by
-		# _build_owner_exclude_list(), so no extra faction check is needed.
+		# Shield block — stop the ray here.
 		var parry: ParryCollider = _find_parry_collider(collider_node)
 		if parry != null:
 			parry.on_shot_blocked(shot_damage, source_entity)
@@ -265,16 +382,13 @@ func _collect_ray_hits(
 
 		var victim_root: Node = CombatQuery.resolve_victim_root(collider_node)
 
-		# Non-victim collider (wall/terrain/etc.) blocks the ray.
 		if victim_root == null:
 			break
 
-		# Ignore self-hits if they slipped through.
 		if victim_root == source_entity or source_entity.is_ancestor_of(victim_root):
 			_collect_collision_rids(victim_root, exclude)
 			continue
 
-		# If we've already hit this victim, exclude all of its colliders and keep going.
 		if seen_victims.has(victim_root):
 			_collect_collision_rids(victim_root, exclude)
 			continue
@@ -288,8 +402,6 @@ func _collect_ray_hits(
 			"rid": hit_rid,
 		})
 
-		# Exclude every collider belonging to this victim so the next raycast
-		# can continue past the whole target, not just one shape.
 		_collect_collision_rids(victim_root, exclude)
 
 		if victims.size() >= max_targets:
@@ -341,98 +453,55 @@ func _fire_hitscan(
 		)
 
 
-func _start_beam(
-	shot: RangedShotData,
-	snap: AttackSnapshot,
-	combat_context: CombatContext
-) -> void:
-	_kill_beam()
-
-	if combat_context == null or combat_context.owner == null:
-		return
-
-	var owner_node: Node = combat_context.owner as Node
-	if owner_node == null:
-		return
-
-	var tick_sec: float = max(shot.beam_tick_sec, 0.01)
-	var ticks: int = int(ceil(shot.beam_duration_sec / tick_sec))
-
-	_beam_tween = owner_node.create_tween()
-	_beam_tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
-
-	for _i: int in range(ticks):
-		_beam_tween.tween_callback(Callable(self, "_beam_tick_callback").bind(shot, snap, combat_context))
-		_beam_tween.tween_interval(tick_sec)
-
-	_beam_tween.tween_callback(Callable(self, "_beam_finish_callback"))
-
-
-func _beam_tick_callback(
-	shot: RangedShotData,
-	snap: AttackSnapshot,
-	combat_context: CombatContext
-) -> void:
-	_beam_tick(shot, snap, combat_context)
-
-
-func _beam_finish_callback() -> void:
-	_kill_beam()
-
-
-func _beam_tick(
-	base_shot: RangedShotData,
-	snap: AttackSnapshot,
-	combat_context: CombatContext
-) -> void:
-	if combat_context == null or combat_context.owner == null:
-		return
-	if not (combat_context.owner is Node2D):
-		return
-
-	var source_entity: Node2D = combat_context.owner as Node2D
-	var muzzle: Node2D = _resolve_muzzle(source_entity)
-
-	var origin: Vector2 = muzzle.global_position
-	var dir: Vector2 = combat_context.aim_dir
-	if dir.length() < 0.001:
-		dir = Vector2.RIGHT
-	else:
-		dir = dir.normalized()
-
-	var range_value: float = max(1.0, base_shot.max_range)
-	var damage: float = base_shot.damage
-	var pierce: int = max(0, base_shot.pierce)
-
-	var to: Vector2 = origin + dir * range_value
-	var max_targets: int = max(1, pierce + 1)
-
-	var result: Dictionary = _collect_ray_hits(origin, to, source_entity, max_targets, damage)
-	var victims: Array[Dictionary] = result.get("victims", []) as Array[Dictionary]
-	var final_pos: Vector2 = result.get("final_pos", to) as Vector2
-
-	_debug_set_beam_line(origin, final_pos)
-
-	for entry: Dictionary in victims:
-		var victim_root: Node = entry["victim_root"] as Node
-		var collider_node: Node = entry["collider_node"] as Node
-
-		AttackImpactResolver.apply_hit(
-			combat_context,
-			snap,
-			victim_root,
-			collider_node,
-			dir,
-			damage
-		)
-
+# ---------------------------------------------------------------------------
+# Beam line visuals (indexed per shot for multi-beam support)
+# ---------------------------------------------------------------------------
 
 func _kill_beam() -> void:
-	if _beam_tween != null and is_instance_valid(_beam_tween):
-		_beam_tween.kill()
-	_beam_tween = null
-	_debug_clear_beam_line(debug_beam_life_pad_sec)
+	_debug_clear_all_beam_lines(debug_beam_life_pad_sec)
 
+
+func _debug_set_beam_line_indexed(index: int, from: Vector2, to: Vector2) -> void:
+	if not debug_draw_shots:
+		return
+	if context == null or context.owner == null:
+		return
+	if not (context.owner is Node2D):
+		return
+
+	if not _beam_lines.has(index) or not is_instance_valid(_beam_lines[index]):
+		var source_entity: Node2D = context.owner as Node2D
+		var parent: Node = source_entity.get_parent() if source_entity.get_parent() != null else get_tree().current_scene
+		if parent == null:
+			return
+		_beam_lines[index] = _debug_make_line(parent)
+
+	var line: Line2D = _beam_lines[index] as Line2D
+	if line == null:
+		return
+	line.clear_points()
+	line.add_point(from)
+	line.add_point(to)
+
+
+func _debug_clear_all_beam_lines(delay_sec: float) -> void:
+	for idx: int in _beam_lines.keys():
+		var line: Line2D = _beam_lines[idx] as Line2D
+		if line == null or not is_instance_valid(line):
+			continue
+		if delay_sec <= 0.01 or not line.is_inside_tree():
+			line.queue_free()
+			continue
+		var tween: Tween = line.create_tween()
+		tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+		tween.tween_interval(maxf(0.01, delay_sec))
+		tween.tween_callback(Callable(line, "queue_free"))
+	_beam_lines.clear()
+
+
+# ---------------------------------------------------------------------------
+# Shared debug helpers
+# ---------------------------------------------------------------------------
 
 func _debug_make_line(parent: Node) -> Line2D:
 	var line: Line2D = Line2D.new()
@@ -466,48 +535,9 @@ func _debug_draw_transient_line(from: Vector2, to: Vector2, life_sec: float) -> 
 	tween.tween_callback(Callable(line, "queue_free"))
 
 
-func _debug_set_beam_line(from: Vector2, to: Vector2) -> void:
-	if not debug_draw_shots:
-		return
-	if context == null or context.owner == null:
-		return
-	if not (context.owner is Node2D):
-		return
-
-	if _beam_line == null or not is_instance_valid(_beam_line):
-		var source_entity: Node2D = context.owner as Node2D
-		var parent: Node = source_entity.get_parent() if source_entity.get_parent() != null else get_tree().current_scene
-		if parent == null:
-			return
-		_beam_line = _debug_make_line(parent)
-
-	_beam_line.clear_points()
-	_beam_line.add_point(from)
-	_beam_line.add_point(to)
-
-
-func _debug_clear_beam_line(delay_sec: float) -> void:
-	if _beam_line == null or not is_instance_valid(_beam_line):
-		_beam_line = null
-		return
-
-	var line: Line2D = _beam_line
-	_beam_line = null
-
-	# Free immediately if delay is negligible, otherwise tween
-	if delay_sec <= 0.01:
-		line.queue_free()
-		return
-
-	if not line.is_inside_tree():
-		line.queue_free()
-		return
-
-	var tween: Tween = line.create_tween()
-	tween.set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
-	tween.tween_interval(max(0.01, delay_sec))
-	tween.tween_callback(Callable(line, "queue_free"))
-
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 func _build_owner_exclude_list(source_entity: Node) -> Array[RID]:
 	var out: Array[RID] = []
@@ -528,10 +558,4 @@ func _collect_collision_rids(node: Node, out: Array[RID]) -> void:
 
 
 func _exit_tree() -> void:
-	if _beam_tween != null and is_instance_valid(_beam_tween):
-		_beam_tween.kill()
-	_beam_tween = null
-
-	if _beam_line != null and is_instance_valid(_beam_line):
-		_beam_line.queue_free()
-	_beam_line = null
+	_debug_clear_all_beam_lines(0.0)

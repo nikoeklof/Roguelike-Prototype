@@ -2,8 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://b0eb7ryv2foaw" path="res://Scenes/Templates/Entities/Player_Entity_Template.tscn" id="1_kyx5t"]
 [ext_resource type="PackedScene" uid="uid://wj0aehlmsmj3" path="res://Scenes/UI/DebugHUD.tscn" id="2_tiaw2"]
-[ext_resource type="PackedScene" uid="uid://clncndcdq5t7c" path="res://Scenes/Entities/AI/Enemy_Ranged_Template_ver1.tscn" id="3_tj7c2"]
-[ext_resource type="PackedScene" uid="uid://m40h81hrtiei" path="res://Scenes/Entities/AI/Enemy_Melee_Template_Version1.tscn" id="4_ugryf"]
+[ext_resource type="PackedScene" uid="uid://c314o51hvlqnc" path="res://Scenes/Entities/AI/Enemy_Knight_Template.tscn" id="3_tj7c2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
 size = Vector2(1169, 29.33334)
@@ -71,23 +70,14 @@ vertices = PackedVector2Array(629.33325, 28, 626.66675, -33.333344, -613.3334, -
 affect_navigation_mesh = true
 carve_navigation_mesh = true
 
-[node name="EnemyRangedTemplateVer1" parent="." unique_id=1052976507 instance=ExtResource("3_tj7c2")]
-position = Vector2(471, 16)
+[node name="EnemyKnighTemplate" parent="." unique_id=698630020 instance=ExtResource("3_tj7c2")]
+position = Vector2(399, -4)
 
-[node name="EnemyRangedTemplateVer2" parent="." unique_id=1178627320 instance=ExtResource("3_tj7c2")]
-position = Vector2(1030, -26)
+[node name="EnemyKnighTemplate2" parent="." unique_id=1081429091 instance=ExtResource("3_tj7c2")]
+position = Vector2(519, -7)
 
-[node name="EnemyRangedTemplateVer3" parent="." unique_id=2121172118 instance=ExtResource("3_tj7c2")]
-position = Vector2(710, -20)
+[node name="EnemyKnighTemplate3" parent="." unique_id=787519726 instance=ExtResource("3_tj7c2")]
+position = Vector2(328, -85)
 
-[node name="EnemyRangedTemplateVer4" parent="." unique_id=121211549 instance=ExtResource("3_tj7c2")]
-position = Vector2(851, -28)
-
-[node name="EnemyMelee" parent="." unique_id=698630020 instance=ExtResource("4_ugryf")]
-position = Vector2(680, 60)
-
-[node name="EnemyMelee2" parent="." unique_id=1102204182 instance=ExtResource("4_ugryf")]
-position = Vector2(531, 63)
-
-[node name="EnemyMelee3" parent="." unique_id=1705660921 instance=ExtResource("4_ugryf")]
-position = Vector2(604, 32)
+[node name="EnemyKnighTemplate4" parent="." unique_id=663330226 instance=ExtResource("3_tj7c2")]
+position = Vector2(560, -106)

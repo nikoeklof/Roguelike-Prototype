@@ -20,6 +20,7 @@ var _hit_ids: Dictionary = {}
 
 
 func _ready() -> void:
+	add_to_group("projectiles")
 	monitoring = true
 	monitorable = true
 

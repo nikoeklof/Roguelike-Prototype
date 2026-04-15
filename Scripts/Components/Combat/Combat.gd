@@ -112,7 +112,20 @@ func try_attack(kind: int, aim_dir: Vector2 = Vector2.RIGHT) -> bool:
 		return false
 
 	var snap: AttackSnapshot = AttackResolver.resolve(ctx, variant)
-	_commit_cooldown(item, snap.cooldown_sec)
+
+	# For beam weapons, lock out re-fire with a sentinel cooldown so a second
+	# executor cannot stack while the continuous beam is running.
+	# The executor clears this via clear_cooldown() when the beam ends.
+	var commit_cooldown: float = snap.cooldown_sec
+	var is_beam: bool = snap.ranged_mode == RangedShotData.ShotMode.BEAM
+	if not is_beam and ctx.item_instance != null:
+		for attr: ItemAttribute in ctx.item_instance.attributes:
+			if attr is BeamModeAttribute:
+				is_beam = true
+				break
+	if is_beam:
+		commit_cooldown = 9999.0
+	_commit_cooldown(item, commit_cooldown)
 
 	var executor: AttackExecutor = variant.create_executor(ctx)
 	if executor == null:
