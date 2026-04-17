@@ -387,7 +387,7 @@ base_attack_speed_mult = 0.8
 
 [node name="Health" type="Node" parent="." unique_id=680203279]
 script = ExtResource("7_1ie7f")
-max_hp = 30.0
+max_hp = 125.0
 
 [node name="FacingPointer" type="Node2D" parent="." unique_id=1696168336]
 script = ExtResource("8_5u15b")
@@ -477,8 +477,12 @@ script = ExtResource("20_dj205")
 script = ExtResource("21_wucoh")
 aggro_range = 400.0
 deaggro_range = 600.0
-beam_hitscan_prefire_delay = 0.2
-beam_hitscan_inaccuracy_degrees = 1.0
+beam_hitscan_prefire_delay = 0.1
+beam_hitscan_inaccuracy_degrees = 5.0
+ranged_burst_count = 6
+spell_burst_count = 1
+melee_burst_count = 4
+melee_reposition_sec = 0.2
 
 [node name="ControlSource" type="Node" parent="." unique_id=1920222032]
 script = ExtResource("22_cv08k")

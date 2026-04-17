@@ -160,9 +160,24 @@ func _update_hitbox_for_progress(t: float) -> void:
 
 
 func _try_hit(other: Node, one_hit_per_target: bool) -> void:
-	if context == null or context.owner == null or other == null:
+	if context == null or not is_instance_valid(context.owner) or other == null:
 		return
 	if other == context.owner:
+		return
+
+	# --- Physical ParryCollider interception (frontal shield block) ---
+	# The ParryCollider is placed in FRONT of the defending entity, so overlapping
+	# it means the attack physically came from the front. No direction math needed.
+	if other is ParryCollider:
+		var pc: ParryCollider = other as ParryCollider
+		if is_instance_valid(context.owner) and context.owner.is_ancestor_of(pc):
+			return  # Own shield — ignore
+		var victim_root_pc: Node = CombatQuery.resolve_victim_root(pc)
+		if victim_root_pc != null:
+			if one_hit_per_target:
+				if _hit_ids.has(victim_root_pc.get_instance_id()):
+					return
+			_apply_shield_block(pc, victim_root_pc, one_hit_per_target)
 		return
 
 	var victim_root: Node = CombatQuery.resolve_victim_root(other)
@@ -177,46 +192,57 @@ func _try_hit(other: Node, one_hit_per_target: bool) -> void:
 
 	var snap: AttackSnapshot = resolve_snapshot()
 	var melee: MeleeSlashVariant = variant as MeleeSlashVariant
-
 	var aim_dir: Vector2 = context.aim_dir
 	if aim_dir.length() < 0.001:
 		aim_dir = Vector2.RIGHT
 	else:
 		aim_dir = aim_dir.normalized()
 
-	# --- Shield interaction ---
-	# Check if the victim is actively blocking with a shield that faces the attacker.
-	var active_shield: ActiveShield = _find_active_shield(victim_root)
-	if active_shield != null and active_shield.is_blocking() and _shield_faces_attacker(victim_root, aim_dir):
-		var penetration: float = melee.shield_penetration if melee != null else 0.0
-		var absorbed: float = snap.damage * (1.0 - penetration)
-		var through: float = snap.damage * penetration
-		if absorbed > 0.0:
-			active_shield.consume_shield_hp(absorbed)
-		if through > 0.0:
-			AttackImpactResolver.apply_hit(context, snap, victim_root, other, aim_dir, through)
+	# --- Poll for ParryCollider overlap to resolve signal-ordering ambiguity ---
+	# body_entered and area_entered(ParryCollider) fire in the same physics frame
+	# in non-deterministic order. If the body fired first, check right now whether
+	# a ParryCollider belonging to this victim is currently overlapping our hitbox.
+	var blocking_pc: ParryCollider = _find_overlapping_parry_collider(victim_root)
+	if blocking_pc != null:
+		_apply_shield_block(blocking_pc, victim_root, one_hit_per_target)
 		return
 
 	AttackImpactResolver.apply_hit(context, snap, victim_root, other, aim_dir)
 
 
-func _find_active_shield(root: Node) -> ActiveShield:
-	if root is Entity:
-		return (root as Entity).find_component(&"ActiveShield") as ActiveShield
-	return root.get_node_or_null("ActiveShield") as ActiveShield
+func _apply_shield_block(pc: ParryCollider, victim_root: Node, one_hit_per_target: bool) -> void:
+	var snap: AttackSnapshot = resolve_snapshot()
+	var melee: MeleeSlashVariant = variant as MeleeSlashVariant
+	var penetration: float = melee.shield_penetration if melee != null else 0.0
+	var absorbed: float = snap.damage * (1.0 - penetration)
+	var through: float = snap.damage * penetration
+
+	if absorbed > 0.0:
+		pc._notify_shield_damage(absorbed)
+
+	# Mark victim so the simultaneously-firing body signal is suppressed.
+	if one_hit_per_target:
+		_hit_ids[victim_root.get_instance_id()] = true
+
+	if through > 0.0:
+		var aim_dir: Vector2 = context.aim_dir.normalized()
+		AttackImpactResolver.apply_hit(context, snap, victim_root, pc, aim_dir, through)
 
 
-func _shield_faces_attacker(victim_root: Node, hit_dir: Vector2) -> bool:
-	## Returns true when the victim's facing direction is oriented toward the attacker,
-	## meaning the shield intercepts the incoming strike.
-	## hit_dir points from attacker toward victim; -hit_dir points victim → attacker.
-	var fp: FacingPointer = victim_root.get_node_or_null("FacingPointer") as FacingPointer
-	if fp == null and victim_root is Entity:
-		fp = (victim_root as Entity).get_node_or_null("FacingPointer") as FacingPointer
-	if fp == null:
-		return true  # No facing data — assume the shield intercepts.
-	# dot > 0: blocker is facing at least partially toward the attacker.
-	return fp.get_facing_vector().dot(-hit_dir) > 0.0
+func _find_overlapping_parry_collider(victim_root: Node) -> ParryCollider:
+	if _hitbox == null or not is_instance_valid(_hitbox):
+		return null
+	for area: Area2D in _hitbox.get_overlapping_areas():
+		if not (area is ParryCollider):
+			continue
+		var pc: ParryCollider = area as ParryCollider
+		# Skip own shield
+		if is_instance_valid(context.owner) and context.owner.is_ancestor_of(pc):
+			continue
+		# Confirm this ParryCollider belongs to the same victim we're processing
+		if CombatQuery.resolve_victim_root(pc) == victim_root:
+			return pc
+	return null
 
 
 func _cleanup_hitbox() -> void:

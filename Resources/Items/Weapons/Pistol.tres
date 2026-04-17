@@ -10,10 +10,15 @@ damage = 20.0
 cooldown_sec = 0.8
 spread_degrees = 3.0
 spread_pattern_degrees = 2.0
+knockback = 10.0
 metadata/_custom_type_script = "uid://vb45gvi2vybc"
 
 [sub_resource type="Resource" id="Resource_bqfws"]
 script = ExtResource("2_bqfws")
+hitscan_range = 400.0
+beam_range = 400.0
+projectile_speed = 900.0
+projectile_lifetime_sec = 1.0
 metadata/_custom_type_script = "uid://bmkfvpy6i2foi"
 
 [resource]

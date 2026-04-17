@@ -22,12 +22,12 @@ class RoomNode:
 		coord = c
 
 class FloorPlan:
-	var _seed: int
+	var seed: int
 	var rooms: Dictionary = {}       # Vector2i -> RoomNode
 	var coords: Array[Vector2i] = [] # typed list of keys
 
 	func _init(s: int) -> void:
-		_seed = s
+		seed = s
 		rooms = {}
 		coords = []
 

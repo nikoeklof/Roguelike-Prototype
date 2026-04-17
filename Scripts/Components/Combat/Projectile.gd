@@ -138,12 +138,12 @@ func _try_hit(other: Node) -> void:
 	# Shield block — intercept before victim resolution so the hit is consumed
 	# by the ParryCollider and never walks up to damage the entity behind it.
 	if other is ParryCollider:
-		if _owner != null and _owner.is_ancestor_of(other):
+		if is_instance_valid(_owner) and _owner.is_ancestor_of(other):
 			return  # Own shield — ignore
 		(other as ParryCollider).on_projectile_hit(self)
 		return
 
-	if _owner != null:
+	if is_instance_valid(_owner):
 		if other == _owner:
 			return
 		if _owner.is_ancestor_of(other):

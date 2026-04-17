@@ -11,10 +11,15 @@ cooldown_sec = 0.2
 is_automatic = true
 spread_degrees = 7.0
 spread_pattern_degrees = 5.0
+knockback = 5.0
 metadata/_custom_type_script = "uid://vb45gvi2vybc"
 
 [sub_resource type="Resource" id="Resource_f32wa"]
 script = ExtResource("4_npcsr")
+hitscan_range = 400.0
+beam_range = 400.0
+projectile_speed = 700.0
+projectile_lifetime_sec = 1.0
 metadata/_custom_type_script = "uid://bmkfvpy6i2foi"
 
 [resource]

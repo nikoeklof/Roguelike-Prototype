@@ -12,7 +12,7 @@ static func apply_hit(
 ) -> bool:
 	if ctx == null:
 		return false
-	if ctx.owner == null:
+	if not is_instance_valid(ctx.owner):
 		return false
 	if victim_root == null:
 		return false

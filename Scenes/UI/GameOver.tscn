@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://ma5wcevbvg61"]
+
+[ext_resource type="Script" uid="uid://0p3k4u8s3cf6" path="res://Scripts/UI/GameOver.gd" id="1_gover"]
+
+[node name="GameOver" type="CanvasLayer" unique_id=100464723]
+layer = 10
+script = ExtResource("1_gover")
+
+[node name="Overlay" type="ColorRect" parent="." unique_id=1580464882]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=2095286574]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer" unique_id=52286576]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="CenterContainer/VBox" unique_id=1699206917]
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "GAME OVER"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="CenterContainer/VBox" unique_id=273581843]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
+[node name="RestartButton" type="Button" parent="CenterContainer/VBox" unique_id=1618061795]
+layout_mode = 2
+text = "Restart"
+
+[connection signal="pressed" from="CenterContainer/VBox/RestartButton" to="." method="_on_restart_pressed"]

@@ -55,7 +55,6 @@ script = ExtResource("1")
 id = &"base_shield_active"
 item_def = SubResource("Resource_6g5pj")
 pool_def = SubResource("Resource_fnwo2")
-min_attribute_count = 1
 max_attribute_count = 3
 auto_include_global = false
 auto_weapon_token = "ShieldActive"

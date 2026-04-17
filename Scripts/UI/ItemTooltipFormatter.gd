@@ -118,6 +118,10 @@ static func format_expanded(item: Node) -> String:
 		var base_stats: ItemStats = def.base_stats if def.base_stats != null else ItemStats.new()
 		out += _format_stats_block(base_stats)
 
+	# Melee-specific def properties (swing style, arc, etc.)
+	if def != null and def is MeleeItemDef:
+		out += _format_melee_def_block(def as MeleeItemDef)
+
 	if inst != null:
 		out += "\nAttrs: %s" % format_attributes(inst)
 
@@ -193,6 +197,36 @@ static func _format_stats_block(stats: ItemStats) -> String:
 		return "Stats: (base)\n"
 
 	return "Stats:\n- " + "\n- ".join(lines) + "\n"
+
+
+static func _format_melee_def_block(def: MeleeItemDef) -> String:
+	var lines: Array[String] = []
+
+	var style_name: String = _swing_style_name(int(def.swing_style))
+	lines.append("Style: %s" % style_name)
+
+	if def.swing_style != MeleeSlashVariant.SwingStyle.STAB:
+		lines.append("Arc: %s°" % _fmt_float(def.arc_degrees))
+
+	if not is_zero_approx(def.lunge_speed):
+		lines.append("Lunge: %s" % _fmt_float(def.lunge_speed))
+
+	if not is_zero_approx(def.shield_penetration):
+		lines.append("Shield Pen: %s%%" % _fmt_float(def.shield_penetration * 100.0))
+
+	return "Melee:\n- " + "\n- ".join(lines) + "\n"
+
+
+static func _swing_style_name(style: int) -> String:
+	match style:
+		MeleeSlashVariant.SwingStyle.SWING:
+			return "Swing"
+		MeleeSlashVariant.SwingStyle.OVERHEAD:
+			return "Overhead"
+		MeleeSlashVariant.SwingStyle.STAB:
+			return "Stab"
+		_:
+			return "Unknown"
 
 
 static func _fmt_float(v: float) -> String:

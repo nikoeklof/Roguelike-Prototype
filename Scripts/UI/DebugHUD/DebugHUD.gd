@@ -262,13 +262,4 @@ func _on_item_selected(index: int) -> void:
 		details.append_text("Empty slot.")
 		return
 
-	var item_name: String = str(item.name)
-	details.append_text("[b]%s[/b]\n\n" % item_name)
-
-	for p in item.get_property_list():
-		if typeof(p) == TYPE_DICTIONARY and p.has("usage") and p.has("name"):
-			var usage: int = int(p["usage"])
-			if usage & PROPERTY_USAGE_SCRIPT_VARIABLE != 0:
-				var prop_name: String = str(p["name"])
-				var value: Variant = item.get(prop_name)
-				details.append_text("%s: %s\n" % [prop_name, str(value)])
+	details.append_text(ItemTooltipFormatter.format_expanded(item))

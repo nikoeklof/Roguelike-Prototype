@@ -1,16 +1,16 @@
 [gd_resource type="Resource" script_class="MeleeItemDef" format=3 uid="uid://dsw6lbih5c75m"]
 
-[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_o0fqu"]
+[ext_resource type="Script" uid="uid://45e0mc8hgetk" path="res://Scripts/Items/MeleeItemStats.gd" id="1_o0fqu"]
 [ext_resource type="Script" uid="uid://v53hpunax3jt" path="res://Scripts/Items/MeleeItemDef.gd" id="2_o0fqu"]
 
 [sub_resource type="Resource" id="Resource_bqh06"]
 script = ExtResource("1_o0fqu")
-damage = 20.0
-cooldown_sec = 0.5
-knockback = 1.0
-hitbox_offset = Vector2(0, 20)
-hitbox_size = Vector2(50, 10)
-metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+damage = 45.0
+cooldown_sec = 0.7
+knockback = 10.0
+hitbox_offset = Vector2(30, 0)
+hitbox_size = Vector2(80, 15)
+metadata/_custom_type_script = "uid://45e0mc8hgetk"
 
 [resource]
 script = ExtResource("2_o0fqu")

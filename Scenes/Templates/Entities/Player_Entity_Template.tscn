@@ -387,7 +387,7 @@ base_friction = 1300.0
 
 [node name="Health" type="Node" parent="." unique_id=175137403]
 script = ExtResource("7_554au")
-max_hp = 100.0
+max_hp = 300.0
 invuln_sec_on_hit = 1.0
 
 [node name="FacingPointer" type="Node2D" parent="." unique_id=1170378246]

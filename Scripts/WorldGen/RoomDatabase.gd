@@ -110,20 +110,20 @@ func _collect_room_scene_paths(dir_path: String, out_paths: Array[String]) -> vo
 
 	dir.list_dir_begin()
 	while true:
-		var _name: String = dir.get_next()
-		if name.is_empty():
+		var entry_name: String = dir.get_next()
+		if entry_name.is_empty():
 			break
-		if name.begins_with("."):
+		if entry_name.begins_with("."):
 			continue
 
-		var full: String = dir_path.path_join(name)
+		var full: String = dir_path.path_join(entry_name)
 		if dir.current_is_dir():
 			_collect_room_scene_paths(full, out_paths)
 			continue
 
-		if not name.ends_with(".tscn"):
+		if not entry_name.ends_with(".tscn"):
 			continue
-		if name.find("RoomChunk") == -1:
+		if entry_name.find("RoomChunk") == -1:
 			continue
 
 		out_paths.append(full)

@@ -780,6 +780,18 @@ func _execute_decision() -> void:
 				else:
 					print("[EnemyAI] Warning: no StateHandler node found on entity=", _entity)
 
+		"cast_buff_spell":
+			# Self-buff: fire and keep moving toward the target.
+			# Stopping movement is left to the spell's own allow_move_during_attack flag.
+			if _combat != null:
+				_equipment.set_active_slot_spell("ai_spell")
+				if not _control.attack_is_down():
+					_control.press_attack(dir_to_target, Combat.AttackKind.SPELL)
+				var sh4 := _entity.get_node_or_null("StateHandler") as StateHandler
+				if sh4 != null:
+					sh4.change_state("Attack", {"attack_kind": Combat.AttackKind.SPELL, "from_ai": true})
+			_control.set_move_intent(_get_nav_direction_to_target())
+
 		"shield_block":
 			_control.set_block_intent(true)
 			# Advance toward the target with shield raised instead of standing still.

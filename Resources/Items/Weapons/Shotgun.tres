@@ -11,10 +11,15 @@ cooldown_sec = 1.3
 projectile_count = 6
 spread_degrees = 20.0
 spread_pattern_degrees = 15.0
+knockback = 10.0
 metadata/_custom_type_script = "uid://vb45gvi2vybc"
 
 [sub_resource type="Resource" id="Resource_ainjy"]
 script = ExtResource("4_ws6nw")
+hitscan_range = 300.0
+beam_range = 300.0
+projectile_speed = 800.0
+projectile_lifetime_sec = 1.0
 metadata/_custom_type_script = "uid://bmkfvpy6i2foi"
 
 [resource]
