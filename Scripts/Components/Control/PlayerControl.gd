@@ -33,7 +33,7 @@ func _physics_process(_delta: float) -> void:
 	elif Input.is_action_just_pressed(slot_ranged_action):
 		eq.set_active_slot_ranged("player_input")
 	elif Input.is_action_just_pressed(slot_spell_action):
-		eq.set_active_slot_spell("player_input")
+		_trigger_spell_cast(entity)
 	elif Input.is_action_just_pressed(next_slot_action):
 		eq.cycle_active_slot(+1, "player_input")
 	elif Input.is_action_just_pressed(prev_slot_action):
@@ -132,3 +132,18 @@ func _active_attack_kind() -> Combat.AttackKind:
 	if eq != null:
 		return eq.active_slot as Combat.AttackKind
 	return Combat.AttackKind.MELEE
+
+
+func _trigger_spell_cast(entity: CharacterBody2D) -> void:
+	var combat: Combat = _combat(entity)
+	if combat == null:
+		return
+	combat.try_attack(Combat.AttackKind.SPELL, aim_dir(Vector2.RIGHT))
+
+
+func _combat(entity: Node) -> Combat:
+	if entity is Entity:
+		var c: Node = (entity as Entity).get_component(&"Combat")
+		if c is Combat:
+			return c as Combat
+	return entity.get_node_or_null("Combat") as Combat

@@ -8,6 +8,7 @@ var _owner_entity: Node = null
 var _equipment: Equipment = null
 var _spell_slot: EquipmentSlot = null
 var _queued_spell_cast: bool = false
+var _is_player_controlled: bool = false
 
 
 func _ready() -> void:
@@ -47,13 +48,12 @@ func _ready() -> void:
 		if not _spell_slot.changed.is_connected(_on_spell_slot_changed):
 			_spell_slot.changed.connect(_on_spell_slot_changed)
 	
+	_is_player_controlled = _detect_player_controlled()
 	_hook_weapon_signals()
 
 
 func _process(_delta: float) -> void:
-	if Input.is_action_just_pressed("ui_cast_spell"):
-		print("[SpellCastingManager] Cast input pressed!")
-		_on_cast_input_pressed()
+	pass  # Spell input is handled by PlayerControl (Q key) and EnemyAI directly.
 
 
 func _on_cast_input_pressed() -> void:
@@ -105,8 +105,15 @@ func _try_cast_spell_now() -> bool:
 		print("[SpellCastingManager] Spell on cooldown - %.2fs remaining" % remaining)
 		return false
 	
+	# Resolve aim direction from mouse position.
+	var aim_dir: Vector2 = Vector2.RIGHT
+	if _owner_entity is Node2D:
+		var mouse_dir: Vector2 = (_owner_entity as Node2D).get_global_mouse_position() - (_owner_entity as Node2D).global_position
+		if mouse_dir.length() > 0.001:
+			aim_dir = mouse_dir.normalized()
+
 	# Use Spell's try_cast method directly
-	var success: bool = spell.try_cast(_owner_entity, Vector2.RIGHT)
+	var success: bool = spell.try_cast(_owner_entity, aim_dir)
 	
 	if success and stats != null:
 		# Get the cooldown from the spell's item instance
@@ -170,3 +177,15 @@ func _find_owner_entity() -> Node:
 			return n
 		n = n.get_parent()
 	return null
+
+
+func _detect_player_controlled() -> bool:
+	if _owner_entity == null:
+		return false
+	# Group check is authoritative — every player entity is added to "player".
+	if _owner_entity.is_in_group("player"):
+		return true
+	# Fallback: presence of a PlayerControl component.
+	if _owner_entity is Entity:
+		return (_owner_entity as Entity).find_component(&"PlayerControl") != null
+	return _owner_entity.get_node_or_null("PlayerControl") != null

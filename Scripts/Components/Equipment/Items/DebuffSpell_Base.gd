@@ -120,35 +120,23 @@ func _on_projectile_hit(area: Area2D, ctx: CombatContext, item_instance: ItemIns
 	if area == null:
 		return
 
-	print("[DebuffSpell] Projectile hit: %s" % area.name)
+	var caster_faction: Faction = _get_faction(ctx.owner)
+	if caster_faction == null:
+		return
 
-	# Check if this is an entity with a valid faction
+	# Walk up hierarchy to find the Entity root
 	var parent: Node = area.get_parent()
 	while parent != null:
 		if parent is Entity:
-			# Get faction of target
-			var target_faction: Faction = _get_faction(parent)
-			var caster_faction: Faction = _get_faction(ctx.owner)
-			
-			# Only apply debuff to hostile entities (not self, not allies)
-			if target_faction == null or caster_faction == null:
-				print("[DebuffSpell] Target or caster has no faction, skipping")
+			if not caster_faction.is_hostile_to(parent):
 				break
-			
-			# Skip self and allies
-			if target_faction.faction == caster_faction.faction:
-				print("[DebuffSpell] Target is same faction or self, skipping debuff")
-				break
-			
-			print("[DebuffSpell] ✓ Applying debuff to: %s (faction: %s)" % [parent.name, Faction.Id.keys()[target_faction.faction]])
-			
+
 			# Dispatch to all debuff attributes
 			for attr: ItemAttribute in item_instance.attributes:
 				if attr == null or not attr is DebuffSpellAttribute:
 					continue
-				var debuff_attr: DebuffSpellAttribute = attr as DebuffSpellAttribute
-				debuff_attr.apply_debuff_to_target(parent, ctx, item_instance)
-			
+				(attr as DebuffSpellAttribute).apply_debuff_to_target(parent, ctx, item_instance)
+
 			# Remove the projectile after applying debuff
 			if area.get_parent() is Projectile:
 				area.get_parent().queue_free()
@@ -240,15 +228,8 @@ func _apply_aoe_debuff_instantly(ctx: CombatContext, origin: Vector2, owner_enti
 		
 		processed_entities[found_entity] = true
 		
-		# Get faction of target
-		var target_faction: Faction = _get_faction(found_entity)
-		
 		# Only apply debuff to hostile entities
-		if target_faction == null or caster_faction == null:
-			continue
-		
-		# Skip same faction and self
-		if target_faction.faction == caster_faction.faction:
+		if caster_faction == null or not caster_faction.is_hostile_to(found_entity):
 			continue
 		
 		targets_hit.append(found_entity.name)

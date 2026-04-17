@@ -33,7 +33,7 @@ func set_active_slot(new_slot: int, reason: String = "") -> void:
 
 
 func cycle_active_slot(dir: int, reason: String = "cycle") -> void:
-	var order := [Combat.AttackKind.MELEE, Combat.AttackKind.RANGED, Combat.AttackKind.SPELL]
+	var order := [Combat.AttackKind.MELEE, Combat.AttackKind.RANGED]
 	var idx := order.find(_active_slot)
 	if idx == -1:
 		idx = 0

@@ -22,5 +22,5 @@ metadata/_custom_type_script = "uid://cg5lmkvo5xwyb"
 
 [resource]
 script = ExtResource("2_d28ti")
-spell_common = Array[ExtResource("1_harsy")]([SubResource("Resource_5ud4g"), SubResource("Resource_x6fe2")])
+spell_common = Array[ExtResource("1_harsy")]([SubResource("Resource_5ud4g"), SubResource("Resource_x6fe2"), null])
 metadata/_custom_type_script = "uid://bo58hs72paoxt"

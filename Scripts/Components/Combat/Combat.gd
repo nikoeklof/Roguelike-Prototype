@@ -82,6 +82,10 @@ func try_attack(kind: int, aim_dir: Vector2 = Vector2.RIGHT) -> bool:
 	if not can_attack(item):
 		return false
 
+	# --- Spell items bypass the variant/executor pipeline ---
+	if item is Spell:
+		return _try_cast_spell(item as Spell, owner_entity, aim_dir)
+
 	if not item.has_method("get_attack_variant"):
 		return false
 
@@ -224,6 +228,17 @@ func _resolve_executor_parent(owner_entity: Node) -> Node:
 		return owner_entity.get_parent()
 
 	return self
+
+
+func _try_cast_spell(spell: Spell, owner_entity: Node, aim_dir: Vector2) -> bool:
+	var d: Vector2 = aim_dir.normalized() if aim_dir.length() > 0.001 else Vector2.RIGHT
+	var success: bool = spell.try_cast(owner_entity, d)
+	if success:
+		# Brief re-entry guard — Spell manages its own real cooldown via _cd_until.
+		# This prevents double-firing within the same physics frame.
+		_commit_cooldown(spell, 0.05)
+		attack_finished.emit(AttackKind.SPELL)
+	return success
 
 
 func _on_executor_finished(_success: bool, kind: int, executor: AttackExecutor) -> void:
