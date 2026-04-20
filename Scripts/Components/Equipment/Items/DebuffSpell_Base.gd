@@ -119,6 +119,8 @@ func _cast_projectile_debuff(ctx: CombatContext, owner_entity: Node, dir: Vector
 func _on_projectile_hit(area: Area2D, ctx: CombatContext, item_instance: ItemInstance) -> void:
 	if area == null:
 		return
+	if ctx == null or not is_instance_valid(ctx.owner):
+		return
 
 	var caster_faction: Faction = _get_faction(ctx.owner)
 	if caster_faction == null:
@@ -167,12 +169,18 @@ func _cast_aoe_debuff(ctx: CombatContext, owner_entity: Node) -> void:
 		t.one_shot = true
 		t.wait_time = aoe_travel_time
 		owner_entity.add_child(t)
-		t.timeout.connect(Callable(self, "_apply_aoe_debuff_instantly").bindv([ctx, caster_pos, owner_entity, aoe_radius]), CONNECT_ONE_SHOT)
+		t.timeout.connect(func() -> void:
+			if is_instance_valid(owner_entity):
+				_apply_aoe_debuff_instantly(ctx, caster_pos, owner_entity, aoe_radius)
+			if is_instance_valid(t):
+				t.queue_free()
+		, CONNECT_ONE_SHOT)
 		t.start()
 
 
 func _apply_aoe_debuff_instantly(ctx: CombatContext, origin: Vector2, owner_entity: Node, aoe_radius: float) -> void:
-	print("[DebuffSpell] Applying AOE debuff at %s with radius %f" % [origin, aoe_radius])
+	if not is_instance_valid(owner_entity) or ctx == null or not is_instance_valid(ctx.owner):
+		return
 
 	if not owner_entity is Node2D:
 		push_warning("[DebuffSpell] owner_entity must be Node2D for AoE")
@@ -249,8 +257,7 @@ func _apply_aoe_debuff_instantly(ctx: CombatContext, origin: Vector2, owner_enti
 
 
 func _get_faction(entity: Node) -> Faction:
-	"""Helper to get Faction component from an entity"""
-	if entity == null:
+	if entity == null or not is_instance_valid(entity):
 		return null
 	
 	if entity is Entity:

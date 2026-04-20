@@ -356,11 +356,13 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_d71ut"]
-size = Vector2(11, 8)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_s8hwr"]
+radius = 7.0
+height = 20.0
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_tm314"]
-size = Vector2(11, 8)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_02ocv"]
+radius = 7.0
+height = 20.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_d71ut"]
 radius = 25.0
@@ -409,12 +411,15 @@ script = ExtResource("9_7r15b")
 unique_name_in_owner = true
 
 [node name="MeleeSlot" parent="Equipment" index="0" unique_id=1103842256]
+allow_multiple = false
 initial_item_scene = null
 
 [node name="RangedSlot" parent="Equipment" index="1" unique_id=1681126984]
+allow_multiple = false
 initial_item_scene = null
 
 [node name="SpellSlot" parent="Equipment" index="2" unique_id=1739323574]
+allow_multiple = false
 initial_item_scene = null
 
 [node name="ShieldSlot" parent="Equipment" index="3" unique_id=1862735357]
@@ -465,15 +470,17 @@ collision_layer = 16
 collision_mask = 8
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=779696000]
-position = Vector2(-0.5, 6)
-shape = SubResource("RectangleShape2D_d71ut")
+position = Vector2(-0.5, 2)
+shape = SubResource("CapsuleShape2D_s8hwr")
 
 [node name="WorldCollider" type="CollisionShape2D" parent="." unique_id=464013779]
-position = Vector2(-1, 7)
+visible = false
+position = Vector2(-1, -1)
 scale = Vector2(2, 2)
-shape = SubResource("RectangleShape2D_tm314")
+shape = SubResource("CapsuleShape2D_02ocv")
 
 [node name="InteractionArea" type="Area2D" parent="." unique_id=514886212]
+visible = false
 position = Vector2(-1, -1)
 scale = Vector2(2, 2)
 collision_layer = 0

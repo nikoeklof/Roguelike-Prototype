@@ -646,11 +646,9 @@ func _get_ranged_shot_mode() -> RangedShotData.ShotMode:
 	if weapon == null or not weapon is RangedWeapon:
 		return RangedShotData.ShotMode.PROJECTILE
 	var rw: RangedWeapon = weapon as RangedWeapon
-	# Mirror the priority chain from RangedWeapon.get_attack_variant()
-	var mode: RangedShotData.ShotMode = rw.default_mode
-	var profile: RangedAttackProfile = rw.get_ranged_profile()
-	if profile != null:
-		mode = profile.default_mode
+	var mode: RangedShotData.ShotMode = RangedShotData.ShotMode.PROJECTILE
+	if rw.item_def != null and rw.item_def.stats != null:
+		mode = rw.item_def.stats.default_mode
 	var inst: ItemInstance = rw.get_item_instance()
 	if inst != null and int(inst.ranged_mode) >= 0:
 		mode = inst.ranged_mode as RangedShotData.ShotMode

@@ -1,24 +1,13 @@
-extends ItemStats
+extends Resource
 class_name ShieldItemStats
 
-## ItemStats subclass for shield items.
-## Hides all attack-specific fields so the inspector only shows stats relevant
-## to a shield: defensive multipliers, HP bonuses, and heal-on-equip.
-## Hidden fields remain at default values and are still safe to read in code.
+@export_group("Passive Defense")
+@export var flat_damage_reduction: float = 0.0
+@export_range(0.5, 1.0, 0.01) var damage_taken_mult: float = 1.0
 
-func _validate_property(property: Dictionary) -> void:
-	var ATTACK_ONLY: PackedStringArray = PackedStringArray([
-		"damage",
-		"is_automatic",
-		"projectile_count",
-		"pierce",
-		"spread_degrees",
-		"spread_pattern_degrees",
-		"muzzle_offset",
-		"active_time",
-		"knockback",
-		"hitbox_offset",
-		"hitbox_size",
-	])
-	if property["name"] in ATTACK_ONLY:
-		property["usage"] = PROPERTY_USAGE_STORAGE
+@export_group("Movement")
+@export_range(0.5, 1.5, 0.01) var move_speed_mult: float = 1.0
+
+@export_group("Health")
+@export var bonus_max_hp: float = 0.0
+@export var heal_on_equip: float = 0.0

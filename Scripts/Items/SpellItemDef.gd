@@ -4,12 +4,13 @@ class_name SpellItemDef
 enum SpellType { BUFF, DEBUFF }
 enum DeliveryMode { PROJECTILE, AOE }
 
-@export var spell_type: SpellType = SpellType.BUFF
+@export var stats: SpellItemStats
 
-# Delivery configuration (for DEBUFF spells)
+@export_group("Spell Config")
+@export var spell_type: SpellType = SpellType.BUFF
 @export var delivery_mode: DeliveryMode = DeliveryMode.PROJECTILE
 
-# Projectile settings
+@export_group("Projectile")
 @export var projectile_scene: PackedScene = preload("res://Scenes/Templates/EquipmentItems/Projectile_template.tscn")
 @export_range(0.0, 5000.0, 1.0) var projectile_speed: float = 450.0
 @export_range(-5000.0, 5000.0, 1.0) var projectile_gravity: float = 0.0
@@ -21,13 +22,17 @@ enum DeliveryMode { PROJECTILE, AOE }
 @export var projectile_sprite_texture: Texture2D
 @export var projectile_sprite_tint: Color = Color.WHITE
 
-# AOE settings
+@export_group("AOE")
 @export_range(50.0, 500.0, 10.0) var aoe_radius: float = 150.0
 @export var aoe_instant: bool = true
 @export_range(0.1, 5.0, 0.1) var aoe_travel_time: float = 0.5
 
 func _init() -> void:
 	category = Category.SPELL
+
+func _validate_property(property: Dictionary) -> void:
+	if property["name"] == "base_stats":
+		property["usage"] = PROPERTY_USAGE_NONE
 
 
 func get_projectile_config() -> Dictionary:

@@ -8,6 +8,8 @@ var damage: float = 1.0
 var pierce: int = 0
 
 var _owner: Node = null
+var _owner_id: int = -1
+var _shooter_faction: Faction.Id = Faction.Id.NEUTRAL
 var _age: float = 0.0
 var _distance_travelled: float = 0.0
 var _max_range: float = 0.0
@@ -54,6 +56,7 @@ func setup(
 		pierce = prc
 		_owner = own
 		_remaining_hits = maxi(1, pierce + 1)
+		_snapshot_shooter(own)
 		return
 
 	push_warning("Projectile.setup(): unsupported payload.")
@@ -66,6 +69,7 @@ func _setup_from_launch(launch: ProjectileLaunchData) -> void:
 	_context = launch.context
 	_snapshot = launch.snapshot
 	_owner = launch.owner
+	_snapshot_shooter(launch.owner)
 
 	global_position = launch.origin
 
@@ -101,6 +105,17 @@ func get_projectile_owner() -> Node:
 
 func set_projectile_owner(new_owner: Node) -> void:
 	_owner = new_owner
+	_snapshot_shooter(new_owner)
+
+
+func _snapshot_shooter(shooter: Node) -> void:
+	if not is_instance_valid(shooter):
+		_owner_id = -1
+		_shooter_faction = Faction.Id.NEUTRAL
+		return
+	_owner_id = shooter.get_instance_id()
+	var f: Faction = CombatQuery.find_faction(shooter)
+	_shooter_faction = f.faction if f != null else Faction.Id.NEUTRAL
 
 
 func _physics_process(delta: float) -> void:
@@ -135,23 +150,24 @@ func _try_hit(other: Node) -> void:
 	if other == null:
 		return
 
-	# Shield block — intercept before victim resolution so the hit is consumed
-	# by the ParryCollider and never walks up to damage the entity behind it.
+	# Shield block — never let a shooter's own shield eat the projectile.
 	if other is ParryCollider:
-		if is_instance_valid(_owner) and _owner.is_ancestor_of(other):
-			return  # Own shield — ignore
+		if _is_from_shooter(other):
+			return
 		(other as ParryCollider).on_projectile_hit(self)
 		return
 
-	if is_instance_valid(_owner):
-		if other == _owner:
-			return
-		if _owner.is_ancestor_of(other):
-			return
+	# Skip colliders that belong to the shooter's entity tree.
+	if _is_from_shooter(other):
+		return
 
 	var victim_root: Node = CombatQuery.resolve_victim_root(other)
 	if victim_root == null:
 		victim_root = other
+
+	# Skip if the resolved root is the shooter.
+	if victim_root.get_instance_id() == _owner_id:
+		return
 
 	var victim_id: int = victim_root.get_instance_id()
 	if _hit_ids.has(victim_id):
@@ -161,41 +177,59 @@ func _try_hit(other: Node) -> void:
 	if hit_dir.length() < 0.001:
 		hit_dir = Vector2.RIGHT
 
-	# New unified hit path.
-	if _context != null and _snapshot != null:
+	# Unified hit path — owner must still be alive for attribute dispatch.
+	if _context != null and _snapshot != null and is_instance_valid(_context.owner):
 		var applied: bool = AttackImpactResolver.apply_hit(
-			_context,
-			_snapshot,
-			victim_root,
-			other,
-			hit_dir,
-			damage
+			_context, _snapshot, victim_root, other, hit_dir, damage
 		)
-
 		if applied:
 			_hit_ids[victim_id] = true
 			_remaining_hits -= 1
 			if _remaining_hits <= 0:
 				queue_free()
 			return
-	# Legacy fallback.
+
+	# Faction-aware fallback (also used when owner has been freed).
+	if not _can_hit_faction(victim_root):
+		if other is PhysicsBody2D or other is TileMap:
+			queue_free()
+		return
+
 	var hp: Health = CombatQuery.find_health(victim_root)
-
-	# If the projectile owner was freed (e.g. shooter died), treat source as null.
-	var src: Node = _owner
-	if src != null and not is_instance_valid(src):
-		src = null
-
-	if hp != null and (src == null or CombatQuery.can_damage(src, victim_root)):
+	if hp != null:
 		_hit_ids[victim_id] = true
-		hp.take_damage(damage, src)
+		hp.take_damage(damage, null)
 		_remaining_hits -= 1
 		if _remaining_hits <= 0:
 			queue_free()
 		return
-	# If it was not a valid victim, treat solid world as an impact.
+
 	if other is PhysicsBody2D or other is TileMap:
 		queue_free()
+
+
+func _is_from_shooter(node: Node) -> bool:
+	if _owner_id == -1:
+		return false
+	var cur: Node = node
+	var depth: int = 0
+	while cur != null and depth < 16:
+		if cur.get_instance_id() == _owner_id:
+			return true
+		cur = cur.get_parent()
+		depth += 1
+	return false
+
+
+func _can_hit_faction(victim_root: Node) -> bool:
+	if _shooter_faction == Faction.Id.NEUTRAL:
+		return true
+	var victim_faction: Faction = CombatQuery.find_faction(victim_root)
+	if victim_faction == null:
+		return true
+	if victim_faction.faction == Faction.Id.NEUTRAL:
+		return true
+	return _shooter_faction != victim_faction.faction
 
 
 func _apply_radius(radius: float) -> void:

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://bj0t03hq8mm"]
 
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="1"]
-[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_ln066"]
+[ext_resource type="Script" uid="uid://01dmpkk1erqu" path="res://Scripts/Items/SpellItemStats.gd" id="1_ln066"]
 [ext_resource type="PackedScene" uid="uid://cosg8jgc5pgfy" path="res://Scenes/Templates/EquipmentItems/Projectile_template.tscn" id="2_dk3tx"]
 [ext_resource type="Script" uid="uid://chvmgm0f6jstl" path="res://Scripts/Items/SpellItemDef.gd" id="2_istdp"]
 [ext_resource type="Resource" uid="uid://dfonapnbe5fy5" path="res://Resources/Items/Pools/Pool_Spell_Buff_All.tres" id="3_ln066"]
@@ -9,15 +9,12 @@
 [sub_resource type="Resource" id="Resource_dk3tx"]
 script = ExtResource("1_ln066")
 cooldown_sec = 10.0
-metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [sub_resource type="Resource" id="Resource_xifq8"]
 script = ExtResource("2_istdp")
+stats = SubResource("Resource_dk3tx")
 id = &"buff"
 display_name = "Buff"
-category = 2
-base_stats = SubResource("Resource_dk3tx")
-metadata/_custom_type_script = "uid://chvmgm0f6jstl"
 
 [resource]
 script = ExtResource("1")

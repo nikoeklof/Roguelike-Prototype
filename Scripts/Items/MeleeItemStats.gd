@@ -1,19 +1,17 @@
-extends ItemStats
+extends Resource
 class_name MeleeItemStats
 
-## ItemStats subclass for melee weapons.
-## Hides ranged-only fields (projectile_count, pierce, spread, muzzle_offset, is_automatic)
-## from the inspector so designers only see fields that are meaningful for melee items.
-## The hidden fields remain at their default values and are still safe to read in code.
+@export_group("Attack")
+@export var damage: float = 10.0
+@export_range(0.05, 10.0, 0.05) var cooldown_sec: float = 0.5
+@export_range(0.0, 2.0, 0.01) var windup_time: float = 0.0
+@export_range(0.01, 2.0, 0.01) var active_time: float = 0.10
+@export_range(0.0, 2.0, 0.01) var recovery_time: float = 0.10
 
-func _validate_property(property: Dictionary) -> void:
-	var RANGED_ONLY: PackedStringArray = PackedStringArray([
-		"is_automatic",
-		"projectile_count",
-		"pierce",
-		"spread_degrees",
-		"spread_pattern_degrees",
-		"muzzle_offset",
-	])
-	if property["name"] in RANGED_ONLY:
-		property["usage"] = PROPERTY_USAGE_STORAGE
+@export_group("Hitbox")
+@export var hitbox_size: Vector2 = Vector2(40, 24)
+@export var hitbox_offset: Vector2 = Vector2(20, 0)
+
+@export_group("Feel")
+@export var knockback: float = 0.0
+@export_range(0.1, 2.0, 0.01) var move_speed_mult: float = 1.0

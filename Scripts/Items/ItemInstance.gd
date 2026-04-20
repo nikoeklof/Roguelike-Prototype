@@ -74,10 +74,7 @@ func compute_stats(context: CombatContext) -> ItemStats:
 	if def == null:
 		return out
 
-	# Placeholder-safe base stats access.
-	var base_res: Resource = null
-	if def != null and "base_stats" in def:
-		base_res = def.base_stats
+	var base_res: Resource = _resolve_stats_resource(def)
 
 	# Collect modifiers from attributes + instance upgrades.
 	var mods: Array[StatModifier] = _collect_stat_modifiers(context)
@@ -115,6 +112,20 @@ func compute_stats(context: CombatContext) -> ItemStats:
 	out.spread_pattern_degrees = maxf(0.0, out.spread_pattern_degrees)
 
 	return out
+
+
+func _resolve_stats_resource(d: ItemDef) -> Resource:
+	if d == null:
+		return null
+	# Typed stats field (new per-type system) takes priority.
+	var typed: Variant = d.get(&"stats")
+	if typed is Resource:
+		return typed as Resource
+	# Fallback: legacy base_stats field (used by ranged/spell/shield until migrated).
+	var base: Variant = d.get(&"base_stats")
+	if base is Resource:
+		return base as Resource
+	return null
 
 
 func _mods_for(all_mods: Array[StatModifier], stat: StringName) -> Array[StatModifier]:

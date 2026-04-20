@@ -1,19 +1,23 @@
-[gd_resource type="Resource" script_class="ItemDef" format=3 uid="uid://b6fwo38qebq3g"]
+[gd_resource type="Resource" script_class="MeleeItemDef" format=3 uid="uid://b6fwo38qebq3g"]
 
-[ext_resource type="Script" path="res://Scripts/Items/ItemStats.gd" id="1"]
-[ext_resource type="Script" path="res://Scripts/Items/ItemDef.gd" id="2"]
+[ext_resource type="Script" uid="uid://45e0mc8hgetk" path="res://Scripts/Items/MeleeItemStats.gd" id="1_lunger"]
+[ext_resource type="Script" uid="uid://v53hpunax3jt" path="res://Scripts/Items/MeleeItemDef.gd" id="2_lunger"]
 
-[sub_resource type="Resource" id="Resource_stats"]
-script = ExtResource("1")
+[sub_resource type="Resource" id="Resource_lunger_stats"]
+script = ExtResource("1_lunger")
 damage = 2.0
 cooldown_sec = 0.5
 windup_time = 0.25
+active_time = 0.10
 recovery_time = 1.0
-move_speed_bonus = 1.0
+hitbox_size = Vector2(40, 24)
+hitbox_offset = Vector2(20, 0)
+knockback = 0.0
+metadata/_custom_type_script = "uid://45e0mc8hgetk"
 
 [resource]
-script = ExtResource("2")
+script = ExtResource("2_lunger")
 id = &"lunger_melee"
-category = 0
 display_name = "Lunger"
-base_stats = SubResource("Resource_stats")
+stats = SubResource("Resource_lunger_stats")
+metadata/_custom_type_script = "uid://v53hpunax3jt"

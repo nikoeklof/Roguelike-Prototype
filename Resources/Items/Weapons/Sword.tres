@@ -7,15 +7,17 @@
 script = ExtResource("1_o0fqu")
 damage = 45.0
 cooldown_sec = 0.7
-knockback = 10.0
-hitbox_offset = Vector2(30, 0)
+active_time = 0.12
+recovery_time = 0.12
 hitbox_size = Vector2(80, 15)
+hitbox_offset = Vector2(30, 0)
+knockback = 10.0
 metadata/_custom_type_script = "uid://45e0mc8hgetk"
 
 [resource]
 script = ExtResource("2_o0fqu")
+stats = SubResource("Resource_bqh06")
 arc_degrees = 175.0
 id = &"sword"
 display_name = "Sword"
-base_stats = SubResource("Resource_bqh06")
-metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
+metadata/_custom_type_script = "uid://v53hpunax3jt"

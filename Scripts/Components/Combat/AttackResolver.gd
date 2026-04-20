@@ -37,8 +37,7 @@ static func resolve(ctx: CombatContext, variant: AttackVariant) -> AttackSnapsho
 		snap.ranged_mode = int(ctx.item_instance.ranged_mode)
 
 	_apply_variant_defaults(snap, variant)
-	_apply_item_defaults(snap, ctx.item if ctx != null else null)
-	
+
 	# Apply attack speed multiplier from entity stats
 	if ctx != null and ctx.owner != null:
 		var entity_stats: Stats = _find_entity_stats(ctx.owner)
@@ -137,54 +136,3 @@ static func _apply_variant_defaults(snap: AttackSnapshot, variant: AttackVariant
 			snap.projectile_sprite_tint = ranged.projectile_sprite_tint
 
 
-static func _apply_item_defaults(snap: AttackSnapshot, item: Node) -> void:
-	if snap == null or item == null:
-		return
-
-	if item is MeleeWeapon:
-		var melee: MeleeWeapon = item as MeleeWeapon
-
-		if snap.hitbox_offset == Vector2.ZERO:
-			snap.hitbox_offset = melee.default_hitbox_offset
-
-		if snap.hitbox_size == Vector2.ZERO:
-			snap.hitbox_size = melee.default_hitbox_size
-
-		if snap.active_time <= 0.0:
-			snap.active_time = max(0.01, melee.default_active_time)
-
-		if is_zero_approx(snap.knockback):
-			snap.knockback = max(0.0, melee.default_knockback)
-
-		if snap.windup_time <= 0.0:
-			snap.windup_time = max(0.0, melee.default_windup)
-
-		if snap.recovery_time <= 0.0:
-			snap.recovery_time = max(0.0, melee.default_recovery)
-
-	elif item is RangedWeapon:
-		var ranged: RangedWeapon = item as RangedWeapon
-
-		if snap.windup_time <= 0.0:
-			snap.windup_time = max(0.0, ranged.default_windup)
-
-		if snap.recovery_time <= 0.0:
-			snap.recovery_time = max(0.0, ranged.default_recovery)
-
-		# Only apply projectile defaults if projectile_spec is defined
-		if snap.projectile_spec == null and snap.projectile_scene == null:
-			if ranged.projectile_spec != null:
-				snap.projectile_spec = ranged.projectile_spec
-				snap.projectile_scene = ranged.projectile_spec.scene
-				snap.projectile_speed = ranged.projectile_spec.speed
-				snap.projectile_gravity = ranged.projectile_spec.gravity
-				snap.projectile_lifetime_sec = ranged.projectile_spec.lifetime_sec
-				snap.projectile_radius = max(1.0, ranged.projectile_spec.radius)
-				snap.projectile_inherit_owner_velocity = clampf(ranged.projectile_spec.inherit_owner_velocity, 0.0, 1.0)
-				snap.projectile_range = max(0.0, ranged.projectile_spec.range)
-				snap.projectile_collision_mask = ranged.projectile_spec.collision_mask
-				snap.projectile_sprite_texture = ranged.projectile_spec.sprite_texture
-				snap.projectile_sprite_tint = ranged.projectile_spec.sprite_tint
-			# For hitscan weapons - projectile_scene exists but no projectile speed/etc properties
-			elif snap.projectile_scene == null and ranged.projectile_scene != null:
-				snap.projectile_scene = ranged.projectile_scene

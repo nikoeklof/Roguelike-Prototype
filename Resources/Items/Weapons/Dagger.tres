@@ -7,16 +7,18 @@
 script = ExtResource("1_umjp4")
 damage = 30.0
 cooldown_sec = 0.4
-knockback = 8.0
-hitbox_offset = Vector2(40, 0)
+active_time = 0.08
+recovery_time = 0.08
 hitbox_size = Vector2(45, 15)
+hitbox_offset = Vector2(40, 0)
+knockback = 8.0
 metadata/_custom_type_script = "uid://45e0mc8hgetk"
 
 [resource]
 script = ExtResource("2_umjp4")
+stats = SubResource("Resource_umjp4")
 swing_style = 2
 arc_degrees = 110.0
 id = &"dagger"
 display_name = "Dagger"
-base_stats = SubResource("Resource_umjp4")
-metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
+metadata/_custom_type_script = "uid://v53hpunax3jt"

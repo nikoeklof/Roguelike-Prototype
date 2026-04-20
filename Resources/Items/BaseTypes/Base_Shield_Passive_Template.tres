@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://byvu2r46uj2sl"]
 
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="1"]
-[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_stats"]
+[ext_resource type="Script" uid="uid://com325vi0bbwd" path="res://Scripts/Items/ShieldItemStats.gd" id="1_stats"]
 [ext_resource type="Script" uid="uid://b7cbswyrmorl7" path="res://Scripts/Items/ShieldItemDef.gd" id="2_shield"]
 [ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="3_3kqy2"]
 [ext_resource type="Script" uid="uid://bo58hs72paoxt" path="res://Scripts/Items/AttributePoolDef.gd" id="4_lv8fp"]
@@ -11,17 +11,14 @@
 
 [sub_resource type="Resource" id="Resource_3kqy2"]
 script = ExtResource("1_stats")
-metadata/_custom_type_script = "uid://cv0h8ksph1drm"
+flat_damage_reduction = 1.0
 
 [sub_resource type="Resource" id="Resource_lv8fp"]
 script = ExtResource("2_shield")
+stats = SubResource("Resource_3kqy2")
 shield_type = 1
-flat_damage_reduction = 1.0
 id = &"shield_passive_template"
 display_name = "Passive Shield"
-category = 3
-base_stats = SubResource("Resource_3kqy2")
-metadata/_custom_type_script = "uid://b7cbswyrmorl7"
 
 [sub_resource type="Resource" id="Resource_tj6wy"]
 script = ExtResource("5_jgpuk")
@@ -40,7 +37,6 @@ metadata/_custom_type_script = "uid://m2lt1tqblbkl"
 [sub_resource type="Resource" id="Resource_jortj"]
 script = ExtResource("4_lv8fp")
 shield_common = Array[ExtResource("3_3kqy2")]([SubResource("Resource_tj6wy"), SubResource("Resource_3kql6"), ExtResource("7_3kqy2")])
-metadata/_custom_type_script = "uid://bo58hs72paoxt"
 
 [resource]
 script = ExtResource("1")

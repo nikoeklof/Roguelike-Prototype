@@ -1,32 +1,24 @@
 [gd_resource type="Resource" script_class="RangedItemDef" format=3 uid="uid://cv0r3gb0d82xu"]
 
 [ext_resource type="Script" uid="uid://vb45gvi2vybc" path="res://Scripts/Items/RangedItemStats.gd" id="1_b3vx2"]
+[ext_resource type="PackedScene" uid="uid://cosg8jgc5pgfy" path="res://Scenes/Templates/EquipmentItems/Projectile_template.tscn" id="2_b3vx2"]
 [ext_resource type="Script" uid="uid://bh78d171gbwqx" path="res://Scripts/Items/RangedItemDef.gd" id="3_b3vx2"]
-[ext_resource type="Script" uid="uid://bmkfvpy6i2foi" path="res://Scenes/Items/RangedAttackProfile.gd" id="4_npcsr"]
 
 [sub_resource type="Resource" id="Resource_8jhcp"]
 script = ExtResource("1_b3vx2")
-damage = 10.0
 cooldown_sec = 0.2
 is_automatic = true
 spread_degrees = 7.0
 spread_pattern_degrees = 5.0
 knockback = 5.0
-metadata/_custom_type_script = "uid://vb45gvi2vybc"
-
-[sub_resource type="Resource" id="Resource_f32wa"]
-script = ExtResource("4_npcsr")
-hitscan_range = 400.0
-beam_range = 400.0
 projectile_speed = 700.0
 projectile_lifetime_sec = 1.0
-metadata/_custom_type_script = "uid://bmkfvpy6i2foi"
+hitscan_range = 400.0
+beam_range = 400.0
 
 [resource]
 script = ExtResource("3_b3vx2")
-ranged_attack_profile = SubResource("Resource_f32wa")
+stats = SubResource("Resource_8jhcp")
 id = &"smg"
 display_name = "SMG"
-category = 1
-base_stats = SubResource("Resource_8jhcp")
 metadata/_custom_type_script = "uid://bhof2rvqrnl7f"

@@ -355,11 +355,13 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_d71ut"]
-size = Vector2(11, 8)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_l5ryf"]
+radius = 7.0
+height = 20.0
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_tm314"]
-size = Vector2(11, 8)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_c3k3q"]
+radius = 7.0
+height = 20.0
 
 [node name="EnemyMelee" type="CharacterBody2D" unique_id=698630020]
 collision_layer = 4
@@ -448,20 +450,19 @@ root_node = NodePath("")
 [node name="StateHandler" parent="." unique_id=464920392 instance=ExtResource("17_b5iik")]
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=817596553]
-visible = false
 position = Vector2(0, -5)
 scale = Vector2(2, 2)
 collision_layer = 16
 collision_mask = 8
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=1554447181]
-position = Vector2(-0.5, 6)
-shape = SubResource("RectangleShape2D_d71ut")
+position = Vector2(-0.5, 2)
+shape = SubResource("CapsuleShape2D_l5ryf")
 
 [node name="WorldCollider" type="CollisionShape2D" parent="." unique_id=1239787640]
-position = Vector2(-1, 7)
+position = Vector2(-1, -1)
 scale = Vector2(2, 2)
-shape = SubResource("RectangleShape2D_tm314")
+shape = SubResource("CapsuleShape2D_c3k3q")
 
 [node name="SpellCastingManager" type="Node" parent="." unique_id=1629895003]
 script = ExtResource("18_7aujv")

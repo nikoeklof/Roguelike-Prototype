@@ -7,17 +7,20 @@
 script = ExtResource("1_6i7ij")
 damage = 80.0
 cooldown_sec = 1.5
-knockback = 30.0
-hitbox_offset = Vector2(30, 0)
+windup_time = 0.2
+active_time = 0.18
+recovery_time = 0.25
 hitbox_size = Vector2(60, 30)
+hitbox_offset = Vector2(30, 0)
+knockback = 30.0
 metadata/_custom_type_script = "uid://45e0mc8hgetk"
 
 [resource]
 script = ExtResource("2_6i7ij")
+stats = SubResource("Resource_6i7ij")
 swing_style = 1
 arc_degrees = 100.0
 shield_penetration = 0.2
 id = &"maul"
 display_name = "Maul"
-base_stats = SubResource("Resource_6i7ij")
-metadata/_custom_type_script = "uid://bhof2rvqrnl7f"
+metadata/_custom_type_script = "uid://v53hpunax3jt"

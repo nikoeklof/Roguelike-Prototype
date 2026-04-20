@@ -1,17 +1,14 @@
 [gd_resource type="Resource" script_class="ShieldItemDef" format=3 uid="uid://bx7fb2c3oa6gk"]
 
-[ext_resource type="Script" uid="uid://cv0h8ksph1drm" path="res://Scripts/Items/ItemStats.gd" id="1_ki4ei"]
+[ext_resource type="Script" uid="uid://com325vi0bbwd" path="res://Scripts/Items/ShieldItemStats.gd" id="1_ki4ei"]
 [ext_resource type="Script" uid="uid://b7cbswyrmorl7" path="res://Scripts/Items/ShieldItemDef.gd" id="2_1rlcj"]
 
 [sub_resource type="Resource" id="Resource_m5jda"]
 script = ExtResource("1_ki4ei")
-metadata/_custom_type_script = "uid://cv0h8ksph1drm"
 
 [resource]
 script = ExtResource("2_1rlcj")
 blocking_collider_size = Vector2(10, 40)
 id = &"buckler_shield"
 display_name = "Buckler Shield"
-category = 3
-base_stats = SubResource("Resource_m5jda")
-metadata/_custom_type_script = "uid://b7cbswyrmorl7"
+stats = SubResource("Resource_m5jda")
