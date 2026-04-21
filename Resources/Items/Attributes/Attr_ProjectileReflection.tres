@@ -1,13 +1,11 @@
-[gd_resource type="Resource" script_class="ProjectileReflectionAttribute" format=3 uid="uid://shield_reflect"]
+[gd_resource type="Resource" script_class="ReflectProjectilesAttribute" format=3 uid="uid://84khepjc52a4"]
 
-[ext_resource type="Script" path="res://Scripts/Items/Attributes/Shields/Attr_ActiveShield_Reflection.gd" id="script"]
+[ext_resource type="Script" uid="uid://ba5jdgdjiwvuq" path="res://Scripts/Items/Attributes/Shields/Attr_ActiveShield_ReflectProjectilesAttribute.gd" id="1_3n1p6"]
 
 [resource]
-script = ExtResource("script")
+script = ExtResource("1_3n1p6")
+window_sec = 0.6
+reflect_speed_mult = 1.2
 id = &"reflect_projectiles"
 display_name = "Projectile Reflection"
 editor_description = "Active shields: Reflect projectiles that hit during block window"
-reflection_window_sec = 0.25
-reflector_size = Vector2(32, 20)
-reflector_offset = Vector2(18, 0)
-reflect_speed_mult = 1.2

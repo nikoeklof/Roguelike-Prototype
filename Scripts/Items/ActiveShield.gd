@@ -114,7 +114,7 @@ func on_block_start() -> void:
 	var stats: Stats = _entity.find_component(&"Stats") as Stats
 	if stats != null:
 		stats.set_move_speed_mult(&"shield_block", _shield_def.movement_speed_mult_while_blocking)
-		stats.set_flat_damage_reduction(&"shield_block", _shield_def.flat_damage_reduction)
+		stats.set_damage_taken_mult(&"shield_block", 1.0 - _shield_def.block_damage_reduction)
 		print("[ActiveShield] Applied blocking penalties")
 	
 	blocking_started.emit()
@@ -140,7 +140,7 @@ func on_block_end() -> void:
 	var stats: Stats = _entity.find_component(&"Stats") as Stats
 	if stats != null:
 		stats.clear_move_speed_mult(&"shield_block")
-		stats.clear_flat_damage_reduction(&"shield_block")
+		stats.clear_damage_taken_mult(&"shield_block")
 	
 	blocking_stopped.emit()
 

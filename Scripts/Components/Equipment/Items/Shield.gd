@@ -153,6 +153,16 @@ func _apply_passives(owner_entity: Node) -> void:
 		if not is_equal_approx(stats_res.flat_damage_reduction, 0.0):
 			stats.set_flat_damage_reduction(_key, stats_res.flat_damage_reduction)
 
+		# Passive shields store base defense in ShieldItemDef fields — apply them directly
+		# since ShieldItemStats defaults are 1.0/0.0 and won't carry these values.
+		var shield_def: ShieldItemDef = _instance.def as ShieldItemDef
+		if shield_def != null and shield_def.shield_type == ShieldItemDef.ShieldType.PASSIVE:
+			var def_key := StringName(_key + "_def")
+			if not is_equal_approx(shield_def.passive_damage_reduction_mult, 0.0):
+				stats.set_damage_taken_mult(def_key, 1.0 - shield_def.passive_damage_reduction_mult)
+			if not is_equal_approx(shield_def.passive_movement_speed_mult, 1.0):
+				stats.set_move_speed_mult(def_key, shield_def.passive_movement_speed_mult)
+
 
 func _clear_passives(owner_entity: Node) -> void:
 	var hp := _find_health(owner_entity)
@@ -171,6 +181,13 @@ func _clear_passives(owner_entity: Node) -> void:
 		stats.clear_move_speed_mult(_key)
 		stats.clear_damage_taken_mult(_key)
 		stats.clear_flat_damage_reduction(_key)
+
+		if _instance != null:
+			var shield_def: ShieldItemDef = _instance.def as ShieldItemDef
+			if shield_def != null and shield_def.shield_type == ShieldItemDef.ShieldType.PASSIVE:
+				var def_key := StringName(_key + "_def")
+				stats.clear_damage_taken_mult(def_key)
+				stats.clear_move_speed_mult(def_key)
 
 
 func _find_health(root: Node) -> Health:

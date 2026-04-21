@@ -26,6 +26,10 @@ enum ShieldType { ACTIVE, PASSIVE }
 @export var passive_damage_reduction_mult: float = 0.1
 @export var passive_movement_speed_mult: float = 0.95
 
+func _init() -> void:
+	category = Category.SHIELD
+
+
 func _validate_property(property: Dictionary) -> void:
 	if property["name"] == "base_stats":
 		property["usage"] = PROPERTY_USAGE_NONE

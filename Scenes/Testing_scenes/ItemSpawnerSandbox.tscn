@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://ma5wcevbvg61" path="res://Scenes/UI/GameOver.tscn" id="4_kyx5t"]
 [ext_resource type="PackedScene" uid="uid://m40h81hrtiei" path="res://Scenes/Entities/AI/Enemy_Melee_Template_Version1.tscn" id="5_kyx5t"]
 [ext_resource type="PackedScene" uid="uid://cp7rnx4qw2m8b" path="res://Scenes/UI/PauseMenu.tscn" id="5_tiaw2"]
+[ext_resource type="PackedScene" uid="uid://clncndcdq5t7c" path="res://Scenes/Entities/AI/Enemy_Ranged_Template_ver1.tscn" id="6_tiaw2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
 size = Vector2(1169, 29.33334)
@@ -87,8 +88,11 @@ position = Vector2(877, 34)
 [node name="EnemyMelee3" parent="." unique_id=581050309 instance=ExtResource("5_kyx5t")]
 position = Vector2(625, -120)
 
-[node name="EnemyMelee4" parent="." unique_id=1717490951 instance=ExtResource("5_kyx5t")]
-position = Vector2(259, -79)
+[node name="EnemyRangedTemplateVer1" parent="." unique_id=1052976507 instance=ExtResource("6_tiaw2")]
+position = Vector2(496, -66)
 
-[node name="EnemyMelee5" parent="." unique_id=1009116206 instance=ExtResource("5_kyx5t")]
-position = Vector2(441, -72)
+[node name="EnemyRangedTemplateVer2" parent="." unique_id=1930963805 instance=ExtResource("6_tiaw2")]
+position = Vector2(271, -197)
+
+[node name="EnemyRangedTemplateVer3" parent="." unique_id=1265326670 instance=ExtResource("6_tiaw2")]
+position = Vector2(154, -96)

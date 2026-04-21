@@ -38,7 +38,8 @@ func build_text(ctx: DebugHUDContext) -> String:
 	# Shield modifiers
 	t += "\nBlock Reduction: %.1f%%" % (shield_def.block_damage_reduction * 100.0)
 	t += "\nMove Speed Mult: %.2f" % shield_def.movement_speed_mult_while_blocking
-	t += "\nFlat Reduction: %.1f" % shield_def.flat_damage_reduction
+	t += "\nBlock Damage Reduction: %.1f" % shield_def.block_damage_reduction
+	t += "\nPassive Damage Reduction: %.1f" % shield_def.passive_damage_reduction_mult
 
 	# Attributes with ability info
 	if not shield_instance.attributes.is_empty():

@@ -2,6 +2,7 @@ extends ItemDef
 class_name SpellItemDef
 
 enum SpellType { BUFF, DEBUFF }
+
 enum DeliveryMode { PROJECTILE, AOE }
 
 @export var stats: SpellItemStats
