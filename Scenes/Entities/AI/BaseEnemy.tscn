@@ -450,16 +450,19 @@ root_node = NodePath("")
 [node name="StateHandler" parent="." unique_id=464920392 instance=ExtResource("17_b5iik")]
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=817596553]
+visible = false
 position = Vector2(0, -5)
 scale = Vector2(2, 2)
 collision_layer = 16
 collision_mask = 8
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=1554447181]
+visible = false
 position = Vector2(-0.5, 2)
 shape = SubResource("CapsuleShape2D_l5ryf")
 
 [node name="WorldCollider" type="CollisionShape2D" parent="." unique_id=1239787640]
+visible = false
 position = Vector2(-1, -1)
 scale = Vector2(2, 2)
 shape = SubResource("CapsuleShape2D_c3k3q")
