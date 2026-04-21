@@ -17,7 +17,7 @@ script = ExtResource("2_shield")
 stats = SubResource("Resource_2kkbu")
 shield_max_hp = 50.0
 blocking_collider_size = Vector2(5, 35)
-blocking_collider_offset = Vector2(20, 0)
+blocking_collider_offset = Vector2(25, 0)
 id = &"shield_active_template"
 display_name = "Active Shield"
 

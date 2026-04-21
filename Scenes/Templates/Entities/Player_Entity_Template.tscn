@@ -463,7 +463,6 @@ duration_sec = 0.0
 stop_movement = false
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=555033056]
-visible = false
 position = Vector2(0, -5)
 scale = Vector2(2, 2)
 collision_layer = 16

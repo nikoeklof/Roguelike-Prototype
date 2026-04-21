@@ -68,6 +68,7 @@ func on_projectile_hit(p: Projectile) -> bool:
 		print("[ParryCollider] Reflecting projectile")
 		p.velocity = -p.velocity * maxf(0.01, reflect_speed_mult)
 		p.set_projectile_owner(_owner)
+		p.refresh_for_reflection()
 	else:
 		print("[ParryCollider] Destroying projectile")
 		p.queue_free()

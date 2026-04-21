@@ -108,6 +108,12 @@ func set_projectile_owner(new_owner: Node) -> void:
 	_snapshot_shooter(new_owner)
 
 
+func refresh_for_reflection() -> void:
+	_age = 0.0
+	_distance_travelled = 0.0
+	_hit_ids.clear()
+
+
 func _snapshot_shooter(shooter: Node) -> void:
 	if not is_instance_valid(shooter):
 		_owner_id = -1
