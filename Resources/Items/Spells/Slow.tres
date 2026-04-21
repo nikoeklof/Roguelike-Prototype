@@ -1,7 +1,9 @@
 [gd_resource type="Resource" script_class="SpellItemDef" format=3 uid="uid://c8pxlw6exokm"]
 
-[ext_resource type="Script" uid="uid://bnewspellstat1" path="res://Scripts/Items/SpellItemStats.gd" id="1_spell"]
+[ext_resource type="Script" uid="uid://01dmpkk1erqu" path="res://Scripts/Items/SpellItemStats.gd" id="1_spell"]
+[ext_resource type="PackedScene" uid="uid://cosg8jgc5pgfy" path="res://Scenes/Templates/EquipmentItems/Projectile_template.tscn" id="1_uxdke"]
 [ext_resource type="Script" uid="uid://chvmgm0f6jstl" path="res://Scripts/Items/SpellItemDef.gd" id="2_p7wta"]
+[ext_resource type="Resource" uid="uid://bnbwuj3ccksy3" path="res://Resources/Items/SpellEffects/SlowEffect.tres" id="3_slow"]
 
 [sub_resource type="Resource" id="Resource_lwg0m"]
 script = ExtResource("1_spell")
@@ -11,7 +13,9 @@ recovery_time = 0.1
 
 [resource]
 script = ExtResource("2_p7wta")
+stats = SubResource("Resource_lwg0m")
 spell_type = 1
+core_effect = ExtResource("3_slow")
 id = &"slow"
 display_name = "Slow"
-stats = SubResource("Resource_lwg0m")
+category = 2

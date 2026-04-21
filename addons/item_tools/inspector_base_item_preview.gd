@@ -15,17 +15,18 @@ func _can_handle(object: Object) -> bool:
 
 func _parse_begin(object: Object) -> void:
 	var bt: BaseItemType = null
+	var spawner: ItemSpawner = null
 	var title_prefix: String = ""
 
 	if object is BaseItemType:
 		bt = object as BaseItemType
 		title_prefix = "BaseItemType"
 	elif object is ItemSpawner:
-		var sp: ItemSpawner = object as ItemSpawner
-		bt = sp.base_type
+		spawner = object as ItemSpawner
+		bt = spawner.base_type_override
 		title_prefix = "ItemSpawner"
 
-	_add_preview_panel(bt, title_prefix)
+	_add_preview_panel(bt, spawner, title_prefix)
 	_add_item_def_editor(bt)
 
 
@@ -33,7 +34,7 @@ func _parse_begin(object: Object) -> void:
 # Roll preview panel
 # ------------------------------------------------------------
 
-func _add_preview_panel(bt: BaseItemType, title_prefix: String) -> void:
+func _add_preview_panel(bt: BaseItemType, spawner: ItemSpawner, title_prefix: String) -> void:
 	var root: VBoxContainer = VBoxContainer.new()
 	root.add_theme_constant_override("separation", 6)
 
@@ -75,36 +76,47 @@ func _add_preview_panel(bt: BaseItemType, title_prefix: String) -> void:
 		output.clear()
 		output.append_text(s)
 
+	# Use spawner-category header when no fixed base type is pinned.
 	var header_text: Callable = func() -> String:
+		if spawner != null and bt == null:
+			return _build_spawner_header_text(spawner, title_prefix)
 		return _build_header_text(bt, title_prefix)
 
 	var do_roll: Callable = func() -> void:
-		if bt == null:
-			set_text.call(header_text.call())
-			return
+		var seed_val: int = int(seed_box.value)
+		var rolled_bt: BaseItemType = bt
+		var inst: ItemInstance = null
 
-		var seed: int = int(seed_box.value)
-		var inst: ItemInstance = ItemSpawner.roll_preview(bt, seed)
+		if spawner != null and bt == null:
+			# Category-based: pick base type from registry, then roll.
+			var result: Dictionary = ItemSpawner.roll_preview_from_seed(
+				int(spawner.spawn_category), seed_val
+			)
+			if result.is_empty():
+				set_text.call(header_text.call() + "\n[Registry missing or no entries for this category]\n")
+				return
+			rolled_bt = result.get("base_type") as BaseItemType
+			inst     = result.get("instance")  as ItemInstance
+		else:
+			if rolled_bt == null:
+				set_text.call(header_text.call())
+				return
+			inst = ItemSpawner.roll_preview(rolled_bt, seed_val)
 
-		var text: String = ""
-		text += header_text.call()
-		text += "Seed: %d\n" % seed
+		var text: String = header_text.call()
+		if rolled_bt != null and rolled_bt != bt:
+			text += "Rolled Type: %s\n" % rolled_bt.resource_path.get_file()
+		text += "Seed: %d\n" % seed_val
 		text += _build_mode_line(inst)
 		text += _build_shield_line(inst)
 		text += _build_attr_lines(inst)
 		text += _build_stats_lines(inst)
-
 		set_text.call(text)
 
 	set_text.call(header_text.call())
 
-	roll_btn.pressed.connect(func() -> void:
-		do_roll.call()
-	)
-
-	copy_btn.pressed.connect(func() -> void:
-		DisplayServer.clipboard_set(output.get_parsed_text())
-	)
+	roll_btn.pressed.connect(func() -> void: do_roll.call())
+	copy_btn.pressed.connect(func() -> void: DisplayServer.clipboard_set(output.get_parsed_text()))
 
 	add_custom_control(root)
 
@@ -220,6 +232,14 @@ func _add_spin_row(parent: VBoxContainer, label_text: String, current_val: float
 
 # ------------------------------------------------------------
 # Text builders
+
+
+func _build_spawner_header_text(spawner: ItemSpawner, title_prefix: String) -> String:
+	var cat_name: String = ItemSpawner.SpawnCategory.keys()[spawner.spawn_category]
+	var s: String = "%s preview\n" % title_prefix
+	s += "Category: %s\n" % cat_name
+	s += "Base Type: <rolls from registry>\n"
+	return s
 # ------------------------------------------------------------
 
 func _build_header_text(bt: BaseItemType, title_prefix: String) -> String:
@@ -347,8 +367,9 @@ func _build_stats_lines(inst: ItemInstance) -> String:
 				ShieldItemDef.ShieldType.PASSIVE:
 					s += "  Damage Reduction: %.0f%%\n" % (shield_def.passive_damage_reduction_mult * 100.0)
 					s += "  Movement Speed: %.0f%%\n" % (shield_def.passive_movement_speed_mult * 100.0)
-					if not is_equal_approx(shield_def.flat_damage_reduction, 0.0):
-						s += "  Flat Damage Reduction: %.1f\n" % shield_def.flat_damage_reduction
+					var flat_dr: float = shield_def.stats.flat_damage_reduction if shield_def.stats != null else 0.0
+					if not is_equal_approx(flat_dr, 0.0):
+						s += "  Flat Damage Reduction: %.1f\n" % flat_dr
 			return s
 
 	# Melee items: show style info + relevant stats.

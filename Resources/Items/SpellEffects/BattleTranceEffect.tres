@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="BattleTranceEffect" format=3 uid="uid://c6win8wkbbqio"]
+
+[ext_resource type="Script" uid="uid://cjgnqe4sidkdw" path="res://Scripts/Items/SpellEffects/BattleTranceEffect.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Battle Trance"

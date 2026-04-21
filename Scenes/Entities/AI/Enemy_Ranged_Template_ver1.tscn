@@ -24,15 +24,9 @@
 [ext_resource type="Script" uid="uid://bbbudfifufwof" path="res://Scripts/Components/Control/EnemyControl.gd" id="22_cv08k"]
 [ext_resource type="Script" uid="uid://cwbkt1ur6316g" path="res://Scripts/Components/Equipment/Slots/LoadoutAssigner.gd" id="23_gh4i0"]
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="24_el41w"]
-[ext_resource type="Resource" uid="uid://dki8qndxyoqep" path="res://Resources/Items/BaseTypes/Base_Maul.tres" id="25_er6hk"]
-[ext_resource type="Resource" uid="uid://bo12lrqfrp7gs" path="res://Resources/Items/BaseTypes/Base_Sword.tres" id="26_rh5h7"]
-[ext_resource type="Resource" uid="uid://ch6uawoeugf1x" path="res://Resources/Items/BaseTypes/Base_Dagger.tres" id="27_2fhxy"]
 [ext_resource type="Resource" uid="uid://8ljp76qu0ced" path="res://Resources/Items/BaseTypes/Base_SMG.tres" id="28_7odyb"]
 [ext_resource type="Resource" uid="uid://du2xohmhqnykk" path="res://Resources/Items/BaseTypes/Base_Pistol.tres" id="29_jydcu"]
 [ext_resource type="Resource" uid="uid://dd7da2d8a8a74" path="res://Resources/Items/BaseTypes/Base_Shotgun.tres" id="30_nrf7o"]
-[ext_resource type="Resource" uid="uid://bj0t03hq8mm" path="res://Resources/Items/BaseTypes/Base_Spell_Buff.tres" id="31_fnjyy"]
-[ext_resource type="Resource" uid="uid://bj0t03hq8mn" path="res://Resources/Items/BaseTypes/Base_Spell_Debuff.tres" id="32_jv7rp"]
-[ext_resource type="Resource" uid="uid://byvu2r46uj2sl" path="res://Resources/Items/BaseTypes/Base_Shield_Passive_Template.tres" id="33_rt2by"]
 [ext_resource type="Script" uid="uid://0dxcoac7x0wu" path="res://Scripts/UI/EntityHealthBar.gd" id="34_c2rqt"]
 
 [sub_resource type="Resource" id="Resource_npqn8"]
@@ -406,12 +400,15 @@ ray_length = 125.0
 unique_name_in_owner = true
 
 [node name="MeleeSlot" parent="Equipment" index="0" unique_id=1103842256]
+allow_multiple = false
 initial_item_scene = null
 
 [node name="RangedSlot" parent="Equipment" index="1" unique_id=1681126984]
+allow_multiple = false
 initial_item_scene = null
 
 [node name="SpellSlot" parent="Equipment" index="2" unique_id=1739323574]
+allow_multiple = false
 initial_item_scene = null
 
 [node name="ShieldSlot" parent="Equipment" index="3" unique_id=1862735357]
@@ -494,10 +491,7 @@ metadata/_custom_type_script = "uid://bbbudfifufwof"
 
 [node name="LoadoutAssigner" type="Node" parent="." unique_id=1325155121]
 script = ExtResource("23_gh4i0")
-melee_pool = Array[ExtResource("24_el41w")]([ExtResource("25_er6hk"), ExtResource("26_rh5h7"), ExtResource("27_2fhxy")])
 ranged_pool = Array[ExtResource("24_el41w")]([ExtResource("28_7odyb"), ExtResource("29_jydcu"), ExtResource("30_nrf7o")])
-spell_pool = Array[ExtResource("24_el41w")]([ExtResource("31_fnjyy"), ExtResource("32_jv7rp")])
-shield_pool = Array[ExtResource("24_el41w")]([ExtResource("33_rt2by"), ExtResource("33_rt2by")])
 guarantee_ranged = true
 melee_chance = 0.0
 ranged_chance = 1.0

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="PhasingAttribute" format=3 uid="uid://8donth540nx6"]
+
+[ext_resource type="Script" uid="uid://m2lt1tqblbkl" path="res://Scripts/Items/Attributes/Shields/Attr_PassiveShield_Phasing.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+phase_duration_sec = 1.0
+id = &"phasing"
+display_name = "Phasing"
+editor_description = "Passive shields: Periodically become immune to damage for a short duration with cooldown"

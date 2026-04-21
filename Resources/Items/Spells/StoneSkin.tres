@@ -1,7 +1,9 @@
 [gd_resource type="Resource" script_class="SpellItemDef" format=3 uid="uid://c8pxlw5exokm"]
 
-[ext_resource type="Script" uid="uid://bnewspellstat1" path="res://Scripts/Items/SpellItemStats.gd" id="1_spell"]
+[ext_resource type="Script" uid="uid://01dmpkk1erqu" path="res://Scripts/Items/SpellItemStats.gd" id="1_spell"]
+[ext_resource type="PackedScene" uid="uid://cosg8jgc5pgfy" path="res://Scenes/Templates/EquipmentItems/Projectile_template.tscn" id="1_wjjd6"]
 [ext_resource type="Script" uid="uid://chvmgm0f6jstl" path="res://Scripts/Items/SpellItemDef.gd" id="2_o81hc"]
+[ext_resource type="Resource" uid="uid://opqf7pr3lgg" path="res://Resources/Items/SpellEffects/StoneSkinEffect.tres" id="3_ss"]
 
 [sub_resource type="Resource" id="Resource_lwg0m"]
 script = ExtResource("1_spell")
@@ -11,6 +13,8 @@ recovery_time = 0.15
 
 [resource]
 script = ExtResource("2_o81hc")
+stats = SubResource("Resource_lwg0m")
+core_effect = ExtResource("3_ss")
 id = &"stone_skin"
 display_name = "Stone Skin"
-stats = SubResource("Resource_lwg0m")
+category = 2

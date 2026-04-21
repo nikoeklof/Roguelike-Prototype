@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="EnemySlowAuraEffect" format=3 uid="uid://dm688y01vjy3m"]
+
+[ext_resource type="Script" uid="uid://dmmmltodlvhhg" path="res://Scripts/Items/SpellEffects/EnemySlowAuraEffect.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Slow"

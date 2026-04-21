@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="SlowEffect" format=3 uid="uid://bnbwuj3ccksy3"]
+
+[ext_resource type="Script" uid="uid://745vefhwkrbl" path="res://Scripts/Items/SpellEffects/SlowEffect.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Slow"

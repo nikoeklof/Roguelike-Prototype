@@ -3,18 +3,13 @@
 [ext_resource type="PackedScene" uid="uid://bc5opk6hrhyng" path="res://Scenes/Entities/AI/BaseEnemy.tscn" id="1_so0ye"]
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="2_373f7"]
 [ext_resource type="Resource" uid="uid://du2xohmhqnykk" path="res://Resources/Items/BaseTypes/Base_Pistol.tres" id="3_7xhb8"]
-[ext_resource type="Resource" uid="uid://bj0t03hq8mn" path="res://Resources/Items/BaseTypes/Base_Spell_Debuff.tres" id="4_b2jk5"]
+[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_Frailty.tres" id="4_373f7"]
+[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_Slow.tres" id="5_7xhb8"]
 
 [node name="EnemyCasterDebuffer" unique_id=698630020 instance=ExtResource("1_so0ye")]
 
 [node name="Health" parent="." index="5" unique_id=689961032]
 max_hp = 125.0
-
-[node name="Hurtbox" parent="." index="13" unique_id=817596553]
-visible = false
-
-[node name="WorldCollider" parent="." index="14" unique_id=1239787640]
-visible = false
 
 [node name="EntityVisualController" parent="." index="16" unique_id=2027082757]
 default_tint = Color(1.0396242e-05, 0.62945604, 0.003160265, 1)
@@ -25,7 +20,7 @@ beam_hitscan_prefire_delay = 0.1
 [node name="LoadoutAssigner" parent="." index="20" unique_id=1700062721]
 melee_pool = Array[ExtResource("2_373f7")]([])
 ranged_pool = Array[ExtResource("2_373f7")]([ExtResource("3_7xhb8")])
-spell_pool = Array[ExtResource("2_373f7")]([ExtResource("4_b2jk5")])
+spell_pool = Array[ExtResource("2_373f7")]([ExtResource("4_373f7"), ExtResource("5_7xhb8")])
 shield_pool = Array[ExtResource("2_373f7")]([])
 guarantee_melee = false
 guarantee_ranged = true

@@ -7,7 +7,7 @@
 [ext_resource type="Script" uid="uid://bo58hs72paoxt" path="res://Scripts/Items/AttributePoolDef.gd" id="4_lv8fp"]
 [ext_resource type="Script" uid="uid://dpdx2d7h3wywm" path="res://Scripts/Items/Attributes/Shields/Attr_PassiveShield_Regeneration.gd" id="5_jgpuk"]
 [ext_resource type="Script" uid="uid://m2lt1tqblbkl" path="res://Scripts/Items/Attributes/Shields/Attr_PassiveShield_Phasing.gd" id="6_5ottx"]
-[ext_resource type="Resource" path="res://Resources/Items/Attributes/Attr_ShieldBonus.tres" id="7_3kqy2"]
+[ext_resource type="Resource" path="res://Resources/Items/Attributes/Shields/Attr_ShieldBonus.tres" id="7_3kqy2"]
 
 [sub_resource type="Resource" id="Resource_3kqy2"]
 script = ExtResource("1_stats")

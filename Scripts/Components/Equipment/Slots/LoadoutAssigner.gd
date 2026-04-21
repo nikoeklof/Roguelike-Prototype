@@ -157,7 +157,13 @@ func _roll_instance(base_type: BaseItemType, item_seed: int, rng: RandomNumberGe
 	if int(base_type.item_def.category) == ItemDef.Category.RANGED and base_type.use_ranged_mode_roll:
 		chosen_mode = _roll_ranged_mode(rng, base_type)
 		inst.ranged_mode = chosen_mode
-	
+
+	# Roll spell delivery mode for debuff spells
+	if int(base_type.item_def.category) == ItemDef.Category.SPELL:
+		var spell_def: SpellItemDef = base_type.item_def as SpellItemDef
+		if spell_def != null and spell_def.spell_type == SpellItemDef.SpellType.DEBUFF:
+			inst.spell_delivery_mode = _roll_spell_delivery_mode(rng, spell_def)
+
 	# Roll attributes from the BaseItemType's pool
 	_roll_attributes(inst, base_type, rng, attr_count, chosen_mode)
 	
@@ -254,6 +260,20 @@ func _roll_ranged_mode(rng: RandomNumberGenerator, bt: BaseItemType) -> int:
 	if r < w_hit:
 		return RangedShotData.ShotMode.HITSCAN
 	return RangedShotData.ShotMode.BEAM
+
+
+func _roll_spell_delivery_mode(rng: RandomNumberGenerator, spell_def: SpellItemDef) -> int:
+	if spell_def.locked_delivery_mode >= 0:
+		return spell_def.locked_delivery_mode
+	var w_proj: float = maxf(0.0, spell_def.weight_projectile)
+	var w_aoe:  float = maxf(0.0, spell_def.weight_aoe)
+	var total: float  = w_proj + w_aoe
+	if total <= 0.0:
+		return SpellItemDef.DeliveryMode.PROJECTILE
+	var r: float = rng.randf() * total
+	if r < w_proj:
+		return SpellItemDef.DeliveryMode.PROJECTILE
+	return SpellItemDef.DeliveryMode.AOE
 
 
 func _roll_attributes(inst: ItemInstance, bt: BaseItemType, rng: RandomNumberGenerator, count: int, chosen_mode: int) -> void:

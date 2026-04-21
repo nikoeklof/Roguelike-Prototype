@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="FrailtyEffect" format=3 uid="uid://c0bx8ou6otwo3"]
+
+[ext_resource type="Script" uid="uid://dikhcjmftb3l7" path="res://Scripts/Items/SpellEffects/FrailtyEffect.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Frailty"

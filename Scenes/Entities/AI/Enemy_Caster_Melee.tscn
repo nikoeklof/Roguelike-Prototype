@@ -2,7 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://bc5opk6hrhyng" path="res://Scenes/Entities/AI/BaseEnemy.tscn" id="1_giurr"]
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="2_cjn07"]
-[ext_resource type="Resource" uid="uid://bj0t03hq8mm" path="res://Resources/Items/BaseTypes/Base_Spell_Buff.tres" id="3_6yhai"]
+[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_BattleTrance.tres" id="3_6yhai"]
+[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_StoneSkin.tres" id="4_o2ugr"]
 
 [node name="EnemyCasterMelee" unique_id=698630020 instance=ExtResource("1_giurr")]
 
@@ -21,7 +22,7 @@ spell_burst_count = 0
 
 [node name="LoadoutAssigner" parent="." index="20" unique_id=1700062721]
 ranged_pool = Array[ExtResource("2_cjn07")]([])
-spell_pool = Array[ExtResource("2_cjn07")]([ExtResource("3_6yhai")])
+spell_pool = Array[ExtResource("2_cjn07")]([ExtResource("3_6yhai"), ExtResource("4_o2ugr")])
 shield_pool = Array[ExtResource("2_cjn07")]([])
 guarantee_spell = true
 spell_chance = 1.0

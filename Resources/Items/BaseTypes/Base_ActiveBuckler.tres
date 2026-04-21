@@ -8,7 +8,7 @@ script = ExtResource("1_ki4ei")
 
 [resource]
 script = ExtResource("2_1rlcj")
+stats = SubResource("Resource_m5jda")
 blocking_collider_size = Vector2(10, 40)
 id = &"buckler_shield"
 display_name = "Buckler Shield"
-stats = SubResource("Resource_m5jda")

@@ -9,10 +9,8 @@ flat_damage_reduction = 1.0
 
 [resource]
 script = ExtResource("2_bt8du")
+stats = SubResource("Resource_m5jda")
 shield_type = 1
-movement_speed_mult_while_blocking = 0.65
 passive_damage_reduction_mult = 0.05
-passive_movement_speed_mult = 0.9500000000000001
 id = &"light_ward"
 display_name = "Light Ward"
-stats = SubResource("Resource_m5jda")

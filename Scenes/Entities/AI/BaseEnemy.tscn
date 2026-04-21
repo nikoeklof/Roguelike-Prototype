@@ -30,10 +30,12 @@
 [ext_resource type="Resource" uid="uid://8ljp76qu0ced" path="res://Resources/Items/BaseTypes/Base_SMG.tres" id="28_r5lbv"]
 [ext_resource type="Resource" uid="uid://du2xohmhqnykk" path="res://Resources/Items/BaseTypes/Base_Pistol.tres" id="29_c7bnl"]
 [ext_resource type="Resource" uid="uid://dd7da2d8a8a74" path="res://Resources/Items/BaseTypes/Base_Shotgun.tres" id="30_x4x3m"]
-[ext_resource type="Resource" uid="uid://bj0t03hq8mm" path="res://Resources/Items/BaseTypes/Base_Spell_Buff.tres" id="31_cmpdu"]
-[ext_resource type="Resource" uid="uid://bj0t03hq8mn" path="res://Resources/Items/BaseTypes/Base_Spell_Debuff.tres" id="32_bb6cb"]
+[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_StoneSkin.tres" id="31_75i0r"]
+[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_Slow.tres" id="32_ydj6b"]
 [ext_resource type="Resource" uid="uid://byvu2r46uj2sl" path="res://Resources/Items/BaseTypes/Base_Shield_Passive_Template.tres" id="33_6avle"]
+[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_Frailty.tres" id="33_f7pjd"]
 [ext_resource type="Script" uid="uid://0dxcoac7x0wu" path="res://Scripts/UI/EntityHealthBar.gd" id="34_s5rif"]
+[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_BattleTrance.tres" id="34_wpril"]
 
 [sub_resource type="Resource" id="Resource_rmh8v"]
 script = ExtResource("14_pu3nb")
@@ -493,7 +495,7 @@ metadata/_custom_type_script = "uid://bbbudfifufwof"
 script = ExtResource("23_7k7xb")
 melee_pool = Array[ExtResource("24_smhtr")]([ExtResource("25_26add"), ExtResource("26_lqwhe"), ExtResource("27_et5la")])
 ranged_pool = Array[ExtResource("24_smhtr")]([ExtResource("28_r5lbv"), ExtResource("29_c7bnl"), ExtResource("30_x4x3m")])
-spell_pool = Array[ExtResource("24_smhtr")]([ExtResource("31_cmpdu"), ExtResource("32_bb6cb")])
+spell_pool = Array[ExtResource("24_smhtr")]([ExtResource("31_75i0r"), ExtResource("32_ydj6b"), ExtResource("33_f7pjd"), ExtResource("34_wpril")])
 shield_pool = Array[ExtResource("24_smhtr")]([ExtResource("33_6avle"), ExtResource("33_6avle")])
 guarantee_melee = true
 ranged_chance = 0.0

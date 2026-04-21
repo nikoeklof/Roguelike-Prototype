@@ -1,7 +1,9 @@
 [gd_resource type="Resource" script_class="SpellItemDef" format=3 uid="uid://c8pxlw7exokm"]
 
-[ext_resource type="Script" uid="uid://bnewspellstat1" path="res://Scripts/Items/SpellItemStats.gd" id="1_spell"]
+[ext_resource type="PackedScene" uid="uid://cosg8jgc5pgfy" path="res://Scenes/Templates/EquipmentItems/Projectile_template.tscn" id="1_k7xna"]
+[ext_resource type="Script" uid="uid://01dmpkk1erqu" path="res://Scripts/Items/SpellItemStats.gd" id="1_spell"]
 [ext_resource type="Script" uid="uid://chvmgm0f6jstl" path="res://Scripts/Items/SpellItemDef.gd" id="2_g4w64"]
+[ext_resource type="Resource" uid="uid://c0bx8ou6otwo3" path="res://Resources/Items/SpellEffects/FrailtyEffect.tres" id="3_frailty"]
 
 [sub_resource type="Resource" id="Resource_lwg0m"]
 script = ExtResource("1_spell")
@@ -11,7 +13,9 @@ recovery_time = 0.12
 
 [resource]
 script = ExtResource("2_g4w64")
+stats = SubResource("Resource_lwg0m")
 spell_type = 1
+core_effect = ExtResource("3_frailty")
 id = &"frailty"
 display_name = "Frailty"
-stats = SubResource("Resource_lwg0m")
+category = 2

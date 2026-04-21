@@ -2,22 +2,8 @@
 
 [ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="1_8yo1t"]
 [ext_resource type="Script" uid="uid://bo58hs72paoxt" path="res://Scripts/Items/AttributePoolDef.gd" id="2_h8fvq"]
-[ext_resource type="Script" uid="uid://l16fmw10wfl7" path="res://Scripts/Items/Attributes/Spells/FrailtyDebuff.gd" id="3_8d0ot"]
-[ext_resource type="Script" uid="uid://d12cru3h1bofi" path="res://Scripts/Items/Attributes/Spells/SlowDebuff.gd" id="4_akue0"]
-
-[sub_resource type="Resource" id="Resource_padrl"]
-script = ExtResource("3_8d0ot")
-id = &"frailty"
-display_name = "Frailty"
-metadata/_custom_type_script = "uid://l16fmw10wfl7"
-
-[sub_resource type="Resource" id="Resource_mtwuf"]
-script = ExtResource("4_akue0")
-id = &"slow"
-display_name = "Slow"
-metadata/_custom_type_script = "uid://d12cru3h1bofi"
 
 [resource]
 script = ExtResource("2_h8fvq")
-spell_common = Array[ExtResource("1_8yo1t")]([SubResource("Resource_padrl"), SubResource("Resource_mtwuf")])
+include_global = false
 metadata/_custom_type_script = "uid://bo58hs72paoxt"

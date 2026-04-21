@@ -8,6 +8,9 @@ class_name ItemInstance
 # (mode is not represented by attributes anymore).
 @export var ranged_mode: int = -1
 
+# Rolled delivery mode for debuff spells. -1 = use def default (PROJECTILE).
+@export var spell_delivery_mode: int = -1
+
 @export var stat_levels: Dictionary = {}
 @export var attributes: Array[ItemAttribute] = []
 

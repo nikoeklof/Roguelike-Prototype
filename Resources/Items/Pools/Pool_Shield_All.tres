@@ -2,18 +2,23 @@
 
 [ext_resource type="Script" uid="uid://bo58hs72paoxt" path="res://Scripts/Items/AttributePoolDef.gd" id="1"]
 [ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="1_n4pfh"]
-[ext_resource type="Script" uid="uid://l16fmw10wfl7" path="res://Scripts/Items/Attributes/Spells/FrailtyDebuff.gd" id="3_akpmw"]
-[ext_resource type="Script" uid="uid://d12cru3h1bofi" path="res://Scripts/Items/Attributes/Spells/SlowDebuff.gd" id="4_ochru"]
+[ext_resource type="Script" uid="uid://cmb3gps077g2o" path="res://Scripts/Items/Attributes/Shields/Attr_ActiveShield_ParryWindowAttribute.gd" id="3_ochru"]
+[ext_resource type="Script" uid="uid://bpuehw5boe5kp" path="res://Scripts/Items/Attributes/Shields/Attr_ActiveShield_Fortify.gd" id="4_55nc8"]
+[ext_resource type="Script" uid="uid://iynllwy4bkcr" path="res://Scripts/Items/Attributes/Shields/Attr_ShieldGlobal_ShieldBonus.gd" id="5_modkb"]
 
-[sub_resource type="Resource" id="Resource_55nc8"]
-script = ExtResource("3_akpmw")
-metadata/_custom_type_script = "uid://l16fmw10wfl7"
+[sub_resource type="Resource" id="Resource_hx7gd"]
+script = ExtResource("3_ochru")
+metadata/_custom_type_script = "uid://cmb3gps077g2o"
 
-[sub_resource type="Resource" id="Resource_modkb"]
-script = ExtResource("4_ochru")
-metadata/_custom_type_script = "uid://d12cru3h1bofi"
+[sub_resource type="Resource" id="Resource_7ftqo"]
+script = ExtResource("4_55nc8")
+metadata/_custom_type_script = "uid://bpuehw5boe5kp"
+
+[sub_resource type="Resource" id="Resource_bwrnc"]
+script = ExtResource("5_modkb")
+metadata/_custom_type_script = "uid://iynllwy4bkcr"
 
 [resource]
 script = ExtResource("1")
-spell_common = Array[ExtResource("1_n4pfh")]([SubResource("Resource_55nc8"), SubResource("Resource_modkb")])
+shield_common = Array[ExtResource("1_n4pfh")]([SubResource("Resource_hx7gd"), SubResource("Resource_7ftqo"), SubResource("Resource_bwrnc")])
 metadata/_custom_type_script = "uid://bo58hs72paoxt"
