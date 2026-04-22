@@ -7,6 +7,7 @@ const REGISTRY_PATH := "res://Resources/Items/ItemTypeRegistry.tres"
 
 @export var entries: Array[BaseItemType] = []
 
+@warning_ignore("unused_private_class_variable")
 @export_tool_button("Refresh Registry") var _refresh_btn = func() -> void: refresh()
 
 

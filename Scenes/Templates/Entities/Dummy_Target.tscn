@@ -28,9 +28,7 @@ shader = ExtResource("13_5atrd")
 shader_parameter/base_tint = Vector4(1, 1, 1, 1)
 shader_parameter/hurt_flash = 0.0
 shader_parameter/debuff_intensity = 1.0
-shader_parameter/debuff_color = Vector4(0.2, 0.1, 0.8, 1)
 shader_parameter/debuff_pulse_speed = 3.00000011875
-shader_parameter/debuff_glow = 1.0000000475
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2mdsq"]
 atlas = ExtResource("17_uqhsm")

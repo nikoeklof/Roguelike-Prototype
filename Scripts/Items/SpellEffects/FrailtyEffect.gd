@@ -21,6 +21,7 @@ func apply_debuff(target: Node, _context: CombatContext, _instance: ItemInstance
 	_refresh_timer(target, TIMER_META, actual_dur, func() -> void:
 		if is_instance_valid(stats):
 			stats.clear_damage_taken_mult(STAT_KEY)
-		_set_visual_debuff(target, 0.0)
-		_set_visual_poison(target, 0.0)
+		if is_instance_valid(target):
+			_set_visual_debuff(target, 0.0)
+			_set_visual_poison(target, 0.0)
 	)

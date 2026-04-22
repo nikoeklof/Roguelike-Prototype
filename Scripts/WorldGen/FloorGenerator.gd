@@ -22,6 +22,7 @@ class RoomNode:
 		coord = c
 
 class FloorPlan:
+	@warning_ignore("shadowed_global_identifier")
 	var seed: int
 	var rooms: Dictionary = {}       # Vector2i -> RoomNode
 	var coords: Array[Vector2i] = [] # typed list of keys

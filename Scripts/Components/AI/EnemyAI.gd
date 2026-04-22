@@ -811,6 +811,7 @@ func _execute_decision() -> void:
 			_control.set_move_intent(Vector2.ZERO)
 
 
+@warning_ignore("unused_parameter")
 func _resolve_conflicts(decisions: Array[AIDecision], context: Dictionary) -> AIDecision:
 	if decisions.size() == 1:
 		return decisions[0]

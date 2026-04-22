@@ -1,6 +1,6 @@
-[gd_scene format=3 uid="uid://cjg1pw5du6khc"]
+[gd_scene format=3 uid="uid://il7ce0hc1ibg"]
 
-[ext_resource type="Script" uid="uid://cle1a7q33wwm7" path="res://Scripts/Components/Equipment/Items/BuffSpell_Base.gd" id="1_vvc8w"]
+[ext_resource type="Script" uid="uid://cle1a7q33wwm7" path="res://Scripts/Components/Equipment/Items/Spells/BuffSpell_Base.gd" id="1_vvc8w"]
 
 [node name="SpellBuffTemplate" type="Node" unique_id=1092460501]
 script = ExtResource("1_vvc8w")

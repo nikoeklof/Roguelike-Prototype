@@ -50,6 +50,11 @@ func can_cast() -> bool:
 	return now >= _cd_until
 
 
+func get_cooldown_remaining() -> float:
+	var now: float = Time.get_ticks_msec() / 1000.0
+	return maxf(0.0, _cd_until - now)
+
+
 func get_pickup_slot_kind() -> int:
 	return int(pickup_slot_kind)
 

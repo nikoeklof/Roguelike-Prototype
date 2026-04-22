@@ -66,7 +66,7 @@ func _cast_projectile(ctx: CombatContext, owner_entity: Node, dir: Vector2, spel
 	projectile.setup(launch)
 
 	projectile.area_entered.connect(
-		_on_projectile_hit.bind(ctx, _instance),
+		_on_projectile_hit.bind(ctx, _instance, projectile),
 		CONNECT_ONE_SHOT
 	)
 
@@ -74,7 +74,7 @@ func _cast_projectile(ctx: CombatContext, owner_entity: Node, dir: Vector2, spel
 	parent.add_child(projectile)
 
 
-func _on_projectile_hit(area: Area2D, ctx: CombatContext, inst: ItemInstance) -> void:
+func _on_projectile_hit(area: Area2D, ctx: CombatContext, inst: ItemInstance, proj: Projectile) -> void:
 	if area == null or ctx == null or not is_instance_valid(ctx.owner):
 		return
 	var spell_def: SpellItemDef = inst.def as SpellItemDef
@@ -91,8 +91,7 @@ func _on_projectile_hit(area: Area2D, ctx: CombatContext, inst: ItemInstance) ->
 
 	spell_def.core_effect.apply_debuff(target, ctx, inst)
 
-	var proj: Projectile = area.get_parent() as Projectile
-	if proj != null and is_instance_valid(proj):
+	if is_instance_valid(proj):
 		proj.queue_free()
 
 

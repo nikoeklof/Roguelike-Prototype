@@ -1,6 +1,6 @@
-[gd_scene format=3 uid="uid://i7trnlyedgj"]
+[gd_scene format=3 uid="uid://cbahjua8deux8"]
 
-[ext_resource type="Script" uid="uid://upme1fcmf6wa" path="res://Scripts/Components/Equipment/Items/DebuffSpell_Base.gd" id="1_e668v"]
+[ext_resource type="Script" uid="uid://upme1fcmf6wa" path="res://Scripts/Components/Equipment/Items/Spells/DebuffSpell_Base.gd" id="1_e668v"]
 
 [node name="SpellDebuffTemplate" type="Node" unique_id=851048650]
 script = ExtResource("1_e668v")

@@ -191,6 +191,7 @@ func _try_hit(other: Node, one_hit_per_target: bool) -> void:
 		_hit_ids[victim_id] = true
 
 	var snap: AttackSnapshot = resolve_snapshot()
+	@warning_ignore("unused_variable")
 	var melee: MeleeSlashVariant = variant as MeleeSlashVariant
 	var aim_dir: Vector2 = context.aim_dir
 	if aim_dir.length() < 0.001:

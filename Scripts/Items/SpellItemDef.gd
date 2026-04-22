@@ -24,7 +24,9 @@ enum DeliveryMode { PROJECTILE, AOE }
 @export_range(1.0, 256.0, 1.0)   var projectile_radius: float = 6.0
 @export_range(0.0, 1.0, 0.01)    var inherit_owner_velocity: float = 0.0
 @export_range(0.0, 5000.0, 1.0)  var projectile_range: float = 0.0
-@export var projectile_collision_mask: int = 0x7FFFFFFF
+## Layer 1 (World=bit0) + Layer 5 (Hurtbox=bit4) = 0b10001 = 17.
+## Debuff projectiles should hit walls and enemy hurtboxes, NOT enemy bodies (layer 3).
+@export var projectile_collision_mask: int = 0b10001
 @export var projectile_sprite_texture: Texture2D
 @export var projectile_sprite_tint: Color = Color.WHITE
 
