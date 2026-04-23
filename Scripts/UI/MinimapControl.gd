@@ -69,9 +69,16 @@ func _draw() -> void:
 		if room == null:
 			continue
 
+		if room.kind == &"XL_OCCUPIED":
+			continue
+
 		var local: Vector2i = coord - _bounds.position
 		var pixel_pos: Vector2 = origin + Vector2(local) * float(cell_size)
-		var rect: Rect2 = Rect2(pixel_pos, Vector2(float(cell_size), float(cell_size)))
+
+		var cell_px: float = float(cell_size)
+		var is_xl: bool = room.kind == &"XL"
+		var rect_size: Vector2 = Vector2(cell_px * 2.0, cell_px * 2.0) if is_xl else Vector2(cell_px, cell_px)
+		var rect: Rect2 = Rect2(pixel_pos, rect_size)
 
 		_draw_room(rect, room)
 		_draw_exits(rect, room.exits_mask)
@@ -86,6 +93,8 @@ func _draw_room(rect: Rect2, room: FloorGenerator.RoomNode) -> void:
 		base_color = Color(0.2, 0.8, 0.2)
 	elif room.kind == &"BOSS":
 		base_color = Color(0.8, 0.2, 0.2)
+	elif room.kind == &"XL":
+		base_color = Color(0.6, 0.3, 0.8)
 
 	draw_rect(rect, base_color, true)
 	draw_rect(rect, Color(0, 0, 0), false, 2.0)

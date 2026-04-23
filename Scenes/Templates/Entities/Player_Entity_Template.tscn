@@ -30,13 +30,15 @@
 [ext_resource type="Resource" uid="uid://8ljp76qu0ced" path="res://Resources/Items/BaseTypes/Base_SMG.tres" id="28_dk20e"]
 [ext_resource type="Resource" uid="uid://du2xohmhqnykk" path="res://Resources/Items/BaseTypes/Base_Pistol.tres" id="29_oqplw"]
 [ext_resource type="Resource" uid="uid://dd7da2d8a8a74" path="res://Resources/Items/BaseTypes/Base_Shotgun.tres" id="30_dkplh"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_BattleTrance.tres" id="31_hsnb7"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_Frailty.tres" id="32_dk20e"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_Slow.tres" id="33_oqplw"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_StoneSkin.tres" id="34_dkplh"]
-[ext_resource type="Resource" uid="uid://byvu2r46uj2sl" path="res://Resources/Items/BaseTypes/Base_Shield_Passive_Template.tres" id="34_rmh8v"]
-[ext_resource type="Resource" uid="uid://dcjiie8behkkq" path="res://Resources/Items/BaseTypes/Base_Shield_Active_Template.tres" id="34_x8u2g"]
+[ext_resource type="Resource" uid="uid://dgm58on3v30gu" path="res://Resources/Items/BaseTypes/Base_BattleTrance.tres" id="31_hsnb7"]
+[ext_resource type="Resource" uid="uid://c38gr0st0mpao" path="res://Resources/Items/BaseTypes/Base_Frailty.tres" id="32_dk20e"]
+[ext_resource type="Resource" uid="uid://b4leq7gqugxla" path="res://Resources/Items/BaseTypes/Base_Slow.tres" id="33_oqplw"]
+[ext_resource type="Resource" uid="uid://d0w3klfjdm3rg" path="res://Resources/Items/BaseTypes/Base_StoneSkin.tres" id="34_dkplh"]
+[ext_resource type="Resource" uid="uid://rhtbswfunek4" path="res://Resources/Items/BaseTypes/Base_PassiveHeavy.tres" id="35_oqplw"]
 [ext_resource type="Script" uid="uid://0dxcoac7x0wu" path="res://Scripts/UI/EntityHealthBar.gd" id="35_s8hwr"]
+[ext_resource type="Resource" uid="uid://bijjyqyfgaxme" path="res://Resources/Items/BaseTypes/Base_ActiveKnight.tres" id="36_dkplh"]
+[ext_resource type="Resource" uid="uid://bx7fb2c3oa6gk" path="res://Resources/Items/BaseTypes/Base_ActiveBuckler.tres" id="37_82nsm"]
+[ext_resource type="Resource" uid="uid://r2rrq1r0s1ax" path="res://Resources/Items/BaseTypes/Base_PassiveLightWard.tres" id="38_yc78x"]
 
 [sub_resource type="Resource" id="Resource_rmh8v"]
 script = ExtResource("14_s8hwr")
@@ -47,6 +49,10 @@ shader = ExtResource("15_o0gml")
 shader_parameter/base_tint = Vector4(1, 1, 1, 1)
 shader_parameter/hurt_flash = 0.0
 shader_parameter/debuff_intensity = 0.0
+shader_parameter/poison_amount = 0.0
+shader_parameter/freeze_amount = 0.0
+shader_parameter/burn_amount = 0.0
+shader_parameter/shield_amount = 0.0
 shader_parameter/debuff_pulse_speed = 3.00000011875
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2mdsq"]
@@ -508,7 +514,7 @@ script = ExtResource("23_oirap")
 melee_pool = Array[ExtResource("24_x8u2g")]([ExtResource("25_s8hwr"), ExtResource("26_02ocv"), ExtResource("27_hsnb7")])
 ranged_pool = Array[ExtResource("24_x8u2g")]([ExtResource("28_dk20e"), ExtResource("29_oqplw"), ExtResource("30_dkplh")])
 spell_pool = Array[ExtResource("24_x8u2g")]([ExtResource("31_hsnb7"), ExtResource("32_dk20e"), ExtResource("33_oqplw"), ExtResource("34_dkplh")])
-shield_pool = Array[ExtResource("24_x8u2g")]([ExtResource("34_rmh8v"), ExtResource("34_x8u2g")])
+shield_pool = Array[ExtResource("24_x8u2g")]([ExtResource("35_oqplw"), ExtResource("36_dkplh"), ExtResource("37_82nsm"), ExtResource("38_yc78x")])
 guarantee_melee = true
 guarantee_ranged = true
 guarantee_spell = true

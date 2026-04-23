@@ -1,14 +1,63 @@
-[gd_resource type="Resource" script_class="ShieldItemDef" format=3 uid="uid://bx7fb2c3oa6gk"]
+[gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://bx7fb2c3oa6gk"]
 
 [ext_resource type="Script" uid="uid://com325vi0bbwd" path="res://Scripts/Items/ShieldItemStats.gd" id="1_ki4ei"]
 [ext_resource type="Script" uid="uid://b7cbswyrmorl7" path="res://Scripts/Items/ShieldItemDef.gd" id="2_1rlcj"]
+[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="3_yorvc"]
+[ext_resource type="Script" uid="uid://bo58hs72paoxt" path="res://Scripts/Items/AttributePoolDef.gd" id="4_4cu6w"]
+[ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="5_r8e8t"]
+[ext_resource type="Script" uid="uid://bpuehw5boe5kp" path="res://Scripts/Items/Attributes/Shields/Attr_ActiveShield_Fortify.gd" id="5_y418a"]
+[ext_resource type="Script" uid="uid://iynllwy4bkcr" path="res://Scripts/Items/Attributes/Shields/Attr_ShieldGlobal_ShieldBonus.gd" id="6_5o71a"]
+[ext_resource type="Script" uid="uid://chuv51kaj1jd3" path="res://Scripts/Items/Attributes/Shields/Attr_ActiveShield_Reflection.gd" id="7_5mfp8"]
 
-[sub_resource type="Resource" id="Resource_m5jda"]
+[sub_resource type="Resource" id="Resource_2kkbu"]
 script = ExtResource("1_ki4ei")
 
-[resource]
+[sub_resource type="Resource" id="Resource_6g5pj"]
 script = ExtResource("2_1rlcj")
-stats = SubResource("Resource_m5jda")
-blocking_collider_size = Vector2(10, 40)
-id = &"buckler_shield"
-display_name = "Buckler Shield"
+stats = SubResource("Resource_2kkbu")
+block_damage_reduction = 0.85
+movement_speed_mult_while_blocking = 0.95
+shield_max_hp = 125.0
+shield_regen_rate = 30.0
+shield_regen_delay = 2.0
+blocking_collider_size = Vector2(5, 35)
+blocking_collider_offset = Vector2(25, 0)
+id = &"Base_ActiveBuckler"
+display_name = "Buckler's Shield"
+category = 3
+
+[sub_resource type="Resource" id="Resource_kvxaw"]
+script = ExtResource("5_y418a")
+id = &"fortify"
+display_name = "Fortify"
+editor_description = "Provides additional damage reduction while blocking"
+metadata/_custom_type_script = "uid://bpuehw5boe5kp"
+
+[sub_resource type="Resource" id="Resource_x8cc1"]
+script = ExtResource("6_5o71a")
+id = &"shield_bonus"
+display_name = "Shield Bonus"
+editor_description = "Increases all shields' damage reduction, and provides flat protection."
+metadata/_custom_type_script = "uid://iynllwy4bkcr"
+
+[sub_resource type="Resource" id="Resource_yfrsl"]
+script = ExtResource("7_5mfp8")
+id = &"reflection"
+display_name = "Projectile Reflection"
+editor_description = "Reflect projectiles while blocking"
+metadata/_custom_type_script = "uid://chuv51kaj1jd3"
+
+[sub_resource type="Resource" id="Resource_fnwo2"]
+script = ExtResource("4_4cu6w")
+shield_common = Array[ExtResource("3_yorvc")]([SubResource("Resource_kvxaw"), SubResource("Resource_x8cc1"), SubResource("Resource_yfrsl")])
+
+[resource]
+script = ExtResource("5_r8e8t")
+id = &"base_shield_active"
+item_def = SubResource("Resource_6g5pj")
+pool_def = SubResource("Resource_fnwo2")
+max_attribute_count = 3
+auto_include_global = false
+auto_weapon_token = "Buckler's Shield"
+use_ranged_mode_roll = false
+metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"

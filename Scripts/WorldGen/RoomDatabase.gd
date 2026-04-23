@@ -125,6 +125,8 @@ func _collect_room_scene_paths(dir_path: String, out_paths: Array[String]) -> vo
 			continue
 		if entry_name.find("RoomChunk") == -1:
 			continue
+		if entry_name.ends_with("_template.tscn"):
+			continue
 
 		out_paths.append(full)
 
@@ -148,13 +150,13 @@ func _infer_exits_mask_from_scene_state(ps: PackedScene) -> int:
 
 		# Paths look like: "RoomChunk/Exits/Exit_N" or "Exits/Exit_N" depending on root name.
 		# Using ends_with keeps it resilient.
-		if p.ends_with("Exits/Exit_N"):
+		if p.ends_with("Exits/Exit_N") or p.ends_with("Exits/Exit_N1") or p.ends_with("Exits/Exit_N2"):
 			mask |= N
-		elif p.ends_with("Exits/Exit_E"):
+		elif p.ends_with("Exits/Exit_E") or p.ends_with("Exits/Exit_E1") or p.ends_with("Exits/Exit_E2"):
 			mask |= E
-		elif p.ends_with("Exits/Exit_S"):
+		elif p.ends_with("Exits/Exit_S") or p.ends_with("Exits/Exit_S1") or p.ends_with("Exits/Exit_S2"):
 			mask |= S
-		elif p.ends_with("Exits/Exit_W"):
+		elif p.ends_with("Exits/Exit_W") or p.ends_with("Exits/Exit_W1") or p.ends_with("Exits/Exit_W2"):
 			mask |= W
 
 	return mask

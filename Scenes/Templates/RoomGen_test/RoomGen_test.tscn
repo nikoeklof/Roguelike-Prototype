@@ -3,12 +3,16 @@
 [ext_resource type="PackedScene" uid="uid://b0eb7ryv2foaw" path="res://Scenes/Templates/Entities/Player_Entity_Template.tscn" id="1_7cxed"]
 [ext_resource type="PackedScene" uid="uid://bwksy64ngqgra" path="res://Scenes/WorldGen/floor_spawner.tscn" id="2_5cmkh"]
 [ext_resource type="PackedScene" uid="uid://wj0aehlmsmj3" path="res://Scenes/UI/DebugHUD.tscn" id="3_5cmkh"]
-[ext_resource type="PackedScene" uid="uid://dq8mxvl3yt7c1" path="res://Scenes/UI/GameOver.tscn" id="4_gover"]
+[ext_resource type="PackedScene" uid="uid://ma5wcevbvg61" path="res://Scenes/UI/GameOver.tscn" id="4_gover"]
 [ext_resource type="PackedScene" uid="uid://cp7rnx4qw2m8b" path="res://Scenes/UI/PauseMenu.tscn" id="5_pmenu"]
 
 [node name="Node2D" type="Node2D" unique_id=1786143231]
 
+[node name="Player" parent="." unique_id=423000657 instance=ExtResource("1_7cxed")]
+position = Vector2(-128, -80)
+
 [node name="FloorSpawner" parent="." unique_id=1367362986 instance=ExtResource("2_5cmkh")]
+xl_room_chance = 0.3
 main_len = 6
 branch_density = 1.0
 branch_len_ratio = 0.5
@@ -16,12 +20,11 @@ clump_penalty = 4.0
 straight_bias = 1.5
 player_path = NodePath("../Player")
 
-[node name="Player" parent="." unique_id=423000657 instance=ExtResource("1_7cxed")]
-position = Vector2(-128, -80)
-
 [node name="DebugHud" parent="." unique_id=1698329193 instance=ExtResource("3_5cmkh")]
 player_root_path = NodePath("../Player")
 
-[node name="GameOver" parent="." instance=ExtResource("4_gover")]
+[node name="GameOver" parent="." unique_id=413590827 instance=ExtResource("4_gover")]
+visible = false
 
-[node name="PauseMenu" parent="." instance=ExtResource("5_pmenu")]
+[node name="PauseMenu" parent="." unique_id=2044777399 instance=ExtResource("5_pmenu")]
+visible = false

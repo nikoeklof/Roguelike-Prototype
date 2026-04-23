@@ -2,11 +2,20 @@
 
 [ext_resource type="Script" uid="uid://c3jkbqm575wlf" path="res://Scripts/WorldGen/FloorSpawner.gd" id="1_liia8"]
 [ext_resource type="Script" uid="uid://8fvjixunqscs" path="res://Scripts/WorldGen/RoomDatabase.gd" id="2_dsi2y"]
+[ext_resource type="PackedScene" uid="uid://bgw48rrmw52wx" path="res://Scenes/Templates/World/RoomGen/Normal/RoomChunk_template.tscn" id="3_templ"]
 
-[node name="FloorSpawner" type="Node2D" unique_id=1367362986 node_paths=PackedStringArray("room_database")]
+[node name="FloorSpawner" type="Node2D" unique_id=1367362986 node_paths=PackedStringArray("room_database", "xl_room_database")]
 script = ExtResource("1_liia8")
 room_database = NodePath("RoomDatabase")
+xl_room_database = NodePath("XLRoomDatabase")
 
 [node name="RoomDatabase" type="Node" parent="." unique_id=1086203349]
 script = ExtResource("2_dsi2y")
 metadata/_custom_type_script = "uid://8fvjixunqscs"
+rooms_dir = "res://Scenes/Templates/World/RoomGen/Normal"
+fallback_room_scene = ExtResource("3_templ")
+
+[node name="XLRoomDatabase" type="Node" parent="." unique_id=1086203350]
+script = ExtResource("2_dsi2y")
+metadata/_custom_type_script = "uid://8fvjixunqscs"
+rooms_dir = "res://Scenes/Templates/World/RoomGen/XL"

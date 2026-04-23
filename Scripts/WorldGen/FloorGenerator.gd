@@ -6,6 +6,16 @@ const E: int = 2
 const S: int = 4
 const W: int = 8
 
+# XL room 8-bit exit mask (stored in RoomNode.xl_exits_mask)
+const XL_N1: int = 1    # north-left  door → neighbor (xl_x,   xl_y-1)
+const XL_N2: int = 2    # north-right door → neighbor (xl_x+1, xl_y-1)
+const XL_E1: int = 4    # east-top    door → neighbor (xl_x+2, xl_y  )
+const XL_E2: int = 8    # east-bottom door → neighbor (xl_x+2, xl_y+1)
+const XL_S1: int = 16   # south-left  door → neighbor (xl_x,   xl_y+2)
+const XL_S2: int = 32   # south-right door → neighbor (xl_x+1, xl_y+2)
+const XL_W1: int = 64   # west-top    door → neighbor (xl_x-1, xl_y  )
+const XL_W2: int = 128  # west-bottom door → neighbor (xl_x-1, xl_y+1)
+
 const DIR_N: Vector2i = Vector2i(0, -1)
 const DIR_E: Vector2i = Vector2i(1, 0)
 const DIR_S: Vector2i = Vector2i(0, 1)
@@ -16,6 +26,8 @@ class RoomNode:
 	var coord: Vector2i
 	var kind: StringName = &"NORMAL"
 	var exits_mask: int = 0
+	var xl_exits_mask: int = 0
+	var xl_parent: Vector2i = Vector2i.ZERO
 	var depth: int = -1
 
 	func _init(c: Vector2i) -> void:
@@ -59,7 +71,9 @@ func generate(
 	# Layout shaping
 	clump_penalty: float = 3.0,
 	straight_bias: float = 0.9,
-	min_separation: int = 1
+	min_separation: int = 1,
+
+	xl_room_chance: float = 0.0
 ) -> FloorPlan:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = _seed
@@ -122,6 +136,10 @@ func generate(
 	var boss_coord: Vector2i = _farthest_coord(plan)
 	if boss_coord != start:
 		(plan.rooms[boss_coord] as RoomNode).kind = &"BOSS"
+
+	if xl_room_chance > 0.0:
+		_promote_xl_rooms(plan, rng, xl_room_chance)
+		_compute_xl_exits(plan)
 
 	return plan
 
@@ -240,6 +258,74 @@ func _exit_count(mask: int) -> int:
 	if (mask & S) != 0: count += 1
 	if (mask & W) != 0: count += 1
 	return count
+
+# -----------------------------------------------------------------------------
+# XL room promotion
+# -----------------------------------------------------------------------------
+func _promote_xl_rooms(plan: FloorPlan, rng: RandomNumberGenerator, chance: float) -> void:
+	var shuffled: Array[Vector2i] = []
+	shuffled.assign(plan.coords)
+	for i in range(shuffled.size() - 1, 0, -1):
+		var j: int = rng.randi_range(0, i)
+		var tmp: Vector2i = shuffled[i]
+		shuffled[i] = shuffled[j]
+		shuffled[j] = tmp
+
+	for coord: Vector2i in shuffled:
+		var rn := plan.rooms[coord] as RoomNode
+		if rn.kind != &"NORMAL":
+			continue
+
+		var c10: Vector2i = coord + Vector2i(1, 0)
+		var c01: Vector2i = coord + Vector2i(0, 1)
+		var c11: Vector2i = coord + Vector2i(1, 1)
+
+		if not plan.rooms.has(c10) or not plan.rooms.has(c01) or not plan.rooms.has(c11):
+			continue
+
+		var rn10 := plan.rooms[c10] as RoomNode
+		var rn01 := plan.rooms[c01] as RoomNode
+		var rn11 := plan.rooms[c11] as RoomNode
+
+		if rn10.kind != &"NORMAL" or rn01.kind != &"NORMAL" or rn11.kind != &"NORMAL":
+			continue
+
+		if rng.randf() >= chance:
+			continue
+
+		rn.kind = &"XL"
+		rn10.kind = &"XL_OCCUPIED"; rn10.xl_parent = coord
+		rn01.kind = &"XL_OCCUPIED"; rn01.xl_parent = coord
+		rn11.kind = &"XL_OCCUPIED"; rn11.xl_parent = coord
+
+
+func _compute_xl_exits(plan: FloorPlan) -> void:
+	for c: Vector2i in plan.coords:
+		var rn := plan.rooms[c] as RoomNode
+		if rn.kind != &"XL":
+			continue
+		var xl: int = 0
+		if _xl_open(plan, c, Vector2i( 0, -1)): xl |= XL_N1
+		if _xl_open(plan, c, Vector2i( 1, -1)): xl |= XL_N2
+		if _xl_open(plan, c, Vector2i( 2,  0)): xl |= XL_E1
+		if _xl_open(plan, c, Vector2i( 2,  1)): xl |= XL_E2
+		if _xl_open(plan, c, Vector2i( 0,  2)): xl |= XL_S1
+		if _xl_open(plan, c, Vector2i( 1,  2)): xl |= XL_S2
+		if _xl_open(plan, c, Vector2i(-1,  0)): xl |= XL_W1
+		if _xl_open(plan, c, Vector2i(-1,  1)): xl |= XL_W2
+		rn.xl_exits_mask = xl
+		var mask: int = 0
+		if (xl & (XL_N1 | XL_N2)) != 0: mask |= N
+		if (xl & (XL_E1 | XL_E2)) != 0: mask |= E
+		if (xl & (XL_S1 | XL_S2)) != 0: mask |= S
+		if (xl & (XL_W1 | XL_W2)) != 0: mask |= W
+		rn.exits_mask = mask
+
+
+func _xl_open(plan: FloorPlan, c: Vector2i, offset: Vector2i) -> bool:
+	var nc: Vector2i = c + offset
+	return plan.rooms.has(nc) and (plan.rooms[nc] as RoomNode).kind != &"XL_OCCUPIED"
+
 
 func _pick_center_start(plan: FloorPlan) -> Vector2i:
 	var sum: Vector2 = Vector2.ZERO

@@ -6,6 +6,8 @@ signal floor_plan_generated(plan: FloorGenerator.FloorPlan)
 
 @export var room_scene: PackedScene
 @export var room_database: RoomDatabase
+@export var xl_room_database: RoomDatabase
+@export_range(0.0, 1.0, 0.05) var xl_room_chance: float = 0.25
 
 # --------------------------------------------------
 # Seed control
@@ -42,7 +44,8 @@ var runtime_seed: int = 0
 # Doors
 @export var apply_door_colliders: bool = true
 
-const ROOM_SIZE: Vector2i = Vector2i(528, 528)
+const ROOM_SIZE: Vector2i = Vector2i(800, 800)
+const XL_ROOM_SIZE: Vector2i = Vector2i(1600, 1600)
 
 var _gen: FloorGenerator
 var _plan: FloorGenerator.FloorPlan
@@ -66,6 +69,10 @@ func _ready() -> void:
 		room_database.rebuild()
 		print(room_database.debug_summary())
 
+	if xl_room_database != null:
+		xl_room_database.rebuild()
+		print(xl_room_database.debug_summary())
+
 	# ---- seed selection ----
 	runtime_seed = seed
 	if randomize_seed:
@@ -88,7 +95,8 @@ func _ready() -> void:
 		branch_len_max_cap,
 		clump_penalty,
 		straight_bias,
-		min_separation
+		min_separation,
+		xl_room_chance
 	)
 	if _plan == null:
 		push_error("FloorSpawner: generator returned NULL plan!")
@@ -123,14 +131,26 @@ func _spawn(plan: FloorGenerator.FloorPlan) -> void:
 	for coord: Vector2i in plan.coords:
 		var rn: FloorGenerator.RoomNode = plan.rooms[coord] as FloorGenerator.RoomNode
 
-		var ps: PackedScene = room_scene
-		if room_database != null:
-			var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-			rng.seed = _room_pick_seed(plan.seed, coord, rn.exits_mask, rn.kind)
-			ps = room_database.pick_scene(rn.exits_mask, rng)
+		if rn.kind == &"XL_OCCUPIED":
+			continue
+
+		var is_xl: bool = rn.kind == &"XL"
+		var ps: PackedScene
+
+		if is_xl:
+			if xl_room_database != null:
+				var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+				rng.seed = _room_pick_seed(plan.seed, coord, rn.exits_mask, rn.kind)
+				ps = xl_room_database.pick_scene(rn.exits_mask, rng)
+		else:
+			ps = room_scene
+			if room_database != null:
+				var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+				rng.seed = _room_pick_seed(plan.seed, coord, rn.exits_mask, rn.kind)
+				ps = room_database.pick_scene(rn.exits_mask, rng)
 
 		if ps == null:
-			push_error("FloorSpawner: no scene available for coord=%s mask=%d" % [str(coord), rn.exits_mask])
+			push_error("FloorSpawner: no scene for coord=%s kind=%s" % [str(coord), String(rn.kind)])
 			continue
 
 		var inst: Node2D = ps.instantiate() as Node2D
@@ -143,7 +163,10 @@ func _spawn(plan: FloorGenerator.FloorPlan) -> void:
 		inst.name = "%s_%d_%d" % [String(rn.kind), coord.x, coord.y]
 
 		if apply_door_colliders:
-			_apply_door_state(inst, rn.exits_mask)
+			if is_xl:
+				_apply_door_state_xl(inst, rn.xl_exits_mask)
+			else:
+				_apply_door_state(inst, rn.exits_mask)
 
 		if spawn_room_items:
 			_wire_item_spawners_for_room(inst, coord)
@@ -194,6 +217,17 @@ func _apply_door_state(room: Node2D, exits_mask: int) -> void:
 	_set_door_collider_open(room, "RoomCollision/EastWall_Door",  (exits_mask & FloorGenerator.E) != 0)
 	_set_door_collider_open(room, "RoomCollision/SouthWall_Door", (exits_mask & FloorGenerator.S) != 0)
 	_set_door_collider_open(room, "RoomCollision/WestWall_Door",  (exits_mask & FloorGenerator.W) != 0)
+
+
+func _apply_door_state_xl(room: Node2D, xl_mask: int) -> void:
+	_set_door_collider_open(room, "RoomCollision/NorthWall_Door1", (xl_mask & FloorGenerator.XL_N1) != 0)
+	_set_door_collider_open(room, "RoomCollision/NorthWall_Door2", (xl_mask & FloorGenerator.XL_N2) != 0)
+	_set_door_collider_open(room, "RoomCollision/EastWall_Door1",  (xl_mask & FloorGenerator.XL_E1) != 0)
+	_set_door_collider_open(room, "RoomCollision/EastWall_Door2",  (xl_mask & FloorGenerator.XL_E2) != 0)
+	_set_door_collider_open(room, "RoomCollision/SouthWall_Door1", (xl_mask & FloorGenerator.XL_S1) != 0)
+	_set_door_collider_open(room, "RoomCollision/SouthWall_Door2", (xl_mask & FloorGenerator.XL_S2) != 0)
+	_set_door_collider_open(room, "RoomCollision/WestWall_Door1",  (xl_mask & FloorGenerator.XL_W1) != 0)
+	_set_door_collider_open(room, "RoomCollision/WestWall_Door2",  (xl_mask & FloorGenerator.XL_W2) != 0)
 
 
 func _set_door_collider_open(room: Node2D, path: String, should_be_open: bool) -> void:

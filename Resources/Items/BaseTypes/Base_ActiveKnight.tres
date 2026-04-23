@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://bijjyqyfgaxme"]
+
+[ext_resource type="Script" uid="uid://b7cbswyrmorl7" path="res://Scripts/Items/ShieldItemDef.gd" id="1_f5m0m"]
+[ext_resource type="Script" uid="uid://com325vi0bbwd" path="res://Scripts/Items/ShieldItemStats.gd" id="2_fxamt"]
+[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="3_6kl1u"]
+[ext_resource type="Script" uid="uid://bo58hs72paoxt" path="res://Scripts/Items/AttributePoolDef.gd" id="4_55vx1"]
+[ext_resource type="Script" uid="uid://bpuehw5boe5kp" path="res://Scripts/Items/Attributes/Shields/Attr_ActiveShield_Fortify.gd" id="5_i47uo"]
+[ext_resource type="Script" uid="uid://iynllwy4bkcr" path="res://Scripts/Items/Attributes/Shields/Attr_ShieldGlobal_ShieldBonus.gd" id="6_c8vdg"]
+[ext_resource type="Script" uid="uid://chuv51kaj1jd3" path="res://Scripts/Items/Attributes/Shields/Attr_ActiveShield_Reflection.gd" id="7_63fov"]
+[ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="8_hnnxq"]
+
+[sub_resource type="Resource" id="Resource_2kkbu"]
+script = ExtResource("2_fxamt")
+
+[sub_resource type="Resource" id="Resource_6g5pj"]
+script = ExtResource("1_f5m0m")
+stats = SubResource("Resource_2kkbu")
+block_damage_reduction = 0.5
+shield_max_hp = 250.0
+shield_regen_rate = 25.0
+shield_regen_delay = 3.5
+blocking_collider_size = Vector2(5, 35)
+blocking_collider_offset = Vector2(25, 0)
+id = &"base_activeknigh"
+display_name = "Knight's Shield"
+category = 3
+
+[sub_resource type="Resource" id="Resource_kvxaw"]
+script = ExtResource("5_i47uo")
+id = &"fortify"
+display_name = "Fortify"
+editor_description = "Provides additional damage reduction while blocking"
+metadata/_custom_type_script = "uid://bpuehw5boe5kp"
+
+[sub_resource type="Resource" id="Resource_x8cc1"]
+script = ExtResource("6_c8vdg")
+id = &"shield_bonus"
+display_name = "Shield Bonus"
+editor_description = "Increases all shields' damage reduction, and provides flat protection."
+metadata/_custom_type_script = "uid://iynllwy4bkcr"
+
+[sub_resource type="Resource" id="Resource_yfrsl"]
+script = ExtResource("7_63fov")
+id = &"reflection"
+display_name = "Projectile Reflection"
+editor_description = "Reflect projectiles while blocking"
+metadata/_custom_type_script = "uid://chuv51kaj1jd3"
+
+[sub_resource type="Resource" id="Resource_fnwo2"]
+script = ExtResource("4_55vx1")
+shield_common = Array[ExtResource("3_6kl1u")]([SubResource("Resource_kvxaw"), SubResource("Resource_x8cc1"), SubResource("Resource_yfrsl")])
+
+[resource]
+script = ExtResource("8_hnnxq")
+id = &"base_shield_active"
+item_def = SubResource("Resource_6g5pj")
+pool_def = SubResource("Resource_fnwo2")
+max_attribute_count = 3
+auto_include_global = false
+auto_weapon_token = "Knight's Shield"
+use_ranged_mode_roll = false
+metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"

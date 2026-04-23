@@ -91,5 +91,4 @@ position = Vector2(541, -61)
 [node name="ItemSpawner" type="Node2D" parent="." unique_id=77439898]
 position = Vector2(677, 268)
 script = ExtResource("6_x3clo")
-spawn_category = 3
 metadata/_custom_type_script = "uid://dpt1ah3dct4go"

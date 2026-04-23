@@ -1,19 +1,23 @@
 [gd_resource type="Resource" script_class="ItemTypeRegistry" format=3 uid="uid://bwn8rhdpt74a2"]
 
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="1_ywlrt"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_BattleTrance.tres" id="2_7l6wq"]
+[ext_resource type="Resource" uid="uid://dgm58on3v30gu" path="res://Resources/Items/BaseTypes/Base_BattleTrance.tres" id="2_7l6wq"]
 [ext_resource type="Script" uid="uid://bhq1een5gj0qf" path="res://Scripts/Items/ItemTypeRegistry.gd" id="2_bgamh"]
+[ext_resource type="Resource" uid="uid://bx7fb2c3oa6gk" path="res://Resources/Items/BaseTypes/Base_ActiveBuckler.tres" id="2_n3nhj"]
 [ext_resource type="Resource" uid="uid://ch6uawoeugf1x" path="res://Resources/Items/BaseTypes/Base_Dagger.tres" id="2_v57fc"]
 [ext_resource type="Resource" uid="uid://dki8qndxyoqep" path="res://Resources/Items/BaseTypes/Base_Maul.tres" id="3_itias"]
+[ext_resource type="Resource" uid="uid://bijjyqyfgaxme" path="res://Resources/Items/BaseTypes/Base_ActiveKnight.tres" id="3_n2nsd"]
 [ext_resource type="Resource" uid="uid://du2xohmhqnykk" path="res://Resources/Items/BaseTypes/Base_Pistol.tres" id="4_0hx0g"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_Frailty.tres" id="4_d51jg"]
+[ext_resource type="Resource" uid="uid://c38gr0st0mpao" path="res://Resources/Items/BaseTypes/Base_Frailty.tres" id="4_d51jg"]
 [ext_resource type="Resource" uid="uid://dd7da2d8a8a74" path="res://Resources/Items/BaseTypes/Base_Shotgun.tres" id="5_xuhb7"]
 [ext_resource type="Resource" uid="uid://8ljp76qu0ced" path="res://Resources/Items/BaseTypes/Base_SMG.tres" id="6_7l6wq"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_Slow.tres" id="8_n2nsd"]
+[ext_resource type="Resource" uid="uid://b4leq7gqugxla" path="res://Resources/Items/BaseTypes/Base_Slow.tres" id="8_n2nsd"]
+[ext_resource type="Resource" uid="uid://rhtbswfunek4" path="res://Resources/Items/BaseTypes/Base_PassiveHeavy.tres" id="8_p3hi7"]
+[ext_resource type="Resource" uid="uid://r2rrq1r0s1ax" path="res://Resources/Items/BaseTypes/Base_PassiveLightWard.tres" id="9_43p1i"]
 [ext_resource type="Resource" uid="uid://bo12lrqfrp7gs" path="res://Resources/Items/BaseTypes/Base_Sword.tres" id="9_n2nsd"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_StoneSkin.tres" id="12_p3hi7"]
+[ext_resource type="Resource" uid="uid://d0w3klfjdm3rg" path="res://Resources/Items/BaseTypes/Base_StoneSkin.tres" id="12_p3hi7"]
 
 [resource]
 script = ExtResource("2_bgamh")
-entries = Array[ExtResource("1_ywlrt")]([ExtResource("2_7l6wq"), ExtResource("2_v57fc"), ExtResource("4_d51jg"), ExtResource("3_itias"), ExtResource("4_0hx0g"), ExtResource("5_xuhb7"), ExtResource("8_n2nsd"), ExtResource("6_7l6wq"), ExtResource("12_p3hi7"), ExtResource("9_n2nsd")])
+entries = Array[ExtResource("1_ywlrt")]([ExtResource("2_n3nhj"), ExtResource("3_n2nsd"), ExtResource("2_7l6wq"), ExtResource("2_v57fc"), ExtResource("4_d51jg"), ExtResource("3_itias"), ExtResource("8_p3hi7"), ExtResource("9_43p1i"), ExtResource("4_0hx0g"), ExtResource("5_xuhb7"), ExtResource("8_n2nsd"), ExtResource("6_7l6wq"), ExtResource("12_p3hi7"), ExtResource("9_n2nsd")])
 metadata/_custom_type_script = "uid://bhq1een5gj0qf"

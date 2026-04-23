@@ -38,6 +38,10 @@ shader = ExtResource("15_4jfla")
 shader_parameter/base_tint = Vector4(0.93, 0.485, -1, 1)
 shader_parameter/hurt_flash = 0.0
 shader_parameter/debuff_intensity = 0.0
+shader_parameter/poison_amount = 0.0
+shader_parameter/freeze_amount = 0.0
+shader_parameter/burn_amount = 0.0
+shader_parameter/shield_amount = 0.0
 shader_parameter/debuff_pulse_speed = 3.00000011875
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2mdsq"]

@@ -1,17 +1,52 @@
-[gd_resource type="Resource" script_class="ShieldItemDef" format=3 uid="uid://rhtbswfunek4"]
+[gd_resource type="Resource" script_class="BaseItemType" format=3 uid="uid://rhtbswfunek4"]
 
 [ext_resource type="Script" uid="uid://com325vi0bbwd" path="res://Scripts/Items/ShieldItemStats.gd" id="1_mot6y"]
 [ext_resource type="Script" uid="uid://b7cbswyrmorl7" path="res://Scripts/Items/ShieldItemDef.gd" id="2_fhhmf"]
+[ext_resource type="Script" uid="uid://bt2f52k5ydybm" path="res://Scripts/Items/ItemAttribute.gd" id="3_dpddj"]
+[ext_resource type="Script" uid="uid://bo58hs72paoxt" path="res://Scripts/Items/AttributePoolDef.gd" id="4_3vmyr"]
+[ext_resource type="Script" uid="uid://dpdx2d7h3wywm" path="res://Scripts/Items/Attributes/Shields/Attr_PassiveShield_Regeneration.gd" id="5_prmmj"]
+[ext_resource type="Script" uid="uid://m2lt1tqblbkl" path="res://Scripts/Items/Attributes/Shields/Attr_PassiveShield_Phasing.gd" id="6_nhgml"]
+[ext_resource type="Resource" path="res://Resources/Items/Attributes/Shields/Attr_ShieldBonus.tres" id="7_ejsw5"]
+[ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="8_6o1cb"]
 
-[sub_resource type="Resource" id="Resource_m5jda"]
+[sub_resource type="Resource" id="Resource_3kqy2"]
 script = ExtResource("1_mot6y")
-flat_damage_reduction = 5.0
+flat_damage_reduction = 1.0
 
-[resource]
+[sub_resource type="Resource" id="Resource_lv8fp"]
 script = ExtResource("2_fhhmf")
-stats = SubResource("Resource_m5jda")
+stats = SubResource("Resource_3kqy2")
 shield_type = 1
-passive_damage_reduction_mult = 0.15
-passive_movement_speed_mult = 0.9
+passive_damage_reduction_mult = 0.3
+passive_movement_speed_mult = 0.85
 id = &"aegis_ward"
 display_name = "Aegis Ward"
+category = 3
+
+[sub_resource type="Resource" id="Resource_tj6wy"]
+script = ExtResource("5_prmmj")
+id = &"regen"
+display_name = "Health Regeneration"
+editor_description = "Passive shields: Slowly recover health while equipped"
+metadata/_custom_type_script = "uid://dpdx2d7h3wywm"
+
+[sub_resource type="Resource" id="Resource_3kql6"]
+script = ExtResource("6_nhgml")
+id = &"phasing"
+display_name = "Phasing"
+editor_description = "Periodically become immune to projectiles for a short duration with cooldown."
+metadata/_custom_type_script = "uid://m2lt1tqblbkl"
+
+[sub_resource type="Resource" id="Resource_jortj"]
+script = ExtResource("4_3vmyr")
+shield_common = Array[ExtResource("3_dpddj")]([SubResource("Resource_tj6wy"), SubResource("Resource_3kql6"), ExtResource("7_ejsw5")])
+
+[resource]
+script = ExtResource("8_6o1cb")
+id = &"base_shield_passive"
+item_def = SubResource("Resource_lv8fp")
+pool_def = SubResource("Resource_jortj")
+max_attribute_count = 3
+auto_weapon_token = "Aegis Ward"
+use_ranged_mode_roll = false
+metadata/_custom_type_script = "uid://cc4l8ud3h2kg7"
