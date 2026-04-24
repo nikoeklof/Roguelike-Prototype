@@ -8,89 +8,122 @@
 [ext_resource type="Script" uid="uid://dlf3hle7uyk2r" path="res://Scripts/UI/DebugHUD/BuffSection.gd" id="5_2dnt7"]
 [ext_resource type="Script" uid="uid://bdhfbeyfofc8c" path="res://Scripts/UI/DebugHUD/EnemyAISection.gd" id="6_3sprj"]
 
-[node name="DebugHud" type="CanvasLayer" unique_id=1698329193]
+[node name="DebugHud" type="CanvasLayer"]
 script = ExtResource("1_rx5bx")
 
-[node name="Root" type="Control" parent="." unique_id=1974708067]
+[node name="MapRoot" type="PanelContainer" parent="."]
 layout_mode = 3
-anchors_preset = 9
-anchor_bottom = 1.0
-offset_right = 586.0
-grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="HBox" type="HBoxContainer" parent="Root" unique_id=925669853]
-layout_mode = 1
-anchors_preset = 15
+anchor_left = 1.0
 anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+anchor_top = 0.0
+anchor_bottom = 0.0
+offset_left = -250.0
+offset_right = -8.0
+offset_top = 8.0
+offset_bottom = 8.0
+grow_horizontal = 0
+grow_vertical = 1
 
-[node name="MapPanel" type="PanelContainer" parent="Root/HBox" unique_id=1027720584]
+[node name="MapVBox" type="VBoxContainer" parent="MapRoot"]
 layout_mode = 2
-size_flags_horizontal = 3
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Root/HBox/MapPanel" unique_id=221748097]
-layout_mode = 2
-
-[node name="MapSection" type="VBoxContainer" parent="Root/HBox/MapPanel/VBoxContainer" unique_id=1870441688]
+[node name="MapSection" type="VBoxContainer" parent="MapRoot/MapVBox"]
 layout_mode = 2
 script = ExtResource("2_eb21l")
 
-[node name="Label" type="Label" parent="Root/HBox/MapPanel/VBoxContainer/MapSection" unique_id=1283684170]
+[node name="Label" type="Label" parent="MapRoot/MapVBox/MapSection"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "MAP"
 
-[node name="Minimap" type="Control" parent="Root/HBox/MapPanel/VBoxContainer/MapSection" unique_id=1434144581]
+[node name="Minimap" type="Control" parent="MapRoot/MapVBox/MapSection"]
 unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("2_vu0vq")
 metadata/_custom_type_script = "uid://dayo3tfgagwfa"
 
-[node name="InfoLabel" type="RichTextLabel" parent="Root/HBox/MapPanel/VBoxContainer" unique_id=1135386700]
+[node name="HUDRoot" type="PanelContainer" parent="."]
+layout_mode = 3
+anchor_left = 0.0
+anchor_right = 0.25
+anchor_top = 0.0
+anchor_bottom = 0.5
+offset_left = 8.0
+offset_right = -8.0
+offset_top = 8.0
+offset_bottom = -8.0
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="HUDVBox" type="VBoxContainer" parent="HUDRoot"]
+layout_mode = 2
+
+[node name="TabBar" type="HBoxContainer" parent="HUDRoot/HUDVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="BtnStats" type="Button" parent="HUDRoot/HUDVBox/TabBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "STATS"
+
+[node name="BtnShield" type="Button" parent="HUDRoot/HUDVBox/TabBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "SHIELD"
+
+[node name="BtnBuffs" type="Button" parent="HUDRoot/HUDVBox/TabBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "BUFFS"
+
+[node name="BtnEnemy" type="Button" parent="HUDRoot/HUDVBox/TabBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ENEMY"
+
+[node name="BtnInventory" type="Button" parent="HUDRoot/HUDVBox/TabBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "INV"
+
+[node name="InfoLabel" type="RichTextLabel" parent="HUDRoot/HUDVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 bbcode_enabled = true
-text = "Seed:"
-autowrap_mode = 2
+scroll_active = true
+fit_content = false
 
-[node name="InventoryPanel" type="PanelContainer" parent="Root/HBox" unique_id=1778764822]
-custom_minimum_size = Vector2(300, 0)
+[node name="InventoryContainer" type="VBoxContainer" parent="HUDRoot/HUDVBox"]
+unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 3
+visible = false
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Root/HBox/InventoryPanel" unique_id=1325696456]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Root/HBox/InventoryPanel/VBoxContainer" unique_id=1788852791]
-layout_mode = 2
-text = "INVENTORY"
-
-[node name="EquipList" type="ItemList" parent="Root/HBox/InventoryPanel/VBoxContainer" unique_id=1593128673]
+[node name="EquipList" type="ItemList" parent="HUDRoot/HUDVBox/InventoryContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Details" type="RichTextLabel" parent="Root/HBox/InventoryPanel/VBoxContainer" unique_id=1916105400]
+[node name="Details" type="RichTextLabel" parent="HUDRoot/HUDVBox/InventoryContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
+bbcode_enabled = true
 
-[node name="PlayerStatsSection" type="Node" parent="." unique_id=1185703774]
+[node name="PlayerStatsSection" type="Node" parent="."]
 script = ExtResource("3_1cmej")
 metadata/_custom_type_script = "uid://bs2ipoyl247bx"
 
-[node name="ShieldSection" type="Node" parent="." unique_id=13965550]
+[node name="ShieldSection" type="Node" parent="."]
 script = ExtResource("4_eb21l")
 metadata/_custom_type_script = "uid://cvf23jeroliwv"
 
-[node name="BuffsSection" type="Node" parent="." unique_id=1256100316]
+[node name="BuffsSection" type="Node" parent="."]
 script = ExtResource("5_2dnt7")
 metadata/_custom_type_script = "uid://dlf3hle7uyk2r"
 
-[node name="EnemyAISection" type="Node" parent="." unique_id=850782112]
+[node name="EnemyAISection" type="Node" parent="."]
 script = ExtResource("6_3sprj")
 metadata/_custom_type_script = "uid://bdhfbeyfofc8c"

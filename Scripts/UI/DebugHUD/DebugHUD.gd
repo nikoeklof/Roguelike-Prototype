@@ -1,17 +1,17 @@
 extends CanvasLayer
 class_name DebugHUD
-## Coordinator for the debug HUD.
-## Discovers all DebugHUDSection children, builds a DebugHUDContext each tick,
-## and concatenates section outputs into the display label.
-## To add a new section: add a child node with a script extending DebugHUDSection.
 
 @export var player_root_path: NodePath
 @export var toggle_action: StringName = &"ui_debug_toggle"
 @export_range(0.01, 0.5, 0.01) var update_tick_rate: float = 0.1
 
+@onready var tab_bar: HBoxContainer = %TabBar
 @onready var info_label: RichTextLabel = %InfoLabel
+@onready var inventory_container: VBoxContainer = %InventoryContainer
 @onready var equip_list: ItemList = %EquipList
 @onready var details: RichTextLabel = %Details
+
+const TAB_INVENTORY := 4
 
 var _player: Node2D = null
 var _equipment: Equipment = null
@@ -19,19 +19,19 @@ var _stats: Stats = null
 var _passive_shield_activator: PassiveShieldAttributeActivator = null
 
 var _sections: Array[DebugHUDSection] = []
+var _active_tab: int = 0
 var _update_timer: float = 0.0
 var _last_output: String = ""
 
 
-# -------------------------
-# Lifecycle
-# -------------------------
-
 func _ready() -> void:
 	_collect_sections()
 	_bind_player()
-	_wire_ui()
+	_wire_tabs()
+	_wire_inventory_ui()
+	_apply_font_sizes()
 	call_deferred("_refresh_inventory")
+	_update_tab_highlights()
 
 
 func _process(delta: float) -> void:
@@ -59,7 +59,39 @@ func _collect_sections() -> void:
 	for child: Node in get_children():
 		if child is DebugHUDSection:
 			_sections.append(child as DebugHUDSection)
-	print("[DebugHUD] Collected %d sections" % _sections.size())
+
+
+# -------------------------
+# Tab wiring
+# -------------------------
+
+func _wire_tabs() -> void:
+	if tab_bar == null:
+		return
+	var buttons: Array[Node] = tab_bar.get_children()
+	for i: int in buttons.size():
+		var btn: Button = buttons[i] as Button
+		if btn == null:
+			continue
+		btn.pressed.connect(_on_tab_pressed.bind(i))
+
+
+func _on_tab_pressed(idx: int) -> void:
+	_active_tab = idx
+	_last_output = ""
+	_rebuild_display()
+	_update_tab_highlights()
+
+
+func _update_tab_highlights() -> void:
+	if tab_bar == null:
+		return
+	var buttons: Array[Node] = tab_bar.get_children()
+	for i: int in buttons.size():
+		var btn: Button = buttons[i] as Button
+		if btn == null:
+			continue
+		btn.flat = (i != _active_tab)
 
 
 # -------------------------
@@ -67,22 +99,30 @@ func _collect_sections() -> void:
 # -------------------------
 
 func _rebuild_display() -> void:
+	var is_inventory := (_active_tab == TAB_INVENTORY)
+	info_label.visible = not is_inventory
+	inventory_container.visible = is_inventory
+
+	if is_inventory:
+		return
+
 	if info_label == null:
 		return
 
-	var ctx: DebugHUDContext = _build_context()
-	var output: String = ""
+	var section_idx: int = _active_tab
+	if section_idx < 0 or section_idx >= _sections.size():
+		info_label.clear()
+		return
 
-	for section: DebugHUDSection in _sections:
-		var body: String = section.build_text(ctx)
-		if body.is_empty():
-			continue
-		if not output.is_empty():
-			output += "\n\n"
-		output += "[b]%s[/b]\n" % section.section_name()
+	var ctx: DebugHUDContext = _build_context()
+	var section: DebugHUDSection = _sections[section_idx]
+	var body: String = section.build_text(ctx)
+
+	var output: String = ""
+	if not body.is_empty():
+		output = "[b]%s[/b]\n" % section.section_name()
 		output += body
 
-	# Only update the label if content changed
 	if output == _last_output:
 		return
 	_last_output = output
@@ -173,13 +213,40 @@ func _connect_slot_changed(path: NodePath) -> void:
 		slot_node.connect("changed", _on_slot_changed)
 
 
-func _wire_ui() -> void:
+func _wire_inventory_ui() -> void:
 	if equip_list != null and not equip_list.item_selected.is_connected(_on_item_selected):
 		equip_list.item_selected.connect(_on_item_selected)
 
 
 # -------------------------
-# Inventory panel (right side)
+# Font sizes
+# -------------------------
+
+func _apply_font_sizes() -> void:
+	var label_font_size := 11
+	var btn_font_size := 10
+	var list_font_size := 11
+
+	if info_label != null:
+		info_label.add_theme_font_size_override("normal_font_size", label_font_size)
+		info_label.add_theme_font_size_override("bold_font_size", label_font_size)
+
+	if details != null:
+		details.add_theme_font_size_override("normal_font_size", label_font_size)
+		details.add_theme_font_size_override("bold_font_size", label_font_size)
+
+	if equip_list != null:
+		equip_list.add_theme_font_size_override("font_size", list_font_size)
+
+	if tab_bar != null:
+		for child: Node in tab_bar.get_children():
+			var btn: Button = child as Button
+			if btn != null:
+				btn.add_theme_font_size_override("font_size", btn_font_size)
+
+
+# -------------------------
+# Inventory panel
 # -------------------------
 
 func _on_equipment_changed(_prev: int, _new: int, _reason: String) -> void:
@@ -214,8 +281,7 @@ func _refresh_inventory() -> void:
 		if item == null:
 			equip_list.add_item("%s: (empty)" % k)
 		else:
-			var label: String = _get_item_display_name(item)
-			equip_list.add_item("%s: %s" % [k, label])
+			equip_list.add_item("%s: %s" % [k, _get_item_display_name(item)])
 
 
 func _get_item_display_name(item: Node) -> String:

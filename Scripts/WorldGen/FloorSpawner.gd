@@ -3,6 +3,7 @@ class_name FloorSpawner
 
 signal floor_spawned(start_room: Node2D)
 signal floor_plan_generated(plan: FloorGenerator.FloorPlan)
+signal player_room_changed(coord: Vector2i)
 
 @export var room_scene: PackedScene
 @export var room_database: RoomDatabase
@@ -180,6 +181,7 @@ func _spawn(plan: FloorGenerator.FloorPlan) -> void:
 			if _room_rolls_combat(coord, rn.kind):
 				_setup_room_controller(inst, rn, is_xl, coord)
 
+		_add_room_tracker(inst, coord, is_xl)
 		_room_instances[coord] = inst
 
 
@@ -332,3 +334,28 @@ func _setup_room_controller(room: Node2D, rn: FloorGenerator.RoomNode, is_xl: bo
 	room.add_child(ctrl)
 	var spawn_seed: int = _room_pick_seed(runtime_seed, coord, rn.exits_mask, rn.kind) ^ 0xBEEF
 	ctrl.setup(room, rn.exits_mask, rn.xl_exits_mask, is_xl, enemy_scenes, spawn_seed)
+
+
+func _add_room_tracker(room: Node2D, coord: Vector2i, is_xl: bool) -> void:
+	var area := Area2D.new()
+	area.collision_layer = 0
+	area.collision_mask = 2  # Player physics layer
+	area.monitoring = true
+	area.monitorable = false
+
+	var shape := CollisionShape2D.new()
+	var rect := RectangleShape2D.new()
+	if is_xl:
+		rect.size = Vector2(1580.0, 1580.0)
+		shape.position = Vector2(800.0, 800.0)
+	else:
+		rect.size = Vector2(780.0, 780.0)
+		shape.position = Vector2(400.0, 400.0)
+	shape.shape = rect
+
+	area.add_child(shape)
+	area.body_entered.connect(func(body: Node) -> void:
+		if body.is_in_group("player"):
+			player_room_changed.emit(coord)
+	)
+	room.add_child(area)
