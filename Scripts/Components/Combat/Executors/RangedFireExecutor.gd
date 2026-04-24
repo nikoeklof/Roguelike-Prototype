@@ -327,17 +327,13 @@ func _fire_projectile(shot: RangedShotData, snap: AttackSnapshot, inst: ItemInst
 	launch.sprite_texture = shot.projectile_sprite_texture
 	launch.sprite_tint = shot.projectile_sprite_tint
 
+	var proj_parent: Node = get_tree().current_scene
+	proj_parent.add_child(projectile)
 	projectile.global_position = launch.origin
 	projectile.setup(launch)
 
 	if inst != null:
 		ItemAttributeBus.dispatch_projectile_spawn(context, projectile, inst)
-
-	var parent_node: Node = context.owner
-	if parent_node != null and parent_node.get_parent() != null:
-		parent_node.get_parent().add_child(projectile)
-	else:
-		get_tree().current_scene.add_child(projectile)
 
 
 func _collect_ray_hits(
@@ -470,8 +466,7 @@ func _debug_set_beam_line_indexed(index: int, from: Vector2, to: Vector2) -> voi
 		return
 
 	if not _beam_lines.has(index) or not is_instance_valid(_beam_lines[index]):
-		var source_entity: Node2D = context.owner as Node2D
-		var parent: Node = source_entity.get_parent() if source_entity.get_parent() != null else get_tree().current_scene
+		var parent: Node = get_tree().current_scene
 		if parent == null:
 			return
 		_beam_lines[index] = _debug_make_line(parent)
@@ -520,8 +515,7 @@ func _debug_draw_transient_line(from: Vector2, to: Vector2, life_sec: float) -> 
 	if not (context.owner is Node2D):
 		return
 
-	var source_entity: Node2D = context.owner as Node2D
-	var parent: Node = source_entity.get_parent() if source_entity.get_parent() != null else get_tree().current_scene
+	var parent: Node = get_tree().current_scene
 	if parent == null:
 		return
 

@@ -55,6 +55,11 @@ var _room_instances: Dictionary = {}
 # call spawn_with_run_seed(runtime_seed) deterministically.
 @export var spawn_room_items: bool = true
 
+@export var spawn_room_enemies: bool = true
+@export var enemy_scenes: Array[PackedScene] = []
+@export_range(0.0, 1.0, 0.05) var combat_chance: float = 0.6
+@export_range(0.0, 1.0, 0.05) var boss_combat_chance: float = 1.0
+
 
 # --------------------------------------------------
 
@@ -170,6 +175,10 @@ func _spawn(plan: FloorGenerator.FloorPlan) -> void:
 
 		if spawn_room_items:
 			_wire_item_spawners_for_room(inst, coord)
+
+		if spawn_room_enemies and rn.kind != &"START":
+			if _room_rolls_combat(coord, rn.kind):
+				_setup_room_controller(inst, rn, is_xl, coord)
 
 		_room_instances[coord] = inst
 
@@ -291,3 +300,35 @@ func _get_player_spawn_position_in_room(room: Node2D) -> Vector2:
 
 func _room_pick_seed(floor_seed: int, coord: Vector2i, exits_mask: int, kind: StringName) -> int:
 	return hash("%d|%d|%d|%d|%s" % [floor_seed, coord.x, coord.y, exits_mask, String(kind)])
+
+
+func _room_rolls_combat(coord: Vector2i, kind: StringName) -> bool:
+	var chance: float = boss_combat_chance if kind == &"BOSS" else combat_chance
+	if chance <= 0.0:
+		return false
+	if chance >= 1.0:
+		return true
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash("%d|%d|%d|cbt" % [runtime_seed, coord.x, coord.y])
+	return rng.randf() < chance
+
+
+# --------------------------------------------------
+
+func _has_enemy_spawns(room: Node2D) -> bool:
+	var spawns := room.get_node_or_null("Spawns")
+	if spawns == null:
+		return false
+	for child: Node in spawns.get_children():
+		if child.name.begins_with("EnemySpawn_"):
+			return true
+	return false
+
+
+func _setup_room_controller(room: Node2D, rn: FloorGenerator.RoomNode, is_xl: bool, coord: Vector2i) -> void:
+	if not _has_enemy_spawns(room):
+		return
+	var ctrl := RoomController.new()
+	room.add_child(ctrl)
+	var spawn_seed: int = _room_pick_seed(runtime_seed, coord, rn.exits_mask, rn.kind) ^ 0xBEEF
+	ctrl.setup(room, rn.exits_mask, rn.xl_exits_mask, is_xl, enemy_scenes, spawn_seed)

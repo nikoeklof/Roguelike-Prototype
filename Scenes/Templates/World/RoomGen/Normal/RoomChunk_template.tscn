@@ -64,10 +64,22 @@ position = Vector2(-132, 312)
 [node name="Spawns" type="Node2D" parent="." unique_id=1198090764]
 
 [node name="EnemySpawn_1" type="Marker2D" parent="Spawns" unique_id=1918727390]
-position = Vector2(260, 312)
+position = Vector2(400, 400)
+
+[node name="EnemySpawn_2" type="Marker2D" parent="Spawns" unique_id=987387725]
+position = Vector2(188, 612)
+
+[node name="EnemySpawn_3" type="Marker2D" parent="Spawns" unique_id=1902961743]
+position = Vector2(612, 188)
+
+[node name="EnemySpawn_4" type="Marker2D" parent="Spawns" unique_id=605254717]
+position = Vector2(188, 188)
+
+[node name="EnemySpawn_5" type="Marker2D" parent="Spawns" unique_id=1374489870]
+position = Vector2(612, 612)
 
 [node name="PickupSpawn_1" type="Marker2D" parent="Spawns" unique_id=1579439961]
-position = Vector2(260, 312)
+position = Vector2(400, 400)
 
 [node name="RoomCollision" type="StaticBody2D" parent="." unique_id=599071928]
 physics_material_override = SubResource("PhysicsMaterial_gxpj8")

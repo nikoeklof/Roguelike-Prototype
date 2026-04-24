@@ -29,13 +29,9 @@ func try_attack(dir: Vector2, owner_entity: Node) -> bool:
 	if owner_entity is Node2D:
 		origin = (owner_entity as Node2D).global_position
 
-	p.global_position = origin
 	p.setup(d * speed, 0.0, lifetime_sec, int(round(damage)), 0, owner_entity)
-
-	if owner_entity.get_parent():
-		owner_entity.get_parent().add_child(p)
-	else:
-		owner_entity.get_tree().current_scene.add_child(p)
+	owner_entity.get_tree().current_scene.add_child(p)
+	p.global_position = origin
 
 	attack_finished.emit()
 	return true

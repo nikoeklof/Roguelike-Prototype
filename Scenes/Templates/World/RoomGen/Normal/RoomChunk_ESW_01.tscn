@@ -1,6 +1,5 @@
 [gd_scene format=3 uid="uid://ba8jfexhoxbnn"]
 
-[ext_resource type="TileSet" uid="uid://dev878l5nx66c" path="res://Art/Tilesets/room_gen_tileset_test.tres" id="1_h26yk"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_gxpj8"]
 friction = 0.0
@@ -63,13 +62,26 @@ position = Vector2(792, 400)
 position = Vector2(8, 400)
 
 [node name="TileMapLayer" type="TileMapLayer" parent="Exits" unique_id=89982960]
-tile_set = ExtResource("1_h26yk")
 
 [node name="Spawns" type="Node2D" parent="." unique_id=1198090764]
 
 [node name="EnemySpawn_1" type="Marker2D" parent="Spawns" unique_id=1918727390]
+position = Vector2(400, 400)
+
+[node name="EnemySpawn_2" type="Marker2D" parent="Spawns" unique_id=987387725]
+position = Vector2(188, 612)
+
+[node name="EnemySpawn_3" type="Marker2D" parent="Spawns" unique_id=1902961743]
+position = Vector2(612, 188)
+
+[node name="EnemySpawn_4" type="Marker2D" parent="Spawns" unique_id=605254717]
+position = Vector2(188, 188)
+
+[node name="EnemySpawn_5" type="Marker2D" parent="Spawns" unique_id=1374489870]
+position = Vector2(612, 612)
 
 [node name="PickupSpawn_1" type="Marker2D" parent="Spawns" unique_id=1579439961]
+position = Vector2(400, 400)
 
 [node name="RoomCollision" type="StaticBody2D" parent="." unique_id=599071928]
 physics_material_override = SubResource("PhysicsMaterial_gxpj8")

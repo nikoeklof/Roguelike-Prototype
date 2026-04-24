@@ -62,7 +62,6 @@ func _cast_projectile(ctx: CombatContext, owner_entity: Node, dir: Vector2, spel
 	launch.sprite_texture  = config.get("texture")
 	launch.sprite_tint     = config.get("tint", Color.WHITE)
 
-	projectile.global_position = launch.origin
 	projectile.setup(launch)
 
 	projectile.area_entered.connect(
@@ -70,8 +69,8 @@ func _cast_projectile(ctx: CombatContext, owner_entity: Node, dir: Vector2, spel
 		CONNECT_ONE_SHOT
 	)
 
-	var parent: Node = owner_entity.get_parent() if owner_entity.get_parent() != null else get_tree().current_scene
-	parent.add_child(projectile)
+	get_tree().current_scene.add_child(projectile)
+	projectile.global_position = launch.origin
 
 
 func _on_projectile_hit(area: Area2D, ctx: CombatContext, inst: ItemInstance, proj: Projectile) -> void:
