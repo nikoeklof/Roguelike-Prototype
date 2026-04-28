@@ -34,3 +34,4 @@ node_modules/
 _Archive/
 .claude/settings.local.json
 CLAUDE.md
+/Art
