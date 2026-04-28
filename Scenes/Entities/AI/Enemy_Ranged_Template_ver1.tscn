@@ -360,6 +360,9 @@ radius = 7.0
 height = 20.0
 
 [node name="EnemyRangedTemplateVer1" type="CharacterBody2D" unique_id=1052976507]
+motion_mode = 1
+wall_min_slide_angle = 0.5235988
+platform_on_leave = 2
 script = ExtResource("1_5d5dm")
 initial_faction = 2
 metadata/_custom_type_script = "uid://csm6mhenieg4s"

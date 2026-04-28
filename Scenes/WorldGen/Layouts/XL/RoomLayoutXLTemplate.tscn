@@ -1,0 +1,36 @@
+[gd_scene format=3 uid="uid://w4aamo1qd0na"]
+
+[ext_resource type="Script" uid="uid://bfstik5h3i4xx" path="res://Scripts/WorldGen/RoomLayout.gd" id="1_1cd46"]
+
+[node name="RoomLayoutXlTemplate" type="Node2D" unique_id=1484087024]
+script = ExtResource("1_1cd46")
+is_xl = true
+exits_mask = 0
+
+[node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=1134234996]
+
+[node name="Exits" type="Node2D" parent="." unique_id=351351611]
+
+[node name="Exit_N1" type="Marker2D" parent="Exits" unique_id=49352860]
+position = Vector2(400, 8)
+
+[node name="Exit_N2" type="Marker2D" parent="Exits" unique_id=1208607993]
+position = Vector2(1200, 8)
+
+[node name="Exit_E1" type="Marker2D" parent="Exits" unique_id=819367462]
+position = Vector2(1592, 400)
+
+[node name="Exit_E2" type="Marker2D" parent="Exits" unique_id=842666603]
+position = Vector2(1592, 1200)
+
+[node name="Exit_S1" type="Marker2D" parent="Exits" unique_id=506793207]
+position = Vector2(400, 1592)
+
+[node name="Exit_S2" type="Marker2D" parent="Exits" unique_id=2027372031]
+position = Vector2(1200, 1592)
+
+[node name="Exit_W1" type="Marker2D" parent="Exits" unique_id=2144101785]
+position = Vector2(8, 400)
+
+[node name="Exit_W2" type="Marker2D" parent="Exits" unique_id=1238664664]
+position = Vector2(8, 1200)

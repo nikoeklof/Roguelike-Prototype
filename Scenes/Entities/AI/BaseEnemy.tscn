@@ -30,12 +30,12 @@
 [ext_resource type="Resource" uid="uid://8ljp76qu0ced" path="res://Resources/Items/BaseTypes/Base_SMG.tres" id="28_r5lbv"]
 [ext_resource type="Resource" uid="uid://du2xohmhqnykk" path="res://Resources/Items/BaseTypes/Base_Pistol.tres" id="29_c7bnl"]
 [ext_resource type="Resource" uid="uid://dd7da2d8a8a74" path="res://Resources/Items/BaseTypes/Base_Shotgun.tres" id="30_x4x3m"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_StoneSkin.tres" id="31_75i0r"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_Slow.tres" id="32_ydj6b"]
+[ext_resource type="Resource" uid="uid://d0w3klfjdm3rg" path="res://Resources/Items/BaseTypes/Base_StoneSkin.tres" id="31_75i0r"]
+[ext_resource type="Resource" uid="uid://b4leq7gqugxla" path="res://Resources/Items/BaseTypes/Base_Slow.tres" id="32_ydj6b"]
 [ext_resource type="Resource" uid="uid://byvu2r46uj2sl" path="res://Resources/Items/BaseTypes/Base_Shield_Passive_Template.tres" id="33_6avle"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_Frailty.tres" id="33_f7pjd"]
+[ext_resource type="Resource" uid="uid://c38gr0st0mpao" path="res://Resources/Items/BaseTypes/Base_Frailty.tres" id="33_f7pjd"]
 [ext_resource type="Script" uid="uid://0dxcoac7x0wu" path="res://Scripts/UI/EntityHealthBar.gd" id="34_s5rif"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_BattleTrance.tres" id="34_wpril"]
+[ext_resource type="Resource" uid="uid://dgm58on3v30gu" path="res://Resources/Items/BaseTypes/Base_BattleTrance.tres" id="34_wpril"]
 
 [sub_resource type="Resource" id="Resource_rmh8v"]
 script = ExtResource("14_pu3nb")
@@ -46,6 +46,10 @@ shader = ExtResource("15_u2u8s")
 shader_parameter/base_tint = Vector4(0.93, 0.485, -1, 1)
 shader_parameter/hurt_flash = 0.0
 shader_parameter/debuff_intensity = 0.0
+shader_parameter/poison_amount = 0.0
+shader_parameter/freeze_amount = 0.0
+shader_parameter/burn_amount = 0.0
+shader_parameter/shield_amount = 0.0
 shader_parameter/debuff_pulse_speed = 3.00000011875
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_2mdsq"]
@@ -366,6 +370,10 @@ height = 20.0
 [node name="EnemyMelee" type="CharacterBody2D" unique_id=698630020]
 collision_layer = 4
 collision_mask = 7
+motion_mode = 1
+wall_min_slide_angle = 0.5235988
+platform_on_leave = 2
+safe_margin = 0.2
 script = ExtResource("1_l5ryf")
 initial_faction = 2
 

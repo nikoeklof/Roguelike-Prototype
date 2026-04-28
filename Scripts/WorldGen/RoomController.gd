@@ -106,20 +106,15 @@ func _start_encounter() -> void:
 func _spawn_enemies() -> void:
 	if _enemy_scenes.is_empty():
 		return
-	var spawns_node := _room.get_node_or_null("Spawns")
-	if spawns_node == null:
+
+	var markers := _find_enemy_spawn_markers()
+	if markers.is_empty():
 		return
 
 	var rng := RandomNumberGenerator.new()
 	rng.seed = _spawn_seed
 
-	for child: Node in spawns_node.get_children():
-		if not child.name.begins_with("EnemySpawn_"):
-			continue
-		var marker := child as Marker2D
-		if marker == null:
-			continue
-
+	for marker: Marker2D in markers:
 		var idx: int = rng.randi_range(0, _enemy_scenes.size() - 1)
 		var scene := _enemy_scenes[idx] as PackedScene
 		if scene == null:
@@ -136,6 +131,17 @@ func _spawn_enemies() -> void:
 		if health != null:
 			health.died.connect(_on_enemy_died)
 			_enemies_remaining += 1
+
+
+func _find_enemy_spawn_markers() -> Array[Marker2D]:
+	var result: Array[Marker2D] = []
+	# Search recursively — markers may live in root Spawns/ or inside a layout child.
+	var all_markers := _room.find_children("EnemySpawn_*", "Marker2D", true, false)
+	for node: Node in all_markers:
+		var m := node as Marker2D
+		if m != null:
+			result.append(m)
+	return result
 
 
 func _find_health(entity: Node) -> Health:
@@ -168,54 +174,76 @@ func _clear_encounter() -> void:
 # --------------------------------------------------
 
 func _lock_doors() -> void:
-	_set_exits_locked(true)
+	var doors := _get_active_doors()
+	if doors.is_empty():
+		_legacy_set_exits_locked(true)
+		return
+	for door in doors:
+		door.close()
 
 
 func _unlock_doors() -> void:
-	_set_exits_locked(false)
-
-
-func _set_exits_locked(locked: bool) -> void:
-	if _is_xl:
-		_set_xl_doors_locked(locked)
-	else:
-		_set_normal_doors_locked(locked)
-
-
-func _set_normal_doors_locked(locked: bool) -> void:
-	if (_exits_mask & FloorGenerator.N) != 0:
-		_set_collider_disabled("RoomCollision/NorthWall_Door", not locked)
-	if (_exits_mask & FloorGenerator.E) != 0:
-		_set_collider_disabled("RoomCollision/EastWall_Door", not locked)
-	if (_exits_mask & FloorGenerator.S) != 0:
-		_set_collider_disabled("RoomCollision/SouthWall_Door", not locked)
-	if (_exits_mask & FloorGenerator.W) != 0:
-		_set_collider_disabled("RoomCollision/WestWall_Door", not locked)
-
-
-func _set_xl_doors_locked(locked: bool) -> void:
-	if (_xl_exits_mask & FloorGenerator.XL_N1) != 0:
-		_set_collider_disabled("RoomCollision/NorthWall_Door1", not locked)
-	if (_xl_exits_mask & FloorGenerator.XL_N2) != 0:
-		_set_collider_disabled("RoomCollision/NorthWall_Door2", not locked)
-	if (_xl_exits_mask & FloorGenerator.XL_E1) != 0:
-		_set_collider_disabled("RoomCollision/EastWall_Door1", not locked)
-	if (_xl_exits_mask & FloorGenerator.XL_E2) != 0:
-		_set_collider_disabled("RoomCollision/EastWall_Door2", not locked)
-	if (_xl_exits_mask & FloorGenerator.XL_S1) != 0:
-		_set_collider_disabled("RoomCollision/SouthWall_Door1", not locked)
-	if (_xl_exits_mask & FloorGenerator.XL_S2) != 0:
-		_set_collider_disabled("RoomCollision/SouthWall_Door2", not locked)
-	if (_xl_exits_mask & FloorGenerator.XL_W1) != 0:
-		_set_collider_disabled("RoomCollision/WestWall_Door1", not locked)
-	if (_xl_exits_mask & FloorGenerator.XL_W2) != 0:
-		_set_collider_disabled("RoomCollision/WestWall_Door2", not locked)
-
-
-func _set_collider_disabled(path: String, disabled: bool) -> void:
-	var n := _room.get_node_or_null(NodePath(path))
-	if n == null:
+	var doors := _get_active_doors()
+	if doors.is_empty():
+		_legacy_set_exits_locked(false)
 		return
+	for door in doors:
+		door.open()
+
+
+# Returns all Door nodes under Doors/ that are actual exits (not walled off).
+func _get_active_doors() -> Array[Door]:
+	var doors_node := _room.get_node_or_null("Doors")
+	if doors_node == null:
+		return []
+	var result: Array[Door] = []
+	for child in doors_node.get_children():
+		var door := child as Door
+		if door != null:
+			result.append(door)
+	return result
+
+
+# Legacy fallback for old RoomChunk scenes without Door nodes.
+func _legacy_set_exits_locked(locked: bool) -> void:
+	if _is_xl:
+		_legacy_set_xl_doors_locked(locked)
+	else:
+		_legacy_set_normal_doors_locked(locked)
+
+
+func _legacy_set_normal_doors_locked(locked: bool) -> void:
+	if (_exits_mask & FloorGenerator.N) != 0:
+		_legacy_set_collider_disabled("RoomCollision/NorthWall_Door", not locked)
+	if (_exits_mask & FloorGenerator.E) != 0:
+		_legacy_set_collider_disabled("RoomCollision/EastWall_Door", not locked)
+	if (_exits_mask & FloorGenerator.S) != 0:
+		_legacy_set_collider_disabled("RoomCollision/SouthWall_Door", not locked)
+	if (_exits_mask & FloorGenerator.W) != 0:
+		_legacy_set_collider_disabled("RoomCollision/WestWall_Door", not locked)
+
+
+func _legacy_set_xl_doors_locked(locked: bool) -> void:
+	if (_xl_exits_mask & FloorGenerator.XL_N1) != 0:
+		_legacy_set_collider_disabled("RoomCollision/NorthWall_Door1", not locked)
+	if (_xl_exits_mask & FloorGenerator.XL_N2) != 0:
+		_legacy_set_collider_disabled("RoomCollision/NorthWall_Door2", not locked)
+	if (_xl_exits_mask & FloorGenerator.XL_E1) != 0:
+		_legacy_set_collider_disabled("RoomCollision/EastWall_Door1", not locked)
+	if (_xl_exits_mask & FloorGenerator.XL_E2) != 0:
+		_legacy_set_collider_disabled("RoomCollision/EastWall_Door2", not locked)
+	if (_xl_exits_mask & FloorGenerator.XL_S1) != 0:
+		_legacy_set_collider_disabled("RoomCollision/SouthWall_Door1", not locked)
+	if (_xl_exits_mask & FloorGenerator.XL_S2) != 0:
+		_legacy_set_collider_disabled("RoomCollision/SouthWall_Door2", not locked)
+	if (_xl_exits_mask & FloorGenerator.XL_W1) != 0:
+		_legacy_set_collider_disabled("RoomCollision/WestWall_Door1", not locked)
+	if (_xl_exits_mask & FloorGenerator.XL_W2) != 0:
+		_legacy_set_collider_disabled("RoomCollision/WestWall_Door2", not locked)
+
+
+func _legacy_set_collider_disabled(path: String, disabled: bool) -> void:
+	var n := _room.get_node_or_null(NodePath(path))
 	if n is CollisionShape2D:
 		(n as CollisionShape2D).set_deferred("disabled", disabled)
 	elif n is CollisionPolygon2D:
