@@ -10,6 +10,7 @@ signal state_changed(new_state: DoorState)
 var _state: DoorState = DoorState.CLOSED
 
 @onready var _collision: CollisionShape2D = $CollisionShape2D
+@onready var _sprite: Sprite2D = $Sprite2D
 
 
 func _ready() -> void:
@@ -51,6 +52,12 @@ func break_door() -> void:
 	state_changed.emit(_state)
 
 
+func apply_theme(texture: Texture2D) -> void:
+	if not is_instance_valid(_sprite):
+		return
+	_sprite.texture = texture
+
+
 func _apply_state() -> void:
 	if not is_instance_valid(_collision):
 		return
@@ -58,6 +65,7 @@ func _apply_state() -> void:
 	_on_visual_state_changed(_state)
 
 
-# No-op until art is wired. Override or connect state_changed signal.
-func _on_visual_state_changed(_new_state: DoorState) -> void:
-	pass
+func _on_visual_state_changed(new_state: DoorState) -> void:
+	if not is_instance_valid(_sprite):
+		return
+	_sprite.visible = new_state == DoorState.CLOSED

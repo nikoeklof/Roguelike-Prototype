@@ -17,6 +17,10 @@ class_name FloorTheme
 ## Palette swaps work as long as tile source IDs and atlas coords match across tilesets.
 @export var floor_tileset: TileSet
 
+## Texture swapped onto every Door node found in the room.
+## Must be the same dungeon spritesheet variant as the rest of the theme.
+@export var door_texture: Texture2D
+
 
 func covers_depth(depth: int) -> bool:
 	return depth >= depth_range.x and depth <= depth_range.y

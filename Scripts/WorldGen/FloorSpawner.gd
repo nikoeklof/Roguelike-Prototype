@@ -56,6 +56,7 @@ var runtime_seed: int = 0
 
 # Doors
 @export var apply_door_colliders: bool = true
+@export var door_scene: PackedScene
 
 const ROOM_SIZE: Vector2i = Vector2i(800, 800)
 const XL_ROOM_SIZE: Vector2i = Vector2i(1600, 1600)
@@ -63,6 +64,8 @@ const XL_ROOM_SIZE: Vector2i = Vector2i(1600, 1600)
 var _gen: FloorGenerator
 var _plan: FloorGenerator.FloorPlan
 var _room_instances: Dictionary = {}
+var _used_layout_paths: Array[String] = []
+var _used_xl_layout_paths: Array[String] = []
 
 # If true, the FloorSpawner will find ItemSpawner nodes inside each room and
 # call spawn_with_run_seed(runtime_seed) deterministically.
@@ -153,6 +156,8 @@ func _spawn(plan: FloorGenerator.FloorPlan) -> void:
 		child.queue_free()
 
 	_room_instances.clear()
+	_used_layout_paths.clear()
+	_used_xl_layout_paths.clear()
 
 	for coord: Vector2i in plan.coords:
 		var rn: FloorGenerator.RoomNode = plan.rooms[coord] as FloorGenerator.RoomNode
@@ -195,8 +200,9 @@ func _spawn(plan: FloorGenerator.FloorPlan) -> void:
 				_apply_door_state(inst, rn.exits_mask)
 
 		_inject_wall_theme(inst)
-		_inject_layout(inst, rn, is_xl, coord)
 		_inject_floor_theme(inst)
+		_inject_door_theme(inst)
+		_inject_layout(inst, rn, is_xl, coord)
 
 		if spawn_room_items:
 			_wire_item_spawners_for_room(inst, coord)
@@ -248,49 +254,56 @@ func _item_spawner_sort(a: ItemSpawner, b: ItemSpawner) -> bool:
 # --------------------------------------------------
 
 func _apply_door_state(room: Node2D, exits_mask: int) -> void:
-	_set_door_state(room, "Door_N", (exits_mask & FloorGenerator.N) != 0)
-	_set_door_state(room, "Door_E", (exits_mask & FloorGenerator.E) != 0)
-	_set_door_state(room, "Door_S", (exits_mask & FloorGenerator.S) != 0)
-	_set_door_state(room, "Door_W", (exits_mask & FloorGenerator.W) != 0)
+	if door_scene == null:
+		push_error("FloorSpawner: door_scene not set.")
+		return
+	var doors_node := Node2D.new()
+	doors_node.name = "Doors"
+	room.add_child(doors_node)
+
+	var defs := [
+		["Door_N", Vector2(400, 8),   0.0,   (exits_mask & FloorGenerator.N) != 0],
+		["Door_S", Vector2(400, 792), 180.0, (exits_mask & FloorGenerator.S) != 0],
+		["Door_E", Vector2(792, 400), 90.0,  (exits_mask & FloorGenerator.E) != 0],
+		["Door_W", Vector2(8,   400), -90.0, (exits_mask & FloorGenerator.W) != 0],
+	]
+	for d in defs:
+		_spawn_door(doors_node, d[0], d[1], d[2], d[3])
 
 
 func _apply_door_state_xl(room: Node2D, xl_mask: int) -> void:
-	_set_door_state(room, "Door_N1", (xl_mask & FloorGenerator.XL_N1) != 0)
-	_set_door_state(room, "Door_N2", (xl_mask & FloorGenerator.XL_N2) != 0)
-	_set_door_state(room, "Door_E1", (xl_mask & FloorGenerator.XL_E1) != 0)
-	_set_door_state(room, "Door_E2", (xl_mask & FloorGenerator.XL_E2) != 0)
-	_set_door_state(room, "Door_S1", (xl_mask & FloorGenerator.XL_S1) != 0)
-	_set_door_state(room, "Door_S2", (xl_mask & FloorGenerator.XL_S2) != 0)
-	_set_door_state(room, "Door_W1", (xl_mask & FloorGenerator.XL_W1) != 0)
-	_set_door_state(room, "Door_W2", (xl_mask & FloorGenerator.XL_W2) != 0)
-
-
-func _set_door_state(room: Node2D, door_name: String, is_exit: bool) -> void:
-	var doors_node := room.get_node_or_null("Doors")
-	if doors_node != null:
-		var door := doors_node.get_node_or_null(door_name) as Door
-		if door != null:
-			if is_exit:
-				door.open()
-			else:
-				door.close()
-			return
-	# Legacy fallback: old RoomChunk scenes use CollisionShape2D directly in RoomCollision.
-	var legacy_map := {
-		"Door_N": "RoomCollision/NorthWall_Door", "Door_E": "RoomCollision/EastWall_Door",
-		"Door_S": "RoomCollision/SouthWall_Door", "Door_W": "RoomCollision/WestWall_Door",
-		"Door_N1": "RoomCollision/NorthWall_Door1", "Door_N2": "RoomCollision/NorthWall_Door2",
-		"Door_E1": "RoomCollision/EastWall_Door1",  "Door_E2": "RoomCollision/EastWall_Door2",
-		"Door_S1": "RoomCollision/SouthWall_Door1", "Door_S2": "RoomCollision/SouthWall_Door2",
-		"Door_W1": "RoomCollision/WestWall_Door1",  "Door_W2": "RoomCollision/WestWall_Door2",
-	}
-	if not legacy_map.has(door_name):
+	if door_scene == null:
+		push_error("FloorSpawner: door_scene not set.")
 		return
-	var n := room.get_node_or_null(NodePath(legacy_map[door_name]))
-	if n is CollisionShape2D:
-		(n as CollisionShape2D).set_deferred("disabled", is_exit)
-	elif n is CollisionPolygon2D:
-		(n as CollisionPolygon2D).set_deferred("disabled", is_exit)
+	var doors_node := Node2D.new()
+	doors_node.name = "Doors"
+	room.add_child(doors_node)
+
+	var defs := [
+		["Door_N1", Vector2(400,  8),    0.0,   (xl_mask & FloorGenerator.XL_N1) != 0],
+		["Door_N2", Vector2(1200, 8),    0.0,   (xl_mask & FloorGenerator.XL_N2) != 0],
+		["Door_S1", Vector2(400,  1592), 180.0, (xl_mask & FloorGenerator.XL_S1) != 0],
+		["Door_S2", Vector2(1200, 1592), 180.0, (xl_mask & FloorGenerator.XL_S2) != 0],
+		["Door_E1", Vector2(1592, 400),  90.0,  (xl_mask & FloorGenerator.XL_E1) != 0],
+		["Door_E2", Vector2(1592, 1200), 90.0,  (xl_mask & FloorGenerator.XL_E2) != 0],
+		["Door_W1", Vector2(8,    400),  -90.0, (xl_mask & FloorGenerator.XL_W1) != 0],
+		["Door_W2", Vector2(8,    1200), -90.0, (xl_mask & FloorGenerator.XL_W2) != 0],
+	]
+	for d in defs:
+		_spawn_door(doors_node, d[0], d[1], d[2], d[3])
+
+
+func _spawn_door(parent: Node2D, door_name: String, pos: Vector2, rot_deg: float, is_exit: bool) -> void:
+	var door := door_scene.instantiate() as Door
+	door.name = door_name
+	door.position = pos
+	door.rotation_degrees = rot_deg
+	door.initial_state = Door.DoorState.OPEN if is_exit else Door.DoorState.CLOSED
+	parent.add_child(door)
+	if is_exit:
+		door.open()
+	else:
+		door.close()
 
 
 # --------------------------------------------------
@@ -324,19 +337,33 @@ func _inject_floor_theme(room: Node2D) -> void:
 			layer.tile_set = theme.floor_tileset
 
 
+func _inject_door_theme(room: Node2D) -> void:
+	var theme := _get_active_theme()
+	if theme == null or theme.door_texture == null:
+		return
+	for node: Node in room.find_children("", "Door", true, false):
+		var door := node as Door
+		if door != null:
+			door.apply_theme(theme.door_texture)
+
+
 func _inject_layout(room: Node2D, rn: FloorGenerator.RoomNode, is_xl: bool, coord: Vector2i) -> void:
 	var db: RoomLayoutDatabase = xl_layout_database if is_xl else layout_database
 	if db == null:
 		return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = _room_pick_seed(runtime_seed, coord, rn.exits_mask, rn.kind) ^ 0xCAFE
-	var layout_scene: PackedScene = db.pick_layout(rn.exits_mask, rn.kind, rng)
+	var used: Array[String] = _used_xl_layout_paths if is_xl else _used_layout_paths
+	var layout_scene: PackedScene = db.pick_layout(rn.kind, rng, used)
 	if layout_scene == null:
 		return
 	var layout: Node = layout_scene.instantiate()
 	if layout == null:
 		return
 	room.add_child(layout)
+	used.append(layout_scene.resource_path)
+	for node: Node in layout.find_children("", "TileMapLayer", true, false):
+		(node as TileMapLayer).z_index = -1
 
 
 # --------------------------------------------------
@@ -401,7 +428,7 @@ func _room_rolls_combat(coord: Vector2i, kind: StringName) -> bool:
 # --------------------------------------------------
 
 func _has_enemy_spawns(room: Node2D) -> bool:
-	return not room.find_children("EnemySpawn_*", "Marker2D", true, false).is_empty()
+	return not room.find_children("EnemySpawner_*", "Marker2D", true, false).is_empty()
 
 
 func _setup_room_controller(room: Node2D, rn: FloorGenerator.RoomNode, is_xl: bool, coord: Vector2i) -> void:

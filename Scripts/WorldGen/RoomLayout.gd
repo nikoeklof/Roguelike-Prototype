@@ -12,7 +12,7 @@ const XL_S1 := 16;  const XL_S2 := 32
 const XL_W1 := 64;  const XL_W2 := 128
 
 const WALL := 16
-const DOOR := 80
+const DOOR := 64
 
 # Normal room
 const ROOM_W := 800;   const ROOM_H := 800

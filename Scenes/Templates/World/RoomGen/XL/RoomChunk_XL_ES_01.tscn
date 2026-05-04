@@ -1,26 +1,19 @@
 [gd_scene format=3 uid="uid://bphv2n1h0b38a"]
 
-
-[sub_resource type="PhysicsMaterial" id="PM1"]
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_g0bn2"]
 friction = 0.0
 absorbent = true
 
-[sub_resource type="RectangleShape2D" id="HS1"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mdjso"]
 size = Vector2(344, 16)
 
-[sub_resource type="RectangleShape2D" id="HD1"]
-size = Vector2(80, 16)
-
-[sub_resource type="RectangleShape2D" id="HM1"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0ctw7"]
 size = Vector2(720, 16)
 
-[sub_resource type="RectangleShape2D" id="VS1"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_mhvfd"]
 size = Vector2(16, 344)
 
-[sub_resource type="RectangleShape2D" id="VD1"]
-size = Vector2(16, 80)
-
-[sub_resource type="RectangleShape2D" id="VM1"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4bdaw"]
 size = Vector2(16, 720)
 
 [node name="RoomChunk" type="Node2D" unique_id=1405286543]
@@ -30,8 +23,6 @@ ROOM_TILES = 98 x 98
 ROOM_SIZE = 1600 x 1600 px
 WALL_THICKNESS = 1 tile (16 px)
 DOORS = 2 per side at x/y 400 and 1200"
-
-[node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=1652064981]
 
 [node name="Exits" type="Node2D" parent="." unique_id=75950095]
 
@@ -47,119 +38,53 @@ position = Vector2(400, 1592)
 [node name="Exit_S2" type="Marker2D" parent="Exits" unique_id=1565216847]
 position = Vector2(1200, 1592)
 
-[node name="TileMapLayer" type="TileMapLayer" parent="Exits" unique_id=1074140166]
+[node name="RoomCollision" type="StaticBody2D" parent="." unique_id=72105328]
+physics_material_override = SubResource("PhysicsMaterial_g0bn2")
 
-[node name="Spawns" type="Node2D" parent="." unique_id=565789622]
-
-[node name="EnemySpawn_1" type="Marker2D" parent="Spawns" unique_id=91549663]
-position = Vector2(800, 800)
-
-[node name="EnemySpawn_2" type="Marker2D" parent="Spawns" unique_id=933275307]
-position = Vector2(376, 1224)
-
-[node name="EnemySpawn_3" type="Marker2D" parent="Spawns" unique_id=1797036646]
-position = Vector2(1224, 376)
-
-[node name="EnemySpawn_4" type="Marker2D" parent="Spawns" unique_id=1241424076]
-position = Vector2(376, 376)
-
-[node name="EnemySpawn_5" type="Marker2D" parent="Spawns" unique_id=483853268]
-position = Vector2(1224, 1224)
-
-[node name="EnemySpawn_6" type="Marker2D" parent="Spawns" unique_id=519652406]
-position = Vector2(800, 376)
-
-[node name="EnemySpawn_7" type="Marker2D" parent="Spawns" unique_id=754735922]
-position = Vector2(376, 800)
-
-[node name="EnemySpawn_8" type="Marker2D" parent="Spawns" unique_id=904868099]
-position = Vector2(1224, 800)
-
-[node name="EnemySpawn_9" type="Marker2D" parent="Spawns" unique_id=1503565846]
-position = Vector2(800, 1224)
-
-[node name="PickupSpawn_1" type="Marker2D" parent="Spawns" unique_id=1561000753]
-position = Vector2(800, 800)
-
-[node name="RoomCollision" type="StaticBody2D" parent="." unique_id=1190509645]
-physics_material_override = SubResource("PM1")
-
-[node name="NorthWall_Left" type="CollisionShape2D" parent="RoomCollision" unique_id=734222942]
+[node name="NorthWall_Left" type="CollisionShape2D" parent="RoomCollision" unique_id=131258349]
 position = Vector2(188, 8)
-shape = SubResource("HS1")
+shape = SubResource("RectangleShape2D_mdjso")
 
-[node name="NorthWall_Door1" type="CollisionShape2D" parent="RoomCollision" unique_id=395013982]
-position = Vector2(400, 8)
-shape = SubResource("HD1")
-
-[node name="NorthWall_Mid" type="CollisionShape2D" parent="RoomCollision" unique_id=1355236017]
+[node name="NorthWall_Mid" type="CollisionShape2D" parent="RoomCollision" unique_id=328833666]
 position = Vector2(800, 8)
-shape = SubResource("HM1")
+shape = SubResource("RectangleShape2D_0ctw7")
 
-[node name="NorthWall_Door2" type="CollisionShape2D" parent="RoomCollision" unique_id=1847461403]
-position = Vector2(1200, 8)
-shape = SubResource("HD1")
-
-[node name="NorthWall_Right" type="CollisionShape2D" parent="RoomCollision" unique_id=1087670335]
+[node name="NorthWall_Right" type="CollisionShape2D" parent="RoomCollision" unique_id=293433498]
 position = Vector2(1412, 8)
-shape = SubResource("HS1")
+shape = SubResource("RectangleShape2D_mdjso")
 
-[node name="SouthWall_Left" type="CollisionShape2D" parent="RoomCollision" unique_id=190242592]
+[node name="SouthWall_Left" type="CollisionShape2D" parent="RoomCollision" unique_id=454518682]
 position = Vector2(188, 1592)
-shape = SubResource("HS1")
+shape = SubResource("RectangleShape2D_mdjso")
 
-[node name="SouthWall_Door1" type="CollisionShape2D" parent="RoomCollision" unique_id=807463639]
-position = Vector2(400, 1592)
-shape = SubResource("HD1")
-
-[node name="SouthWall_Mid" type="CollisionShape2D" parent="RoomCollision" unique_id=292829439]
+[node name="SouthWall_Mid" type="CollisionShape2D" parent="RoomCollision" unique_id=1360241929]
 position = Vector2(800, 1592)
-shape = SubResource("HM1")
+shape = SubResource("RectangleShape2D_0ctw7")
 
-[node name="SouthWall_Door2" type="CollisionShape2D" parent="RoomCollision" unique_id=275319002]
-position = Vector2(1200, 1592)
-shape = SubResource("HD1")
-
-[node name="SouthWall_Right" type="CollisionShape2D" parent="RoomCollision" unique_id=929183552]
+[node name="SouthWall_Right" type="CollisionShape2D" parent="RoomCollision" unique_id=224267817]
 position = Vector2(1412, 1592)
-shape = SubResource("HS1")
+shape = SubResource("RectangleShape2D_mdjso")
 
-[node name="EastWall_Top" type="CollisionShape2D" parent="RoomCollision" unique_id=876053646]
+[node name="EastWall_Top" type="CollisionShape2D" parent="RoomCollision" unique_id=1700059500]
 position = Vector2(1592, 188)
-shape = SubResource("VS1")
+shape = SubResource("RectangleShape2D_mhvfd")
 
-[node name="EastWall_Door1" type="CollisionShape2D" parent="RoomCollision" unique_id=494965755]
-position = Vector2(1592, 400)
-shape = SubResource("VD1")
-
-[node name="EastWall_Mid" type="CollisionShape2D" parent="RoomCollision" unique_id=726096946]
+[node name="EastWall_Mid" type="CollisionShape2D" parent="RoomCollision" unique_id=938545135]
 position = Vector2(1592, 800)
-shape = SubResource("VM1")
+shape = SubResource("RectangleShape2D_4bdaw")
 
-[node name="EastWall_Door2" type="CollisionShape2D" parent="RoomCollision" unique_id=262830434]
-position = Vector2(1592, 1200)
-shape = SubResource("VD1")
-
-[node name="EastWall_Bottom" type="CollisionShape2D" parent="RoomCollision" unique_id=1685721225]
+[node name="EastWall_Bottom" type="CollisionShape2D" parent="RoomCollision" unique_id=425197070]
 position = Vector2(1592, 1412)
-shape = SubResource("VS1")
+shape = SubResource("RectangleShape2D_mhvfd")
 
-[node name="WestWall_Top" type="CollisionShape2D" parent="RoomCollision" unique_id=1103260715]
+[node name="WestWall_Top" type="CollisionShape2D" parent="RoomCollision" unique_id=205633416]
 position = Vector2(8, 188)
-shape = SubResource("VS1")
+shape = SubResource("RectangleShape2D_mhvfd")
 
-[node name="WestWall_Door1" type="CollisionShape2D" parent="RoomCollision" unique_id=1127767113]
-position = Vector2(8, 400)
-shape = SubResource("VD1")
-
-[node name="WestWall_Mid" type="CollisionShape2D" parent="RoomCollision" unique_id=1947479730]
+[node name="WestWall_Mid" type="CollisionShape2D" parent="RoomCollision" unique_id=1582420306]
 position = Vector2(8, 800)
-shape = SubResource("VM1")
+shape = SubResource("RectangleShape2D_4bdaw")
 
-[node name="WestWall_Door2" type="CollisionShape2D" parent="RoomCollision" unique_id=1185155982]
-position = Vector2(8, 1200)
-shape = SubResource("VD1")
-
-[node name="WestWall_Bottom" type="CollisionShape2D" parent="RoomCollision" unique_id=1464962818]
+[node name="WestWall_Bottom" type="CollisionShape2D" parent="RoomCollision" unique_id=825304065]
 position = Vector2(8, 1412)
-shape = SubResource("VS1")
+shape = SubResource("RectangleShape2D_mhvfd")

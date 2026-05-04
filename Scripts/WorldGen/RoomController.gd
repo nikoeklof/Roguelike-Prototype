@@ -136,7 +136,7 @@ func _spawn_enemies() -> void:
 func _find_enemy_spawn_markers() -> Array[Marker2D]:
 	var result: Array[Marker2D] = []
 	# Search recursively — markers may live in root Spawns/ or inside a layout child.
-	var all_markers := _room.find_children("EnemySpawn_*", "Marker2D", true, false)
+	var all_markers := _room.find_children("EnemySpawner_*", "Marker2D", true, false)
 	for node: Node in all_markers:
 		var m := node as Marker2D
 		if m != null:
@@ -188,7 +188,7 @@ func _unlock_doors() -> void:
 		_legacy_set_exits_locked(false)
 		return
 	for door in doors:
-		door.open()
+		door.set_state(door.initial_state)
 
 
 # Returns all Door nodes under Doors/ that are actual exits (not walled off).
