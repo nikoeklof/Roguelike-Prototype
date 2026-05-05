@@ -203,6 +203,7 @@ func _spawn(plan: FloorGenerator.FloorPlan) -> void:
 		_inject_floor_theme(inst)
 		_inject_door_theme(inst)
 		_inject_layout(inst, rn, is_xl, coord)
+		_inject_prop_theme(inst)
 
 		if spawn_room_items:
 			_wire_item_spawners_for_room(inst, coord)
@@ -345,6 +346,15 @@ func _inject_door_theme(room: Node2D) -> void:
 		var door := node as Door
 		if door != null:
 			door.apply_theme(theme.door_texture)
+
+
+func _inject_prop_theme(room: Node2D) -> void:
+	var theme := _get_active_theme()
+	if theme == null or theme.prop_spritesheet == null:
+		return
+	for node: Node in room.find_children("*", "", true, false):
+		if node.is_in_group(&"prop") and node.has_method(&"apply_theme_spritesheet"):
+			node.apply_theme_spritesheet(theme.prop_spritesheet)
 
 
 func _inject_layout(room: Node2D, rn: FloorGenerator.RoomNode, is_xl: bool, coord: Vector2i) -> void:

@@ -21,6 +21,10 @@ class_name FloorTheme
 ## Must be the same dungeon spritesheet variant as the rest of the theme.
 @export var door_texture: Texture2D
 
+## Spritesheet swapped onto every prop in the room.
+## All prop variant sheets must share identical sprite layout so region_rects stay valid.
+@export var prop_spritesheet: Texture2D
+
 
 func covers_depth(depth: int) -> bool:
 	return depth >= depth_range.x and depth <= depth_range.y

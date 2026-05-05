@@ -3,8 +3,8 @@
 [ext_resource type="PackedScene" uid="uid://bc5opk6hrhyng" path="res://Scenes/Entities/AI/BaseEnemy.tscn" id="1_so0ye"]
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="2_373f7"]
 [ext_resource type="Resource" uid="uid://du2xohmhqnykk" path="res://Resources/Items/BaseTypes/Base_Pistol.tres" id="3_7xhb8"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_Frailty.tres" id="4_373f7"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_Slow.tres" id="5_7xhb8"]
+[ext_resource type="Resource" uid="uid://c38gr0st0mpao" path="res://Resources/Items/BaseTypes/Base_Frailty.tres" id="4_373f7"]
+[ext_resource type="Resource" uid="uid://b4leq7gqugxla" path="res://Resources/Items/BaseTypes/Base_Slow.tres" id="5_7xhb8"]
 
 [node name="EnemyCasterDebuffer" unique_id=698630020 instance=ExtResource("1_so0ye")]
 

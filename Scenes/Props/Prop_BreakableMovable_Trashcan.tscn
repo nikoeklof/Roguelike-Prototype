@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://bnp1vfyxvpudf"]
+
+[ext_resource type="Script" uid="uid://wsv53w4d80fq" path="res://Scripts/Props/Prop_BreakableMovable.gd" id="1_obbts"]
+[ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_j863q"]
+[ext_resource type="Script" uid="uid://br17e58m0jn6e" path="res://Scripts/Components/Movement/Mover.gd" id="2_s08gr"]
+[ext_resource type="Script" uid="uid://02a1iudasv4d" path="res://Scripts/Components/Health/Health.gd" id="3_j863q"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_s08gr"]
+radius = 5.5
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_j863q"]
+radius = 5.5
+
+[node name="Prop_BreakableMovable_TrashCan" type="RigidBody2D" unique_id=1873728884]
+collision_layer = 2147483648
+collision_mask = 2147483649
+mass = 90.0
+gravity_scale = 0.0
+lock_rotation = true
+script = ExtResource("1_obbts")
+drag = 0.01
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1645405662]
+position = Vector2(0, 7)
+scale = Vector2(2, 2)
+shape = SubResource("CircleShape2D_s08gr")
+
+[node name="Mover" type="Node" parent="." unique_id=1653561257]
+script = ExtResource("2_s08gr")
+mass = 125.0
+
+[node name="Health" type="Node" parent="." unique_id=952644133]
+script = ExtResource("3_j863q")
+max_hp = 35.0
+
+[node name="Hurtbox" type="Area2D" parent="." unique_id=2142504023]
+scale = Vector2(2, 2)
+collision_layer = 32768
+collision_mask = 128
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=155515598]
+position = Vector2(0, 3.5)
+shape = SubResource("CircleShape2D_j863q")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=388369208]
+texture_filter = 5
+scale = Vector2(2, 2)
+texture = ExtResource("2_j863q")
+region_enabled = true
+region_rect = Rect2(160, 96, 16, 16)

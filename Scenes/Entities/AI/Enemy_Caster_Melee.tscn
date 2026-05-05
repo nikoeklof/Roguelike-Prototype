@@ -2,8 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://bc5opk6hrhyng" path="res://Scenes/Entities/AI/BaseEnemy.tscn" id="1_giurr"]
 [ext_resource type="Script" uid="uid://cc4l8ud3h2kg7" path="res://Scripts/Items/BaseItemType.gd" id="2_cjn07"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_BattleTrance.tres" id="3_6yhai"]
-[ext_resource type="Resource" path="res://Resources/Items/BaseTypes/Base_StoneSkin.tres" id="4_o2ugr"]
+[ext_resource type="Resource" uid="uid://dgm58on3v30gu" path="res://Resources/Items/BaseTypes/Base_BattleTrance.tres" id="3_6yhai"]
+[ext_resource type="Resource" uid="uid://d0w3klfjdm3rg" path="res://Resources/Items/BaseTypes/Base_StoneSkin.tres" id="4_o2ugr"]
 
 [node name="EnemyCasterMelee" unique_id=698630020 instance=ExtResource("1_giurr")]
 

@@ -7,7 +7,15 @@ class_name Mover
 @export_range(0.0, 10000.0, 1.0) var friction := 900.0
 @export_range(0.0, 50.0, 0.1) var deadzone := 5.0
 
+## Mass used for collision-based momentum transfer.
+## Heavier objects push lighter ones harder and lose less speed doing so.
+@export_range(1.0, 9999.0, 1.0) var mass: float = 70.0
+
 var intent: Vector2 = Vector2.ZERO
+
+## Cached from the previous frame's collision pass.
+## Scales max speed when pushing objects heavier than self.
+var _push_speed_factor: float = 1.0
 
 func apply(entity: CharacterBody2D, delta: float) -> void:
 	# Capability gate lives in the execution component (Mover).
@@ -51,7 +59,8 @@ func apply(entity: CharacterBody2D, delta: float) -> void:
 
 	# Effective intent: blocked movement ignores input
 	var eff_intent := Vector2.ZERO if move_blocked else intent
-	var target := eff_intent * effective_move_speed
+	# Scale max speed by push resistance from last frame's heavy-object collision.
+	var target := eff_intent * effective_move_speed * _push_speed_factor
 
 	# Apply acceleration or friction
 	if eff_intent != Vector2.ZERO:
@@ -76,5 +85,37 @@ func apply(entity: CharacterBody2D, delta: float) -> void:
 	if entity.velocity.length() < effective_deadzone:
 		entity.velocity = Vector2.ZERO
 	
+	# Save velocity before move_and_slide — slide zeroes the approach component,
+	# so approach_speed must be computed from pre-slide velocity.
+	var pre_slide_velocity := entity.velocity
+
 	# Actually move the entity
 	entity.move_and_slide()
+
+	# Collision-based momentum transfer + push resistance for next frame.
+	var next_push_factor := 1.0
+	for i: int in entity.get_slide_collision_count():
+		var col: KinematicCollision2D = entity.get_slide_collision(i)
+		var other: Object = col.get_collider()
+		var push_dir: Vector2 = -col.get_normal()
+		var approach_speed: float = pre_slide_velocity.dot(push_dir)
+		if approach_speed <= 0.0:
+			continue
+
+		if other is RigidBody2D:
+			var rb := other as RigidBody2D
+			var combined := mass + rb.mass
+			# Track the most restrictive resistance from all current RigidBody contacts.
+			next_push_factor = minf(next_push_factor, mass / combined)
+			var prop_delta_v := approach_speed * mass / combined
+			rb.apply_central_impulse(push_dir * prop_delta_v * rb.mass)
+		elif other is CharacterBody2D:
+			var other_mover: Mover = (other as Node).get_node_or_null("Mover") as Mover
+			if other_mover == null:
+				continue
+			var combined := mass + other_mover.mass
+			next_push_factor = minf(next_push_factor, mass / combined)
+			var transferred: float = approach_speed * mass / combined
+			(other as CharacterBody2D).velocity += push_dir * transferred
+
+	_push_speed_factor = next_push_factor

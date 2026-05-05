@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://cy21vtbywogr8"]
+
+[ext_resource type="Script" uid="uid://djjenvow2fxvr" path="res://Scripts/Props/Prop_Static.gd" id="1_bqu1b"]
+[ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_1m254"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_bqu1b"]
+radius = 15.0
+height = 89.0
+
+[node name="Prop_Static" type="StaticBody2D" unique_id=793659460]
+scale = Vector2(2, 2)
+collision_layer = 2147483648
+collision_mask = 0
+script = ExtResource("1_bqu1b")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=856611647]
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_bqu1b")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1005046826]
+z_index = -20
+z_as_relative = false
+texture_filter = 5
+scale = Vector2(2, 2)
+texture = ExtResource("2_1m254")
+region_enabled = true
+region_rect = Rect2(258, 118, 44, 16)

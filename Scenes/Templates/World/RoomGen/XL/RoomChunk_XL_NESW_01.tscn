@@ -7,17 +7,11 @@ absorbent = true
 [sub_resource type="RectangleShape2D" id="HS1"]
 size = Vector2(344, 16)
 
-[sub_resource type="RectangleShape2D" id="HD1"]
-size = Vector2(80, 16)
-
 [sub_resource type="RectangleShape2D" id="HM1"]
 size = Vector2(720, 16)
 
 [sub_resource type="RectangleShape2D" id="VS1"]
 size = Vector2(16, 344)
-
-[sub_resource type="RectangleShape2D" id="VD1"]
-size = Vector2(16, 80)
 
 [sub_resource type="RectangleShape2D" id="VM1"]
 size = Vector2(16, 720)
@@ -63,17 +57,9 @@ physics_material_override = SubResource("PM1")
 position = Vector2(188, 8)
 shape = SubResource("HS1")
 
-[node name="NorthWall_Door1" type="CollisionShape2D" parent="RoomCollision" unique_id=429040160]
-position = Vector2(400, 8)
-shape = SubResource("HD1")
-
 [node name="NorthWall_Mid" type="CollisionShape2D" parent="RoomCollision" unique_id=236700284]
 position = Vector2(800, 8)
 shape = SubResource("HM1")
-
-[node name="NorthWall_Door2" type="CollisionShape2D" parent="RoomCollision" unique_id=1322789611]
-position = Vector2(1200, 8)
-shape = SubResource("HD1")
 
 [node name="NorthWall_Right" type="CollisionShape2D" parent="RoomCollision" unique_id=163442218]
 position = Vector2(1412, 8)
@@ -83,17 +69,9 @@ shape = SubResource("HS1")
 position = Vector2(188, 1592)
 shape = SubResource("HS1")
 
-[node name="SouthWall_Door1" type="CollisionShape2D" parent="RoomCollision" unique_id=2124739220]
-position = Vector2(400, 1592)
-shape = SubResource("HD1")
-
 [node name="SouthWall_Mid" type="CollisionShape2D" parent="RoomCollision" unique_id=989691798]
 position = Vector2(800, 1592)
 shape = SubResource("HM1")
-
-[node name="SouthWall_Door2" type="CollisionShape2D" parent="RoomCollision" unique_id=935331218]
-position = Vector2(1200, 1592)
-shape = SubResource("HD1")
 
 [node name="SouthWall_Right" type="CollisionShape2D" parent="RoomCollision" unique_id=2069114580]
 position = Vector2(1412, 1592)
@@ -103,17 +81,9 @@ shape = SubResource("HS1")
 position = Vector2(1592, 188)
 shape = SubResource("VS1")
 
-[node name="EastWall_Door1" type="CollisionShape2D" parent="RoomCollision" unique_id=525687478]
-position = Vector2(1592, 400)
-shape = SubResource("VD1")
-
 [node name="EastWall_Mid" type="CollisionShape2D" parent="RoomCollision" unique_id=638034481]
 position = Vector2(1592, 800)
 shape = SubResource("VM1")
-
-[node name="EastWall_Door2" type="CollisionShape2D" parent="RoomCollision" unique_id=109700373]
-position = Vector2(1592, 1200)
-shape = SubResource("VD1")
 
 [node name="EastWall_Bottom" type="CollisionShape2D" parent="RoomCollision" unique_id=346900747]
 position = Vector2(1592, 1412)
@@ -123,17 +93,9 @@ shape = SubResource("VS1")
 position = Vector2(8, 188)
 shape = SubResource("VS1")
 
-[node name="WestWall_Door1" type="CollisionShape2D" parent="RoomCollision" unique_id=727348230]
-position = Vector2(8, 400)
-shape = SubResource("VD1")
-
 [node name="WestWall_Mid" type="CollisionShape2D" parent="RoomCollision" unique_id=936677152]
 position = Vector2(8, 800)
 shape = SubResource("VM1")
-
-[node name="WestWall_Door2" type="CollisionShape2D" parent="RoomCollision" unique_id=254428292]
-position = Vector2(8, 1200)
-shape = SubResource("VD1")
 
 [node name="WestWall_Bottom" type="CollisionShape2D" parent="RoomCollision" unique_id=647524524]
 position = Vector2(8, 1412)

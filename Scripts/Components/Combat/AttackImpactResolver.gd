@@ -57,8 +57,11 @@ static func apply_hit(
 	if snapshot != null:
 		knockback = snapshot.knockback
 
-	if knockback > 0.0 and victim_root is CharacterBody2D:
-		var body: CharacterBody2D = victim_root as CharacterBody2D
-		body.velocity += resolved_dir * knockback
+	if knockback > 0.0:
+		if victim_root is RigidBody2D:
+			var rb := victim_root as RigidBody2D
+			rb.apply_central_impulse(resolved_dir * knockback * rb.mass)
+		elif victim_root is CharacterBody2D:
+			(victim_root as CharacterBody2D).velocity += resolved_dir * knockback
 
 	return true

@@ -112,11 +112,17 @@ func _check_world_hit(from_pos: Vector2, to_pos: Vector2) -> bool:
 	if hit.is_empty():
 		return false
 
-	# Hit world: place at impact and die
+	# Hit world or solid prop: place at impact and die
 	var hit_pos: Vector2 = hit.get("position", to_pos)
 	global_position = hit_pos
 	if debug_print:
 		print("[Projectile] hit WORLD at ", hit_pos)
+
+	# Push solid movable props (RigidBody2D on World layer).
+	var collider: Object = hit.get("collider")
+	if collider != null and collider.has_method(&"receive_projectile_impulse"):
+		collider.receive_projectile_impulse(_dir, _knockback)
+
 	queue_free()
 	return true
 
@@ -154,9 +160,12 @@ func _try_hit(other: Node) -> void:
 		return
 
 	var applied: bool = hp.take_damage(_damage, _owner_entity)
-	if applied and _knockback > 0.0 and victim_root is CharacterBody2D:
-		var cb: CharacterBody2D = victim_root as CharacterBody2D
-		cb.velocity += _dir * _knockback
+	if applied and _knockback > 0.0:
+		if victim_root is RigidBody2D:
+			var rb := victim_root as RigidBody2D
+			rb.apply_central_impulse(_dir * _knockback * rb.mass)
+		elif victim_root is CharacterBody2D:
+			(victim_root as CharacterBody2D).velocity += _dir * _knockback
 
 	_remaining_hits -= 1
 	if debug_print:

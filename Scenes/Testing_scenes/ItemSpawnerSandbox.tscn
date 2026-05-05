@@ -4,11 +4,15 @@
 [ext_resource type="PackedScene" uid="uid://wj0aehlmsmj3" path="res://Scenes/UI/DebugHUD.tscn" id="2_tiaw2"]
 [ext_resource type="PackedScene" uid="uid://ma5wcevbvg61" path="res://Scenes/UI/GameOver.tscn" id="4_kyx5t"]
 [ext_resource type="PackedScene" uid="uid://cp7rnx4qw2m8b" path="res://Scenes/UI/PauseMenu.tscn" id="5_tiaw2"]
-[ext_resource type="Script" uid="uid://dpt1ah3dct4go" path="res://Scripts/World/Spawners/ItemSpawner.gd" id="6_x3clo"]
-[ext_resource type="PackedScene" uid="uid://rquedc3lql6p" path="res://Scenes/Entities/AI/enemy_caster_debuffer.tscn" id="7_x3clo"]
+[ext_resource type="PackedScene" uid="uid://40h411cyawjb" path="res://Scenes/Props/Prop_Static_TallBush.tscn" id="5_x3clo"]
+[ext_resource type="PackedScene" uid="uid://bnp1vfyxvpudf" path="res://Scenes/Props/Prop_BreakableMovable_Trashcan.tscn" id="6_sn2kg"]
+[ext_resource type="PackedScene" uid="uid://r0bftx73y6j0" path="res://Scenes/Props/Prop_Movable_Box.tscn" id="7_x3clo"]
+[ext_resource type="PackedScene" uid="uid://sqq6tgxsrp5y" path="res://Scenes/Props/Prop_Breakable_VendingMachine.tscn" id="8_sn2kg"]
+[ext_resource type="PackedScene" uid="uid://cy21vtbywogr8" path="res://Scenes/Props/Prop_Static_Table.tscn" id="9_s54dy"]
+[ext_resource type="PackedScene" uid="uid://buo868etml330" path="res://Scenes/Props/Prop_Movable_Chair.tscn" id="10_ypj4y"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
-size = Vector2(1169, 29.33334)
+size = Vector2(1024, 29.33334)
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_tj7c2"]
 vertices = PackedVector2Array(1136.0625, -459, 1142.9297, 692.0078, 813, 112, 812, 89, -65.96875, -459, 347, 86, -63.023438, 693.97656, 341, 114)
@@ -52,7 +56,7 @@ shape = SubResource("RectangleShape2D_3dogw")
 position = Vector2(540, 594)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="floor5" unique_id=1463025990]
-position = Vector2(37, -492.5)
+position = Vector2(36, -490)
 scale = Vector2(0.375, 0.375)
 shape = SubResource("RectangleShape2D_3dogw")
 
@@ -79,16 +83,44 @@ visible = false
 [node name="PauseMenu" parent="." unique_id=1780816859 instance=ExtResource("5_tiaw2")]
 visible = false
 
-[node name="EnemyCasterDebuffer" parent="." unique_id=1731162879 instance=ExtResource("7_x3clo")]
-position = Vector2(445, -8)
+[node name="Prop_Static_TallBush" parent="." unique_id=793659460 instance=ExtResource("5_x3clo")]
+position = Vector2(592, 192)
+scale = Vector2(2, 2)
 
-[node name="EnemyCasterDebuffer2" parent="." unique_id=698630020 instance=ExtResource("7_x3clo")]
-position = Vector2(452, -104)
+[node name="Prop_BreakableMovable_TrashCan" parent="." unique_id=374399205 instance=ExtResource("6_sn2kg")]
+y_sort_enabled = true
+position = Vector2(664, 227)
 
-[node name="EnemyCasterDebuffer3" parent="." unique_id=990515297 instance=ExtResource("7_x3clo")]
-position = Vector2(541, -61)
+[node name="Prop_Movable_Box" parent="." unique_id=235828422 instance=ExtResource("7_x3clo")]
+position = Vector2(657, 146)
 
-[node name="ItemSpawner" type="Node2D" parent="." unique_id=77439898]
-position = Vector2(677, 268)
-script = ExtResource("6_x3clo")
-metadata/_custom_type_script = "uid://dpt1ah3dct4go"
+[node name="Prop_Breakable_VendingMachine" parent="." unique_id=932954203 instance=ExtResource("8_sn2kg")]
+position = Vector2(366, 151)
+scale = Vector2(2, 2)
+
+[node name="Prop_Static" parent="." unique_id=2109853667 instance=ExtResource("9_s54dy")]
+position = Vector2(408, 263)
+
+[node name="Prop_Movable" parent="." unique_id=2107076773 instance=ExtResource("10_ypj4y")]
+position = Vector2(384, 307)
+
+[node name="Prop_Movable2" parent="." unique_id=924145636 instance=ExtResource("10_ypj4y")]
+position = Vector2(423, 307)
+
+[node name="Prop_Movable3" parent="." unique_id=1617263370 instance=ExtResource("10_ypj4y")]
+position = Vector2(344, 307)
+
+[node name="Prop_Movable4" parent="." unique_id=1147860045 instance=ExtResource("10_ypj4y")]
+position = Vector2(458, 307)
+
+[node name="Prop_Movable5" parent="." unique_id=1740141223 instance=ExtResource("10_ypj4y")]
+position = Vector2(387, 225)
+
+[node name="Prop_Movable6" parent="." unique_id=154562772 instance=ExtResource("10_ypj4y")]
+position = Vector2(426, 225)
+
+[node name="Prop_Movable7" parent="." unique_id=2023277444 instance=ExtResource("10_ypj4y")]
+position = Vector2(347, 225)
+
+[node name="Prop_Movable8" parent="." unique_id=519489231 instance=ExtResource("10_ypj4y")]
+position = Vector2(461, 225)
