@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://wsv53w4d80fq" path="res://Scripts/Props/Prop_BreakableMovable.gd" id="1"]
 [ext_resource type="Script" uid="uid://02a1iudasv4d" path="res://Scripts/Components/Health/Health.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_20f6l"]
+[ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
 
 [node name="Prop_BreakableMovable_Solid" type="RigidBody2D" unique_id=623649801]
 collision_mask = 33
@@ -26,3 +27,6 @@ collision_mask = 0
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=1059332499]
+
+[node name="YSorter" type="Node" parent="."]
+script = ExtResource("ys")

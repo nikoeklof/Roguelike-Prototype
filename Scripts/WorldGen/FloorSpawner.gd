@@ -373,7 +373,8 @@ func _inject_layout(room: Node2D, rn: FloorGenerator.RoomNode, is_xl: bool, coor
 	room.add_child(layout)
 	used.append(layout_scene.resource_path)
 	for node: Node in layout.find_children("", "TileMapLayer", true, false):
-		(node as TileMapLayer).z_index = -1
+		(node as TileMapLayer).z_index = -4096
+		(node as TileMapLayer).z_as_relative = false
 
 
 # --------------------------------------------------

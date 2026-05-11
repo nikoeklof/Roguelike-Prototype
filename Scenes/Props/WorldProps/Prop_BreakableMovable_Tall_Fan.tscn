@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://wsv53w4d80fq" path="res://Scripts/Props/Prop_BreakableMovable.gd" id="1_oj535"]
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_wh8lb"]
 [ext_resource type="Script" uid="uid://02a1iudasv4d" path="res://Scripts/Components/Health/Health.gd" id="3_1eh5j"]
+[ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_w5kgg"]
 radius = 18.027756
@@ -40,3 +41,6 @@ scale = Vector2(2.5, 2.5)
 texture = ExtResource("2_wh8lb")
 region_enabled = true
 region_rect = Rect2(128, 98, 16, 14)
+
+[node name="YSorter" type="Node" parent="."]
+script = ExtResource("ys")

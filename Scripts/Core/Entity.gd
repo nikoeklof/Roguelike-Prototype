@@ -110,7 +110,6 @@ func _find_node_with_script_ending(root: Node, filename: String) -> Node:
 
 
 func _physics_process(delta: float) -> void:
-	z_index = int(global_position.y)
 	var local_delta := delta
 	var time := _find_component(&"LocalTimeScale") as LocalTimeScale
 	if time:

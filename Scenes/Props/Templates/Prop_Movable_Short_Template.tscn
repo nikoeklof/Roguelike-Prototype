@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://rvepcfnidlu6" path="res://Scripts/Props/Prop_Movable.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2"]
+[ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
 
 [node name="Prop_Movable_Short" type="RigidBody2D" unique_id=275505260]
 collision_layer = 2147483648
@@ -22,3 +23,6 @@ collision_layer = 0
 collision_mask = 8
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitReceiver" unique_id=1478996405]
+
+[node name="YSorter" type="Node" parent="."]
+script = ExtResource("ys")

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://rvepcfnidlu6" path="res://Scripts/Props/Prop_Movable.gd" id="1_3xo5v"]
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_ighba"]
+[ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_iu4de"]
 
@@ -33,3 +34,6 @@ collision_mask = 8
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitReceiver" unique_id=224608208]
 shape = SubResource("RectangleShape2D_kl0w7")
+
+[node name="YSorter" type="Node" parent="."]
+script = ExtResource("ys")

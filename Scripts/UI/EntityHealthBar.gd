@@ -43,7 +43,7 @@ const FADE_DURATION: float = 0.5
 
 func _ready() -> void:
 	z_as_relative = false
-	z_index = 100000
+	z_index = 4096
 	# Position above entity
 	position = Vector2(0, y_offset)
 

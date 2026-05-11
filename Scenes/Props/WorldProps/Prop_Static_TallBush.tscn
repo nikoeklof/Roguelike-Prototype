@@ -2,11 +2,13 @@
 
 [ext_resource type="Script" uid="uid://djjenvow2fxvr" path="res://Scripts/Props/Prop_Static.gd" id="1_xea30"]
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_05e1g"]
+[ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_xea30"]
 radius = 16.0
 
 [node name="Prop_Static_TallBush" type="StaticBody2D" unique_id=1203845182]
+y_sort_enabled = true
 collision_mask = 0
 script = ExtResource("1_xea30")
 metadata/_custom_type_script = "uid://djjenvow2fxvr"
@@ -21,3 +23,6 @@ scale = Vector2(2, 2)
 texture = ExtResource("2_05e1g")
 region_enabled = true
 region_rect = Rect2(48, 48, 16, 32)
+
+[node name="YSorter" type="Node" parent="."]
+script = ExtResource("ys")

@@ -57,6 +57,8 @@ func _add_detection_area() -> void:
 		shape.position = Vector2(400.0, 400.0)
 	shape.shape = rect
 
+	_detection_area.z_index = -4095
+	_detection_area.z_as_relative = false
 	_detection_area.add_child(shape)
 	_detection_area.body_entered.connect(_on_body_entered)
 	_room.add_child(_detection_area)

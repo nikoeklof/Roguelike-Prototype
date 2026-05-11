@@ -17,14 +17,8 @@ signal prop_moved(velocity: Vector2)
 
 func _ready() -> void:
 	add_to_group(&"prop")
-	z_as_relative = false
-	z_index = int(global_position.y)
 	_health.damaged.connect(_on_damaged)
 	_health.died.connect(_on_died)
-
-
-func _process(_delta: float) -> void:
-	z_index = int(global_position.y)
 
 func apply_theme_spritesheet(spritesheet: Texture2D) -> void:
 	($Sprite2D as Sprite2D).texture = spritesheet

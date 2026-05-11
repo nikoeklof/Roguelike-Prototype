@@ -39,6 +39,7 @@
 [ext_resource type="Resource" uid="uid://bijjyqyfgaxme" path="res://Resources/Items/BaseTypes/Base_ActiveKnight.tres" id="36_dkplh"]
 [ext_resource type="Resource" uid="uid://bx7fb2c3oa6gk" path="res://Resources/Items/BaseTypes/Base_ActiveBuckler.tres" id="37_82nsm"]
 [ext_resource type="Resource" uid="uid://r2rrq1r0s1ax" path="res://Resources/Items/BaseTypes/Base_PassiveLightWard.tres" id="38_yc78x"]
+[ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
 
 [sub_resource type="Resource" id="Resource_rmh8v"]
 script = ExtResource("14_s8hwr")
@@ -374,6 +375,8 @@ height = 9.0
 radius = 25.0
 
 [node name="Player" type="CharacterBody2D" unique_id=423000657]
+z_index = 1
+y_sort_enabled = true
 collision_layer = 2
 collision_mask = 2147483657
 motion_mode = 1
@@ -459,9 +462,9 @@ position = Vector2(0, -5)
 scale = Vector2(2, 2)
 
 [node name="Sprite" type="AnimatedSprite2D" parent="Visual" unique_id=448449294]
-z_as_relative = false
+z_index = 1
 y_sort_enabled = true
-texture_filter = 1
+texture_filter = 5
 material = SubResource("ShaderMaterial_4vlro")
 position = Vector2(0.5, 0)
 scale = Vector2(0.9375, 1)
@@ -536,6 +539,9 @@ script = ExtResource("35_s8hwr")
 bar_height = 5.0
 hide_when_full = false
 metadata/_custom_type_script = "uid://0dxcoac7x0wu"
+
+[node name="YSorter" type="Node" parent="."]
+script = ExtResource("ys")
 
 [editable path="Equipment"]
 [editable path="StateHandler"]
