@@ -25,7 +25,7 @@ clump_penalty = 4.0
 straight_bias = 1.5
 player_path = NodePath("../Player")
 enemy_scenes = Array[PackedScene]([ExtResource("3_1erf8"), ExtResource("4_0ims0"), ExtResource("5_u0cq4"), ExtResource("6_vipik"), ExtResource("7_3k6cy")])
-combat_chance = 0.7
+combat_chance = 0.85
 
 [node name="DebugHud" parent="." unique_id=1698329193 instance=ExtResource("3_5cmkh")]
 player_root_path = NodePath("../Player")

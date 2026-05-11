@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://02a1iudasv4d" path="res://Scripts/Components/Health/Health.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_212es"]
 [ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
+[ext_resource type="Script" path="res://Scripts/NavObstacleFromShape.gd" id="nav_obs"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_212es"]
 radius = 7.0
@@ -43,3 +44,6 @@ shape = SubResource("RectangleShape2D_1l2jr")
 
 [node name="YSorter" type="Node" parent="."]
 script = ExtResource("ys")
+
+[node name="NavObstacle" type="NavigationObstacle2D" parent="."]
+script = ExtResource("nav_obs")

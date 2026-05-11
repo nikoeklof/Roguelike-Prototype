@@ -36,7 +36,7 @@
 [ext_resource type="Resource" uid="uid://c38gr0st0mpao" path="res://Resources/Items/BaseTypes/Base_Frailty.tres" id="33_f7pjd"]
 [ext_resource type="Script" uid="uid://0dxcoac7x0wu" path="res://Scripts/UI/EntityHealthBar.gd" id="34_s5rif"]
 [ext_resource type="Resource" uid="uid://dgm58on3v30gu" path="res://Resources/Items/BaseTypes/Base_BattleTrance.tres" id="34_wpril"]
-[ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
+[ext_resource type="Script" uid="uid://bxgbx0p0doylv" path="res://Scripts/YSorter.gd" id="ys"]
 
 [sub_resource type="Resource" id="Resource_rmh8v"]
 script = ExtResource("14_pu3nb")
@@ -365,8 +365,8 @@ radius = 7.0
 height = 20.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_c3k3q"]
-radius = 7.0
-height = 20.0
+radius = 5.5
+height = 13.0
 
 [node name="EnemyMelee" type="CharacterBody2D" unique_id=698630020]
 collision_layer = 8
@@ -474,8 +474,7 @@ position = Vector2(-0.5, 2)
 shape = SubResource("CapsuleShape2D_l5ryf")
 
 [node name="WorldCollider" type="CollisionShape2D" parent="." unique_id=1239787640]
-visible = false
-position = Vector2(-1, -1)
+position = Vector2(-1, 3)
 scale = Vector2(2, 2)
 shape = SubResource("CapsuleShape2D_c3k3q")
 
@@ -518,7 +517,7 @@ metadata/_custom_type_script = "uid://0dxcoac7x0wu"
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="." unique_id=797994576]
 avoidance_enabled = true
 
-[node name="YSorter" type="Node" parent="."]
+[node name="YSorter" type="Node" parent="." unique_id=882245543]
 script = ExtResource("ys")
 
 [editable path="Equipment"]

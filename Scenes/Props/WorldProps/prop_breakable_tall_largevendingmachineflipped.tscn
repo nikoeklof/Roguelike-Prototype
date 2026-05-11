@@ -24,3 +24,8 @@ max_hp = 150.0
 [node name="CollisionShape2D" parent="Hurtbox" parent_id_path=PackedInt32Array(686228224) index="0" unique_id=1315611956]
 position = Vector2(0, -6)
 shape = SubResource("RectangleShape2D_0t8i4")
+
+[node name="NavObstacle" parent="." index="5"]
+vertices = PackedVector2Array(-15, -12, -15, 0, 15, 0, 15, -12)
+affect_navigation_mesh = true
+carve_navigation_mesh = true

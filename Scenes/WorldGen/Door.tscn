@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://b7hyf710x3tht"]
 
 [ext_resource type="Script" uid="uid://cj57h5ccrvbjm" path="res://Scripts/WorldGen/Door.gd" id="1_7namt"]
+[ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys_door"]
 [ext_resource type="Texture2D" uid="uid://sdsvj1dhlc7j" path="res://Art/Spritesheets/blue_dungeon.png" id="1_67tt4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_7namt"]
@@ -19,3 +20,6 @@ texture = ExtResource("1_67tt4")
 region_enabled = true
 region_rect = Rect2(96, 16, 32, 16)
 region_filter_clip_enabled = true
+
+[node name="YSorter" type="Node" parent="."]
+script = ExtResource("ys_door")

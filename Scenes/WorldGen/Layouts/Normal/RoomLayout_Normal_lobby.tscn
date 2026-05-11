@@ -9,6 +9,12 @@
 [ext_resource type="PackedScene" uid="uid://cs12e4i0iykiv" path="res://Scenes/Props/WorldProps/prop_breakable_movable_tall_ATMflipped.tscn" id="7_v3oe4"]
 [ext_resource type="PackedScene" uid="uid://cm7q2amotijfn" path="res://Scenes/Props/WorldProps/prop_breakable_tall_largevendingmachineflipped.tscn" id="8_k1tam"]
 
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_n50ki"]
+vertices = PackedVector2Array(240, 786, 790, 790, 10, 790, 160, 786, 458.35156, 368, 477.6875, 363, 546.3125, 363, 546.3125, 445, 477.6875, 445, 458.35156, 432, 454.82813, 418.82813, 454.82813, 381.17188, 469.32813, 360.77344, 790, 10, 564.35156, 344, 561.77344, 334.32813, 564.35156, 464, 561.77344, 454.32813, 561.77344, 353.67188, 554.6719, 447.22656, 554.6719, 360.77344, 469.32813, 447.22656, 454.82813, 445.17188, 561.77344, 473.67188, 354.82813, 345.17188, 345.17188, 354.82813, 340.35156, 344, 337.77344, 334.32813, 337.77344, 353.67188, 341.64844, 368, 462.22656, 454.32813, 445.17188, 454.82813, 454.82813, 354.82813, 462.22656, 353.67188, 554.6719, 327.22656, 240, 58, 240, 14, 546.3125, 325, 477.6875, 325, 469.32813, 327.22656, 554.6719, 480.77344, 546.3125, 483, 477.6875, 483, 240, 742, 469.32813, 480.77344, 445.17188, 409.17188, 445.17188, 390.82813, 432, 405.64844, 432, 394.35156, 330.67188, 360.77344, 459.64844, 464, 432, 458.35156, 459.64844, 344, 445.17188, 345.17188, 10, 10, 160, 14, 160, 742, 160, 58, 235.64844, 464, 337.77344, 473.67188, 462.22656, 473.67188, 330.67188, 480.77344, 462.22656, 334.32813, 432, 341.64844, 340.35156, 464, 322.3125, 483, 253.6875, 483, 245.32813, 480.77344, 418.82813, 409.17188, 418.82813, 390.82813, 394.35156, 432, 409.17188, 418.82813, 405.64844, 432, 390.82813, 445.17188, 390.82813, 418.82813, 409.17188, 445.17188, 381.17188, 454.82813, 394.35156, 368, 409.17188, 354.82813, 405.64844, 368, 390.82813, 381.17188, 390.82813, 354.82813, 381.17188, 390.82813, 409.17188, 381.17188, 381.17188, 409.17188, 368, 405.64844, 418.82813, 345.17188, 381.17188, 345.17188, 368, 341.64844, 330.67188, 327.22656, 322.3125, 325, 253.6875, 325, 245.32813, 327.22656, 238.22656, 334.32813, 322.3125, 363, 345.17188, 381.17188, 345.17188, 418.82813, 418.82813, 454.82813, 368, 458.35156, 238.22656, 473.67188, 368, 394.35156, 354.82813, 409.17188, 354.82813, 390.82813, 253.6875, 363, 341.64844, 432, 330.67188, 447.22656, 245.32813, 360.77344, 345.17188, 445.17188, 337.77344, 454.32813, 235.64844, 344, 354.82813, 454.82813, 322.3125, 445, 253.6875, 445, 245.32813, 447.22656, 238.22656, 454.32813, 238.22656, 353.67188)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 5, 6, 7, 8, 9, 10, 11), PackedInt32Array(12, 5, 4), PackedInt32Array(13, 1, 14, 15), PackedInt32Array(14, 1, 16, 17, 18), PackedInt32Array(18, 17, 19, 20), PackedInt32Array(9, 8, 21, 22), PackedInt32Array(23, 16, 1), PackedInt32Array(24, 25, 26, 27), PackedInt32Array(28, 26, 25, 29), PackedInt32Array(22, 21, 30, 31), PackedInt32Array(12, 4, 32, 33), PackedInt32Array(20, 19, 7, 6), PackedInt32Array(13, 15, 34), PackedInt32Array(35, 36, 13, 34, 37), PackedInt32Array(35, 37, 38), PackedInt32Array(35, 38, 39), PackedInt32Array(40, 23, 1), PackedInt32Array(40, 1, 0, 41), PackedInt32Array(42, 41, 0, 43), PackedInt32Array(44, 42, 43), PackedInt32Array(11, 10, 45, 46), PackedInt32Array(46, 45, 47, 48), PackedInt32Array(49, 28, 29), PackedInt32Array(31, 30, 50, 51), PackedInt32Array(52, 33, 32, 53), PackedInt32Array(54, 13, 36, 55), PackedInt32Array(3, 2, 54, 56), PackedInt32Array(54, 55, 57), PackedInt32Array(43, 56, 54, 57, 58), PackedInt32Array(59, 60, 44, 43, 61), PackedInt32Array(35, 39, 62, 53, 63), PackedInt32Array(59, 64, 51, 50, 60), PackedInt32Array(65, 61, 43), PackedInt32Array(66, 65, 43), PackedInt32Array(67, 66, 43), PackedInt32Array(48, 47, 68, 69), PackedInt32Array(70, 71, 72, 73), PackedInt32Array(71, 70, 74, 69, 68), PackedInt32Array(73, 72, 75, 76), PackedInt32Array(77, 78, 79, 80), PackedInt32Array(78, 77, 81), PackedInt32Array(82, 80, 79, 83, 84, 85), PackedInt32Array(62, 52, 53), PackedInt32Array(35, 63, 86), PackedInt32Array(35, 86, 78, 81, 87), PackedInt32Array(35, 87, 88), PackedInt32Array(35, 88, 24, 27, 89), PackedInt32Array(35, 89, 90), PackedInt32Array(35, 90, 91, 57), PackedInt32Array(57, 91, 92), PackedInt32Array(57, 92, 93), PackedInt32Array(94, 49, 29, 95, 96), PackedInt32Array(97, 51, 64, 98), PackedInt32Array(99, 67, 43), PackedInt32Array(69, 74, 84, 83), PackedInt32Array(100, 82, 85, 101), PackedInt32Array(102, 100, 101, 96), PackedInt32Array(95, 102, 96), PackedInt32Array(103, 94, 96, 104), PackedInt32Array(76, 75, 97), PackedInt32Array(105, 106, 103, 104, 107, 108), PackedInt32Array(57, 93, 109), PackedInt32Array(98, 76, 97), PackedInt32Array(110, 98, 64, 108), PackedInt32Array(107, 110, 108), PackedInt32Array(106, 105, 111), PackedInt32Array(106, 111, 112), PackedInt32Array(106, 112, 113), PackedInt32Array(106, 113, 114, 115), PackedInt32Array(115, 114, 58, 109), PackedInt32Array(57, 109, 58), PackedInt32Array(43, 58, 99)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(0, 0, 800, 0, 800, 800, 0, 800)])
+parsed_geometry_type = 1
+
 [node name="RoomLayoutNormalTemplate" unique_id=683270483 instance=ExtResource("1_n50ki")]
 
 [node name="EnemySpawner_1" parent="EnemySpawns" parent_id_path=PackedInt32Array(1424214682) index="0" unique_id=1710457442]
@@ -26,54 +32,58 @@ position = Vector2(288, 496)
 [node name="EnemySpawner_5" type="Marker2D" parent="EnemySpawns" parent_id_path=PackedInt32Array(1424214682) index="4" unique_id=373068077]
 position = Vector2(400, 400)
 
-[node name="Prop_BreakableMovable" parent="." index="3" unique_id=1800845453 instance=ExtResource("2_qwslu")]
-position = Vector2(234, 336)
-
-[node name="Prop_BreakableMovable2" parent="." index="4" unique_id=270185006 instance=ExtResource("2_qwslu")]
-position = Vector2(234, 456)
-
-[node name="Prop_BreakableMovable3" parent="." index="5" unique_id=172340039 instance=ExtResource("2_qwslu")]
-position = Vector2(568, 456)
-
-[node name="Prop_BreakableMovable4" parent="." index="6" unique_id=212966517 instance=ExtResource("2_qwslu")]
-position = Vector2(568, 336)
-
-[node name="Prop_BreakableMovable_Solid" parent="." index="7" unique_id=623649801 instance=ExtResource("3_aujnw")]
-position = Vector2(248, 24)
-
-[node name="Prop_Static_TallBush" parent="." index="8" unique_id=1203845182 instance=ExtResource("4_dnc1c")]
-position = Vector2(368, 352)
-
-[node name="Prop_Static_TallBush2" parent="." index="9" unique_id=549542590 instance=ExtResource("4_dnc1c")]
-position = Vector2(432, 352)
-
-[node name="Prop_Static_TallBush3" parent="." index="10" unique_id=1033532593 instance=ExtResource("4_dnc1c")]
-position = Vector2(368, 416)
-
-[node name="Prop_Static_TallBush4" parent="." index="11" unique_id=639449650 instance=ExtResource("4_dnc1c")]
-position = Vector2(432, 416)
-
-[node name="Prop_Static_Short" parent="." index="12" unique_id=741221275 instance=ExtResource("5_1nepp")]
-position = Vector2(288, 464)
-
-[node name="Prop_Static_Short3" parent="." index="13" unique_id=902137227 instance=ExtResource("5_1nepp")]
-position = Vector2(288, 344)
-
-[node name="Prop_Static_Short4" parent="." index="14" unique_id=1794632303 instance=ExtResource("5_1nepp")]
-position = Vector2(512, 344)
-
-[node name="Prop_Static_Short2" parent="." index="15" unique_id=1375978434 instance=ExtResource("5_1nepp")]
-position = Vector2(512, 464)
-
-[node name="Prop_Breakable_tall_largevendingmachine" parent="." index="16" unique_id=282397828 instance=ExtResource("6_3177u")]
-position = Vector2(200, 24)
-
-[node name="Prop_BreakableMovable_Solid2" parent="." index="17" unique_id=954148553 instance=ExtResource("7_v3oe4")]
-position = Vector2(248, 776)
-
-[node name="Prop_Breakable_tall_largevendingmachine2" parent="." index="18" unique_id=1946639458 instance=ExtResource("8_k1tam")]
-position = Vector2(200, 776)
-
 [node name="ItemSpawner" parent="ItemSpawns" parent_id_path=PackedInt32Array(234293909) index="0" unique_id=1939574588]
 unique_name_in_owner = true
 position = Vector2(400, 576)
+
+[node name="NavigationRegion2D2" type="NavigationRegion2D" parent="." index="4" unique_id=2133702054]
+navigation_polygon = SubResource("NavigationPolygon_n50ki")
+navigation_layers = 4294967295
+
+[node name="Prop_BreakableMovable" parent="NavigationRegion2D2" index="0" unique_id=1800845453 instance=ExtResource("2_qwslu")]
+position = Vector2(234, 336)
+
+[node name="Prop_BreakableMovable2" parent="NavigationRegion2D2" index="1" unique_id=270185006 instance=ExtResource("2_qwslu")]
+position = Vector2(234, 456)
+
+[node name="Prop_BreakableMovable3" parent="NavigationRegion2D2" index="2" unique_id=172340039 instance=ExtResource("2_qwslu")]
+position = Vector2(568, 456)
+
+[node name="Prop_BreakableMovable4" parent="NavigationRegion2D2" index="3" unique_id=212966517 instance=ExtResource("2_qwslu")]
+position = Vector2(568, 336)
+
+[node name="Prop_BreakableMovable_Solid" parent="NavigationRegion2D2" index="4" unique_id=623649801 instance=ExtResource("3_aujnw")]
+position = Vector2(248, 24)
+
+[node name="Prop_Static_TallBush" parent="NavigationRegion2D2" index="5" unique_id=1203845182 instance=ExtResource("4_dnc1c")]
+position = Vector2(368, 352)
+
+[node name="Prop_Static_TallBush2" parent="NavigationRegion2D2" index="6" unique_id=549542590 instance=ExtResource("4_dnc1c")]
+position = Vector2(432, 352)
+
+[node name="Prop_Static_TallBush3" parent="NavigationRegion2D2" index="7" unique_id=1033532593 instance=ExtResource("4_dnc1c")]
+position = Vector2(368, 416)
+
+[node name="Prop_Static_TallBush4" parent="NavigationRegion2D2" index="8" unique_id=639449650 instance=ExtResource("4_dnc1c")]
+position = Vector2(432, 416)
+
+[node name="Prop_Static_Short" parent="NavigationRegion2D2" index="9" unique_id=741221275 instance=ExtResource("5_1nepp")]
+position = Vector2(288, 464)
+
+[node name="Prop_Static_Short3" parent="NavigationRegion2D2" index="10" unique_id=902137227 instance=ExtResource("5_1nepp")]
+position = Vector2(288, 344)
+
+[node name="Prop_Static_Short4" parent="NavigationRegion2D2" index="11" unique_id=1794632303 instance=ExtResource("5_1nepp")]
+position = Vector2(512, 344)
+
+[node name="Prop_Static_Short2" parent="NavigationRegion2D2" index="12" unique_id=1375978434 instance=ExtResource("5_1nepp")]
+position = Vector2(512, 464)
+
+[node name="Prop_Breakable_tall_largevendingmachine" parent="NavigationRegion2D2" index="13" unique_id=282397828 instance=ExtResource("6_3177u")]
+position = Vector2(200, 24)
+
+[node name="Prop_BreakableMovable_Solid2" parent="NavigationRegion2D2" index="14" unique_id=954148553 instance=ExtResource("7_v3oe4")]
+position = Vector2(248, 776)
+
+[node name="Prop_Breakable_tall_largevendingmachine2" parent="NavigationRegion2D2" index="15" unique_id=1946639458 instance=ExtResource("8_k1tam")]
+position = Vector2(200, 776)

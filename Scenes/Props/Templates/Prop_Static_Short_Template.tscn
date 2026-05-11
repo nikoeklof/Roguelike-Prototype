@@ -2,7 +2,8 @@
 
 [ext_resource type="Script" uid="uid://djjenvow2fxvr" path="res://Scripts/Props/Prop_Static.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2"]
-[ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
+[ext_resource type="Script" uid="uid://cmycaexajaybc" path="res://Scripts/NavObstacleFromShape.gd" id="nav_obs"]
+[ext_resource type="Script" uid="uid://bxgbx0p0doylv" path="res://Scripts/YSorter.gd" id="ys"]
 
 [node name="Prop_Static_Short" type="StaticBody2D" unique_id=741221275]
 collision_layer = 2147483648
@@ -16,5 +17,10 @@ texture_filter = 5
 texture = ExtResource("2")
 region_enabled = true
 
-[node name="YSorter" type="Node" parent="."]
+[node name="YSorter" type="Node" parent="." unique_id=1956087306]
 script = ExtResource("ys")
+
+[node name="NavObstacle" type="NavigationObstacle2D" parent="." unique_id=2028240177]
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+script = ExtResource("nav_obs")

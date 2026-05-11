@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://02a1iudasv4d" path="res://Scripts/Components/Health/Health.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="3"]
 [ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
+[ext_resource type="Script" path="res://Scripts/NavObstacleFromShape.gd" id="nav_obs"]
 
 [node name="Prop_Breakable_Short" type="StaticBody2D" unique_id=912117815]
 collision_layer = 2147483648
@@ -29,3 +30,6 @@ monitoring = false
 
 [node name="YSorter" type="Node" parent="."]
 script = ExtResource("ys")
+
+[node name="NavObstacle" type="NavigationObstacle2D" parent="."]
+script = ExtResource("nav_obs")

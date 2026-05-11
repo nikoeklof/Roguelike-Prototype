@@ -2,7 +2,8 @@
 
 [ext_resource type="Script" uid="uid://djjenvow2fxvr" path="res://Scripts/Props/Prop_Static.gd" id="1_thnsu"]
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_g22yu"]
-[ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
+[ext_resource type="Script" uid="uid://cmycaexajaybc" path="res://Scripts/NavObstacleFromShape.gd" id="nav_obs"]
+[ext_resource type="Script" uid="uid://bxgbx0p0doylv" path="res://Scripts/YSorter.gd" id="ys"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_mv5cm"]
 radius = 9.0
@@ -24,5 +25,13 @@ texture = ExtResource("2_g22yu")
 region_enabled = true
 region_rect = Rect2(195, 148, 42, 9)
 
-[node name="YSorter" type="Node" parent="."]
+[node name="YSorter" type="Node" parent="." unique_id=2094881916]
 script = ExtResource("ys")
+
+[node name="NavObstacle" type="NavigationObstacle2D" parent="." unique_id=1743755606]
+radius = 10.0
+vertices = PackedVector2Array(-42, 9, 42, 9, 42, -9, -42, -9)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+avoidance_layers = 4294967295
+script = ExtResource("nav_obs")

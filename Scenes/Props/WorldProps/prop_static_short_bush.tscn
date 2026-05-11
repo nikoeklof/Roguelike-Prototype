@@ -14,3 +14,9 @@ shape = SubResource("RectangleShape2D_58xlp")
 [node name="Sprite2D" parent="." index="1" unique_id=1202502908]
 scale = Vector2(2, 2)
 region_rect = Rect2(80, 69, 16, 9)
+
+[node name="NavObstacle" parent="." index="3"]
+radius = 10.0
+vertices = PackedVector2Array(-16, 9, 16, 9, 16, -7, -16, -7)
+affect_navigation_mesh = true
+carve_navigation_mesh = true

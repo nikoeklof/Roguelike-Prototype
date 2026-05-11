@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_80fan"]
 [ext_resource type="Script" uid="uid://02a1iudasv4d" path="res://Scripts/Components/Health/Health.gd" id="3_xn2cy"]
 [ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
+[ext_resource type="Script" path="res://Scripts/NavObstacleFromShape.gd" id="nav_obs"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_jn6oc"]
 
@@ -35,3 +36,6 @@ shape = SubResource("CircleShape2D_qk4i2")
 
 [node name="YSorter" type="Node" parent="."]
 script = ExtResource("ys")
+
+[node name="NavObstacle" type="NavigationObstacle2D" parent="."]
+script = ExtResource("nav_obs")

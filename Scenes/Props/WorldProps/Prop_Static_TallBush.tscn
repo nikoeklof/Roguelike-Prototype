@@ -2,13 +2,13 @@
 
 [ext_resource type="Script" uid="uid://djjenvow2fxvr" path="res://Scripts/Props/Prop_Static.gd" id="1_xea30"]
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_05e1g"]
-[ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
+[ext_resource type="Script" uid="uid://cmycaexajaybc" path="res://Scripts/NavObstacleFromShape.gd" id="nav_obs"]
+[ext_resource type="Script" uid="uid://bxgbx0p0doylv" path="res://Scripts/YSorter.gd" id="ys"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_xea30"]
 radius = 16.0
 
 [node name="Prop_Static_TallBush" type="StaticBody2D" unique_id=1203845182]
-y_sort_enabled = true
 collision_mask = 0
 script = ExtResource("1_xea30")
 metadata/_custom_type_script = "uid://djjenvow2fxvr"
@@ -24,5 +24,12 @@ texture = ExtResource("2_05e1g")
 region_enabled = true
 region_rect = Rect2(48, 48, 16, 32)
 
-[node name="YSorter" type="Node" parent="."]
+[node name="YSorter" type="Node" parent="." unique_id=1719788346]
 script = ExtResource("ys")
+
+[node name="NavObstacle" type="NavigationObstacle2D" parent="." unique_id=1562238688]
+radius = 10.0
+vertices = PackedVector2Array(-16, 0, -16, 32, 16, 32, 16, 0)
+affect_navigation_mesh = true
+carve_navigation_mesh = true
+script = ExtResource("nav_obs")
