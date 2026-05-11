@@ -12,6 +12,8 @@ signal prop_hit(damage: float, source: Node)
 
 func _ready() -> void:
 	add_to_group(&"prop")
+	z_as_relative = false
+	z_index = int(global_position.y)
 	_health.damaged.connect(_on_damaged)
 	_health.died.connect(_on_died)
 

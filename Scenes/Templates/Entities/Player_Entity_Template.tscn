@@ -459,6 +459,8 @@ position = Vector2(0, -5)
 scale = Vector2(2, 2)
 
 [node name="Sprite" type="AnimatedSprite2D" parent="Visual" unique_id=448449294]
+z_as_relative = false
+y_sort_enabled = true
 texture_filter = 1
 material = SubResource("ShaderMaterial_4vlro")
 position = Vector2(0.5, 0)

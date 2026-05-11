@@ -13,6 +13,7 @@ static var _engine_normalized: bool = false
 
 
 func _ready() -> void:
+	z_as_relative = false
 	# --- NEW: one-time normalization for capture / movie maker / low render FPS ---
 	if not _engine_normalized:
 		_engine_normalized = true
@@ -109,6 +110,7 @@ func _find_node_with_script_ending(root: Node, filename: String) -> Node:
 
 
 func _physics_process(delta: float) -> void:
+	z_index = int(global_position.y)
 	var local_delta := delta
 	var time := _find_component(&"LocalTimeScale") as LocalTimeScale
 	if time:
