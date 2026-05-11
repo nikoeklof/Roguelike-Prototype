@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://bxcdfb513s46d"]
+
+[ext_resource type="PackedScene" uid="uid://du6781g0nj7gs" path="res://Scenes/Props/Templates/Prop_Breakable_Tall_Template.tscn" id="1_jwyy3"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ubk1f"]
+radius = 7.0
+height = 28.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_punyd"]
+radius = 7.0
+height = 28.0
+
+[node name="Prop_Breakable" unique_id=282397828 instance=ExtResource("1_jwyy3")]
+
+[node name="CollisionShape2D" parent="." index="0" unique_id=2003658493]
+position = Vector2(0, 13.5)
+shape = SubResource("CapsuleShape2D_ubk1f")
+
+[node name="Sprite2D" parent="." index="1" unique_id=1264157009]
+scale = Vector2(2, 2)
+region_rect = Rect2(130, 18, 13, 27)
+
+[node name="Health" parent="." index="2" unique_id=1285876757]
+max_hp = 175.0
+
+[node name="CollisionShape2D" parent="Hurtbox" parent_id_path=PackedInt32Array(686228224) index="0" unique_id=1315611956]
+position = Vector2(0, 13.5)
+shape = SubResource("CapsuleShape2D_punyd")

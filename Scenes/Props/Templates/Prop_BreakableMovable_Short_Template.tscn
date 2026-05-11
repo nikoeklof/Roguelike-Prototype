@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://cbmshortbkm01"]
+
+[ext_resource type="Script" uid="uid://wsv53w4d80fq" path="res://Scripts/Props/Prop_BreakableMovable.gd" id="1"]
+[ext_resource type="Script" uid="uid://02a1iudasv4d" path="res://Scripts/Components/Health/Health.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="3"]
+
+[node name="Prop_BreakableMovable_Short" type="RigidBody2D" unique_id=623649810]
+collision_layer = 2147483648
+collision_mask = 1
+gravity_scale = 0.0
+lock_rotation = true
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1422318320]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=83319280]
+texture_filter = 5
+texture = ExtResource("3")
+region_enabled = true
+
+[node name="Health" type="Node" parent="." unique_id=1391780070]
+script = ExtResource("2")
+
+[node name="Hurtbox" type="Area2D" parent="." unique_id=705684345]
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=1059332505]

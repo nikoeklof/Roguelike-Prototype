@@ -12,7 +12,7 @@ radius = 6.0
 
 [node name="Prop_Movable_Box" type="RigidBody2D" unique_id=2056209980]
 collision_layer = 2147483648
-collision_mask = 2147483649
+collision_mask = 2147483648
 mass = 35.0
 gravity_scale = 0.0
 lock_rotation = true
@@ -34,8 +34,8 @@ script = ExtResource("2")
 
 [node name="HitReceiver" type="Area2D" parent="." unique_id=2122239238]
 scale = Vector2(2, 2)
-collision_layer = 41
-collision_mask = 33
+collision_layer = 0
+collision_mask = 8
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitReceiver" unique_id=1469934916]
 shape = SubResource("CircleShape2D_brj5e")

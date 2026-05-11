@@ -1,0 +1,79 @@
+[gd_scene format=3 uid="uid://bn6a6egsgiilv"]
+
+[ext_resource type="PackedScene" uid="uid://od0kxfn24avv" path="res://Scenes/WorldGen/Layouts/Normal/RoomLayout_Template.tscn" id="1_n50ki"]
+[ext_resource type="PackedScene" uid="uid://u4xxrxehm7sb" path="res://Scenes/Props/WorldProps/prop_breakable_movable_normal_bin.tscn" id="2_qwslu"]
+[ext_resource type="PackedScene" uid="uid://cju6fp3vbj73g" path="res://Scenes/Props/WorldProps/prop_breakable_movable_tall_ATM.tscn" id="3_aujnw"]
+[ext_resource type="PackedScene" uid="uid://40h411cyawjb" path="res://Scenes/Props/WorldProps/Prop_Static_TallBush.tscn" id="4_dnc1c"]
+[ext_resource type="PackedScene" uid="uid://bmcrk7odw34gd" path="res://Scenes/Props/WorldProps/Prop_Static_Short_Bench.tscn" id="5_1nepp"]
+[ext_resource type="PackedScene" uid="uid://bqps850o66ohd" path="res://Scenes/Props/WorldProps/prop_breakable_tall_largevendingmachine.tscn" id="6_3177u"]
+[ext_resource type="PackedScene" uid="uid://cs12e4i0iykiv" path="res://Scenes/Props/WorldProps/prop_breakable_movable_tall_ATMflipped.tscn" id="7_v3oe4"]
+[ext_resource type="PackedScene" uid="uid://cm7q2amotijfn" path="res://Scenes/Props/WorldProps/prop_breakable_tall_largevendingmachineflipped.tscn" id="8_k1tam"]
+
+[node name="RoomLayoutNormalTemplate" unique_id=683270483 instance=ExtResource("1_n50ki")]
+
+[node name="EnemySpawner_1" parent="EnemySpawns" parent_id_path=PackedInt32Array(1424214682) index="0" unique_id=1710457442]
+position = Vector2(512, 496)
+
+[node name="EnemySpawner_2" parent="EnemySpawns" parent_id_path=PackedInt32Array(1424214682) index="1" unique_id=999267616]
+position = Vector2(288, 320)
+
+[node name="EnemySpawner_3" parent="EnemySpawns" parent_id_path=PackedInt32Array(1424214682) index="2" unique_id=739235496]
+position = Vector2(512, 320)
+
+[node name="EnemySpawner_4" parent="EnemySpawns" parent_id_path=PackedInt32Array(1424214682) index="3" unique_id=2107960121]
+position = Vector2(288, 496)
+
+[node name="EnemySpawner_5" type="Marker2D" parent="EnemySpawns" parent_id_path=PackedInt32Array(1424214682) index="4" unique_id=373068077]
+position = Vector2(400, 400)
+
+[node name="Prop_BreakableMovable" parent="." index="3" unique_id=1800845453 instance=ExtResource("2_qwslu")]
+position = Vector2(234, 336)
+
+[node name="Prop_BreakableMovable2" parent="." index="4" unique_id=270185006 instance=ExtResource("2_qwslu")]
+position = Vector2(234, 456)
+
+[node name="Prop_BreakableMovable3" parent="." index="5" unique_id=172340039 instance=ExtResource("2_qwslu")]
+position = Vector2(568, 456)
+
+[node name="Prop_BreakableMovable4" parent="." index="6" unique_id=212966517 instance=ExtResource("2_qwslu")]
+position = Vector2(568, 336)
+
+[node name="Prop_BreakableMovable_Solid" parent="." index="7" unique_id=623649801 instance=ExtResource("3_aujnw")]
+position = Vector2(248, 24)
+
+[node name="Prop_Static_TallBush" parent="." index="8" unique_id=1203845182 instance=ExtResource("4_dnc1c")]
+position = Vector2(368, 352)
+
+[node name="Prop_Static_TallBush2" parent="." index="9" unique_id=549542590 instance=ExtResource("4_dnc1c")]
+position = Vector2(432, 352)
+
+[node name="Prop_Static_TallBush3" parent="." index="10" unique_id=1033532593 instance=ExtResource("4_dnc1c")]
+position = Vector2(368, 416)
+
+[node name="Prop_Static_TallBush4" parent="." index="11" unique_id=639449650 instance=ExtResource("4_dnc1c")]
+position = Vector2(432, 416)
+
+[node name="Prop_Static_Short" parent="." index="12" unique_id=741221275 instance=ExtResource("5_1nepp")]
+position = Vector2(288, 464)
+
+[node name="Prop_Static_Short3" parent="." index="13" unique_id=902137227 instance=ExtResource("5_1nepp")]
+position = Vector2(288, 344)
+
+[node name="Prop_Static_Short4" parent="." index="14" unique_id=1794632303 instance=ExtResource("5_1nepp")]
+position = Vector2(512, 344)
+
+[node name="Prop_Static_Short2" parent="." index="15" unique_id=1375978434 instance=ExtResource("5_1nepp")]
+position = Vector2(512, 464)
+
+[node name="Prop_Breakable_tall_largevendingmachine" parent="." index="16" unique_id=282397828 instance=ExtResource("6_3177u")]
+position = Vector2(200, 24)
+
+[node name="Prop_BreakableMovable_Solid2" parent="." index="17" unique_id=954148553 instance=ExtResource("7_v3oe4")]
+position = Vector2(248, 776)
+
+[node name="Prop_Breakable_tall_largevendingmachine2" parent="." index="18" unique_id=1946639458 instance=ExtResource("8_k1tam")]
+position = Vector2(200, 776)
+
+[node name="ItemSpawner" parent="ItemSpawns" parent_id_path=PackedInt32Array(234293909) index="0" unique_id=1939574588]
+unique_name_in_owner = true
+position = Vector2(400, 576)

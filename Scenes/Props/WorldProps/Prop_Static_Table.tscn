@@ -9,7 +9,7 @@ height = 89.0
 
 [node name="Prop_Static" type="StaticBody2D" unique_id=793659460]
 scale = Vector2(2, 2)
-collision_layer = 2147483648
+collision_layer = 2147483712
 collision_mask = 0
 script = ExtResource("1_bqu1b")
 

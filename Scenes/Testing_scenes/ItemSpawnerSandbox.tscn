@@ -3,13 +3,16 @@
 [ext_resource type="PackedScene" uid="uid://b0eb7ryv2foaw" path="res://Scenes/Templates/Entities/Player_Entity_Template.tscn" id="1_kyx5t"]
 [ext_resource type="PackedScene" uid="uid://wj0aehlmsmj3" path="res://Scenes/UI/DebugHUD.tscn" id="2_tiaw2"]
 [ext_resource type="PackedScene" uid="uid://ma5wcevbvg61" path="res://Scenes/UI/GameOver.tscn" id="4_kyx5t"]
+[ext_resource type="PackedScene" uid="uid://b3m0qmk2lfvk4" path="res://Scenes/Props/WorldProps/prop_breakable_movable_tall_foodstall.tscn" id="5_kyx5t"]
 [ext_resource type="PackedScene" uid="uid://cp7rnx4qw2m8b" path="res://Scenes/UI/PauseMenu.tscn" id="5_tiaw2"]
-[ext_resource type="PackedScene" uid="uid://40h411cyawjb" path="res://Scenes/Props/Prop_Static_TallBush.tscn" id="5_x3clo"]
-[ext_resource type="PackedScene" uid="uid://bnp1vfyxvpudf" path="res://Scenes/Props/Prop_BreakableMovable_Trashcan.tscn" id="6_sn2kg"]
-[ext_resource type="PackedScene" uid="uid://r0bftx73y6j0" path="res://Scenes/Props/Prop_Movable_Box.tscn" id="7_x3clo"]
-[ext_resource type="PackedScene" uid="uid://sqq6tgxsrp5y" path="res://Scenes/Props/Prop_Breakable_VendingMachine.tscn" id="8_sn2kg"]
-[ext_resource type="PackedScene" uid="uid://cy21vtbywogr8" path="res://Scenes/Props/Prop_Static_Table.tscn" id="9_s54dy"]
-[ext_resource type="PackedScene" uid="uid://buo868etml330" path="res://Scenes/Props/Prop_Movable_Chair.tscn" id="10_ypj4y"]
+[ext_resource type="PackedScene" uid="uid://cju6fp3vbj73g" path="res://Scenes/Props/WorldProps/prop_breakable_movable_tall_ATM.tscn" id="6_sn2kg"]
+[ext_resource type="PackedScene" uid="uid://c7hcci70mj2oh" path="res://Scenes/Props/WorldProps/prop_breakable_short_empty_box.tscn" id="7_s54dy"]
+[ext_resource type="PackedScene" uid="uid://buo868etml330" path="res://Scenes/Props/WorldProps/Prop_Movable_Chair.tscn" id="7_x3clo"]
+[ext_resource type="PackedScene" uid="uid://6l7vahvhxhjd" path="res://Scenes/Props/WorldProps/prop_static_tall_large_bush.tscn" id="9_s54dy"]
+[ext_resource type="PackedScene" uid="uid://bmcrk7odw34gd" path="res://Scenes/Props/WorldProps/Prop_Static_Short_Bench.tscn" id="10_h5kqh"]
+[ext_resource type="PackedScene" uid="uid://mtu3he3eyg2p" path="res://Scenes/Props/WorldProps/prop_static_short_bush.tscn" id="11_6dspf"]
+[ext_resource type="PackedScene" uid="uid://bqps850o66ohd" path="res://Scenes/Props/WorldProps/prop_breakable_tall_largevendingmachine.tscn" id="11_k1kh3"]
+[ext_resource type="PackedScene" uid="uid://40h411cyawjb" path="res://Scenes/Props/WorldProps/Prop_Static_TallBush.tscn" id="12_qpqqc"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_3dogw"]
 size = Vector2(1024, 29.33334)
@@ -83,44 +86,29 @@ visible = false
 [node name="PauseMenu" parent="." unique_id=1780816859 instance=ExtResource("5_tiaw2")]
 visible = false
 
-[node name="Prop_Static_TallBush" parent="." unique_id=793659460 instance=ExtResource("5_x3clo")]
-position = Vector2(592, 192)
-scale = Vector2(2, 2)
+[node name="Prop_BreakableMovable_Solid" parent="." unique_id=623649801 instance=ExtResource("5_kyx5t")]
+position = Vector2(405, 168)
 
-[node name="Prop_BreakableMovable_TrashCan" parent="." unique_id=374399205 instance=ExtResource("6_sn2kg")]
-y_sort_enabled = true
-position = Vector2(664, 227)
+[node name="Prop_BreakableMovable_Solid2" parent="." unique_id=1748396099 instance=ExtResource("6_sn2kg")]
+position = Vector2(491, 174)
 
-[node name="Prop_Movable_Box" parent="." unique_id=235828422 instance=ExtResource("7_x3clo")]
-position = Vector2(657, 146)
+[node name="Prop_Breakable_Short_EmptyBox" parent="." unique_id=912117815 instance=ExtResource("7_s54dy")]
+position = Vector2(444, 276)
 
-[node name="Prop_Breakable_VendingMachine" parent="." unique_id=932954203 instance=ExtResource("8_sn2kg")]
-position = Vector2(366, 151)
-scale = Vector2(2, 2)
+[node name="Prop_Breakable_tall_largevendingmachine" parent="." unique_id=282397828 instance=ExtResource("11_k1kh3")]
+position = Vector2(554, 177)
 
-[node name="Prop_Static" parent="." unique_id=2109853667 instance=ExtResource("9_s54dy")]
-position = Vector2(408, 263)
+[node name="Prop_Movable" parent="." unique_id=2107076773 instance=ExtResource("7_x3clo")]
+position = Vector2(504, 296)
 
-[node name="Prop_Movable" parent="." unique_id=2107076773 instance=ExtResource("10_ypj4y")]
-position = Vector2(384, 307)
+[node name="Prop_Static_Short" parent="." unique_id=741221275 instance=ExtResource("10_h5kqh")]
+position = Vector2(581, 295)
 
-[node name="Prop_Movable2" parent="." unique_id=924145636 instance=ExtResource("10_ypj4y")]
-position = Vector2(423, 307)
+[node name="Prop_Static_Short2" parent="." unique_id=154546043 instance=ExtResource("11_6dspf")]
+position = Vector2(471, 332)
 
-[node name="Prop_Movable3" parent="." unique_id=1617263370 instance=ExtResource("10_ypj4y")]
-position = Vector2(344, 307)
+[node name="Prop_Static_TallBush" parent="." unique_id=1203845182 instance=ExtResource("12_qpqqc")]
+position = Vector2(580, 385)
 
-[node name="Prop_Movable4" parent="." unique_id=1147860045 instance=ExtResource("10_ypj4y")]
-position = Vector2(458, 307)
-
-[node name="Prop_Movable5" parent="." unique_id=1740141223 instance=ExtResource("10_ypj4y")]
-position = Vector2(387, 225)
-
-[node name="Prop_Movable6" parent="." unique_id=154562772 instance=ExtResource("10_ypj4y")]
-position = Vector2(426, 225)
-
-[node name="Prop_Movable7" parent="." unique_id=2023277444 instance=ExtResource("10_ypj4y")]
-position = Vector2(347, 225)
-
-[node name="Prop_Movable8" parent="." unique_id=519489231 instance=ExtResource("10_ypj4y")]
-position = Vector2(461, 225)
+[node name="Prop_Static_Tall_LargeBush" parent="." unique_id=793659460 instance=ExtResource("9_s54dy")]
+position = Vector2(706, 359)

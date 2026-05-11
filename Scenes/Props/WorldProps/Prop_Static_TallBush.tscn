@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_05e1g"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_xea30"]
-radius = 7.071068
+radius = 16.0
 
 [node name="Prop_Static_TallBush" type="StaticBody2D" unique_id=1203845182]
 collision_mask = 0
@@ -12,11 +12,12 @@ script = ExtResource("1_xea30")
 metadata/_custom_type_script = "uid://djjenvow2fxvr"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=856611647]
-position = Vector2(0, 8)
+position = Vector2(0, 16)
 shape = SubResource("CircleShape2D_xea30")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1005046826]
 texture_filter = 5
+scale = Vector2(2, 2)
 texture = ExtResource("2_05e1g")
 region_enabled = true
 region_rect = Rect2(48, 48, 16, 32)

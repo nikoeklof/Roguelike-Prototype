@@ -28,6 +28,4 @@ func _on_player_died() -> void:
 
 
 func _on_restart_pressed() -> void:
-	WorldSeed.randomize_seed()
-	get_tree().paused = false
-	get_tree().reload_current_scene()
+	GameManager.start_new_run()

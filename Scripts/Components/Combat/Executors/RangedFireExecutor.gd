@@ -102,7 +102,7 @@ func _fire_beam_tick_all(snap: AttackSnapshot) -> void:
 		var to: Vector2 = origin + dir * range_val
 		var max_targets: int = maxi(1, shot.pierce + 1)
 
-		var result: Dictionary = _collect_ray_hits(origin, to, owner_entity, max_targets, tick_damage)
+		var result: Dictionary = _collect_ray_hits(origin, to, owner_entity, max_targets, tick_damage, shot.projectile_collision_mask)
 		var victims: Array[Dictionary] = result.get("victims", []) as Array[Dictionary]
 		var final_pos: Vector2 = result.get("final_pos", to) as Vector2
 
@@ -341,7 +341,8 @@ func _collect_ray_hits(
 	to: Vector2,
 	source_entity: Node2D,
 	max_targets: int,
-	shot_damage: float = 0.0
+	shot_damage: float = 0.0,
+	collision_mask: int = 17
 ) -> Dictionary:
 	var space: PhysicsDirectSpaceState2D = source_entity.get_world_2d().direct_space_state
 	var exclude: Array[RID] = _build_owner_exclude_list(source_entity)
@@ -350,7 +351,7 @@ func _collect_ray_hits(
 	var seen_victims: Dictionary = {}
 
 	for _i: int in range(max_targets + 16):
-		var query: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.create(origin, to)
+		var query: PhysicsRayQueryParameters2D = PhysicsRayQueryParameters2D.create(origin, to, collision_mask)
 		query.exclude = exclude
 		query.collide_with_areas = true
 		query.collide_with_bodies = true
@@ -429,7 +430,7 @@ func _fire_hitscan(
 	var to: Vector2 = origin + dir * range_value
 	var max_targets: int = max(1, pierce + 1)
 
-	var result: Dictionary = _collect_ray_hits(origin, to, source_entity, max_targets, damage)
+	var result: Dictionary = _collect_ray_hits(origin, to, source_entity, max_targets, damage, shot.projectile_collision_mask)
 	var victims: Array[Dictionary] = result.get("victims", []) as Array[Dictionary]
 	var final_pos: Vector2 = result.get("final_pos", to) as Vector2
 

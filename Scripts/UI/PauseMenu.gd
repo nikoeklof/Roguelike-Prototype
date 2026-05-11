@@ -33,9 +33,7 @@ func _on_resume_pressed() -> void:
 
 
 func _on_restart_pressed() -> void:
-	WorldSeed.randomize_seed()
-	get_tree().paused = false
-	get_tree().reload_current_scene()
+	GameManager.start_new_run()
 
 
 func _on_quit_pressed() -> void:

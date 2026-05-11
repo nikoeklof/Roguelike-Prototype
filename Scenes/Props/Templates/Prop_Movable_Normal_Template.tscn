@@ -1,18 +1,19 @@
 [gd_scene format=3 uid="uid://cwsxg3717g0su"]
 
-[ext_resource type="Script" uid="uid://rvepcfnidlu6" path="res://Scripts/Props/Prop_Movable.gd" id="1"]
+[ext_resource type="Script" uid="uid://rvepcfnidlu6" path="res://Scripts/Props/Prop_Movable.gd" id="1_3xo5v"]
+[ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_ighba"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_iu4de"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kl0w7"]
 
 [node name="Prop_Movable" type="RigidBody2D" unique_id=2107076773]
-collision_layer = 2147483648
+collision_layer = 2147483712
 collision_mask = 2147483649
 mass = 20.0
 gravity_scale = 0.0
 lock_rotation = true
-script = ExtResource("1")
+script = ExtResource("1_3xo5v")
 drag = 0.01
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1593641495]
@@ -22,11 +23,13 @@ shape = SubResource("RectangleShape2D_iu4de")
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1169599505]
 texture_filter = 5
 scale = Vector2(2, 2)
+texture = ExtResource("2_ighba")
+region_enabled = true
 
 [node name="HitReceiver" type="Area2D" parent="." unique_id=1297702850]
 scale = Vector2(2, 2)
 collision_layer = 0
-collision_mask = 16
+collision_mask = 8
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitReceiver" unique_id=224608208]
 shape = SubResource("RectangleShape2D_kl0w7")

@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://xpo52imm8pew"]
+
+[ext_resource type="PackedScene" uid="uid://omr3jbar0gu3" path="res://Scenes/Props/Templates/Prop_BreakableMovable_Normal_Template.tscn" id="1_kt86i"]
+
+[node name="Prop_BreakableMovable" unique_id=1800845453 instance=ExtResource("1_kt86i")]
+mass = 50.0
+drag = 0.01
+
+[node name="Sprite2D" parent="." index="1" unique_id=388369208]
+region_rect = Rect2(98, 64, 12, 14)
+
+[node name="Health" parent="." index="2" unique_id=952644133]
+max_hp = 25.0

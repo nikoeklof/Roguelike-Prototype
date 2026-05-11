@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://c7hcci70mj2oh"]
+
+[ext_resource type="PackedScene" uid="uid://cbkshortbrk01" path="res://Scenes/Props/Templates/Prop_Breakable_Short_Template.tscn" id="1_knuum"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7y85n"]
+size = Vector2(24, 28)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2e4p7"]
+size = Vector2(24, 28)
+
+[node name="Prop_Breakable_Short_EmptyBox" unique_id=912117815 instance=ExtResource("1_knuum")]
+
+[node name="CollisionShape2D" parent="." index="0" unique_id=1224252270]
+shape = SubResource("RectangleShape2D_7y85n")
+
+[node name="Sprite2D" parent="." index="1" unique_id=459526410]
+scale = Vector2(2, 2)
+region_rect = Rect2(258, 97, 12, 14)
+
+[node name="Health" parent="." index="2" unique_id=1615915470]
+max_hp = 50.0
+
+[node name="CollisionShape2D" parent="Hurtbox" parent_id_path=PackedInt32Array(1411765010) index="0" unique_id=896498310]
+shape = SubResource("RectangleShape2D_2e4p7")

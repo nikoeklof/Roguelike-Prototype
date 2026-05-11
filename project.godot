@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Survivors_test"
-run/main_scene="uid://bu0u2s2ex755m"
+run/main_scene="uid://c368frngd0f6p"
 config/features=PackedStringArray("4.6", "Forward Plus")
 run/max_fps=500
 config/icon="res://icon.svg"
@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 
 GameClock="*uid://phsoknmb2wgw"
 WorldSeed="*uid://cv7s2poyxooix"
+GameManager="*res://Scripts/GameManager.gd"
 
 [display]
 
@@ -122,7 +123,8 @@ ui_debug_toggle={
 2d_physics/layer_3="Enemy"
 2d_physics/layer_4="Hitbox"
 2d_physics/layer_5="Hurtbox"
-2d_physics/layer_6="Props"
+2d_physics/layer_6="Shields"
+2d_physics/layer_32="Props_Movable"
 
 [physics]
 

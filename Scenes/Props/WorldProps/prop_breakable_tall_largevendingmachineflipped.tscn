@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://cm7q2amotijfn"]
+
+[ext_resource type="PackedScene" uid="uid://du6781g0nj7gs" path="res://Scenes/Props/Templates/Prop_Breakable_Tall_Template.tscn" id="1_nbysy"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_q5v16"]
+size = Vector2(30, 12)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_0t8i4"]
+size = Vector2(30, 12)
+
+[node name="Prop_Breakable_tall_largevendingmachine" unique_id=282397828 instance=ExtResource("1_nbysy")]
+
+[node name="CollisionShape2D" parent="." index="0" unique_id=2003658493]
+position = Vector2(0, -6)
+shape = SubResource("RectangleShape2D_q5v16")
+
+[node name="Sprite2D" parent="." index="1" unique_id=1264157009]
+rotation = 3.1415927
+region_rect = Rect2(65, 16, 30, 24)
+
+[node name="Health" parent="." index="2" unique_id=1285876757]
+max_hp = 150.0
+
+[node name="CollisionShape2D" parent="Hurtbox" parent_id_path=PackedInt32Array(686228224) index="0" unique_id=1315611956]
+position = Vector2(0, -6)
+shape = SubResource("RectangleShape2D_0t8i4")

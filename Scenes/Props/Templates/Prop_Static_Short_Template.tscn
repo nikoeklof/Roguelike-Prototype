@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://bstcpjmaetlc7"]
+
+[ext_resource type="Script" uid="uid://djjenvow2fxvr" path="res://Scripts/Props/Prop_Static.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2"]
+
+[node name="Prop_Static_Short" type="StaticBody2D" unique_id=741221275]
+collision_layer = 2147483648
+collision_mask = 0
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=738084370]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1202502908]
+texture_filter = 5
+texture = ExtResource("2")
+region_enabled = true

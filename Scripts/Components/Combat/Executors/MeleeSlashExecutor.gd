@@ -1,6 +1,8 @@
 extends AttackExecutor
 class_name MeleeSlashExecutor
 
+const _MELEE_BLOCKER_MASK: int = 65  # World (layer 1 = 1) + MeleeBlocker (layer 7 = 64)
+
 var _hit_ids: Dictionary[int, bool] = {}
 var _hitbox: Area2D = null
 var _collision_shape: CollisionShape2D = null
@@ -208,6 +210,9 @@ func _try_hit(other: Node, one_hit_per_target: bool) -> void:
 		_apply_shield_block(blocking_pc, victim_root, one_hit_per_target)
 		return
 
+	if victim_root is CharacterBody2D and _is_melee_blocked(victim_root.global_position):
+		return
+
 	AttackImpactResolver.apply_hit(context, snap, victim_root, other, aim_dir)
 
 
@@ -244,6 +249,17 @@ func _find_overlapping_parry_collider(victim_root: Node) -> ParryCollider:
 		if CombatQuery.resolve_victim_root(pc) == victim_root:
 			return pc
 	return null
+
+
+func _is_melee_blocked(target_pos: Vector2) -> bool:
+	if _attacker == null or not is_instance_valid(_attacker):
+		return false
+	var space := _attacker.get_world_2d().direct_space_state
+	var query := PhysicsRayQueryParameters2D.create(
+		_attacker.global_position, target_pos, _MELEE_BLOCKER_MASK
+	)
+	query.collide_with_areas = false
+	return not space.intersect_ray(query).is_empty()
 
 
 func _cleanup_hitbox() -> void:

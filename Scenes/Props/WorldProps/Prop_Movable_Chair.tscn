@@ -11,7 +11,7 @@ radius = 5.0249376
 
 [node name="Prop_Movable" type="RigidBody2D" unique_id=2107076773]
 collision_layer = 2147483648
-collision_mask = 2147483649
+collision_mask = 2147483648
 mass = 20.0
 gravity_scale = 0.0
 lock_rotation = true
@@ -32,7 +32,7 @@ region_rect = Rect2(291, 133, 10, 9)
 [node name="HitReceiver" type="Area2D" parent="." unique_id=1297702850]
 scale = Vector2(2, 2)
 collision_layer = 0
-collision_mask = 16
+collision_mask = 8
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="HitReceiver" unique_id=224608208]
 shape = SubResource("CircleShape2D_7j386")

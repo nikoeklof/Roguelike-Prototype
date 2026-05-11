@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://mtu3he3eyg2p"]
+
+[ext_resource type="PackedScene" uid="uid://bstcpjmaetlc7" path="res://Scenes/Props/Templates/Prop_Static_Short_Template.tscn" id="1_i8vx5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_58xlp"]
+size = Vector2(32, 16)
+
+[node name="Prop_Static_Short" unique_id=741221275 instance=ExtResource("1_i8vx5")]
+
+[node name="CollisionShape2D" parent="." index="0" unique_id=738084370]
+position = Vector2(0, 1)
+shape = SubResource("RectangleShape2D_58xlp")
+
+[node name="Sprite2D" parent="." index="1" unique_id=1202502908]
+scale = Vector2(2, 2)
+region_rect = Rect2(80, 69, 16, 9)

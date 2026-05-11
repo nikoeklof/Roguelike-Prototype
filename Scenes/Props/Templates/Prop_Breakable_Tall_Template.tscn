@@ -1,7 +1,8 @@
 [gd_scene format=3 uid="uid://du6781g0nj7gs"]
 
-[ext_resource type="Script" uid="uid://b6gmghoc4312y" path="res://Scripts/Props/Prop_Breakable.gd" id="1"]
-[ext_resource type="Script" uid="uid://02a1iudasv4d" path="res://Scripts/Components/Health/Health.gd" id="2"]
+[ext_resource type="Script" uid="uid://b6gmghoc4312y" path="res://Scripts/Props/Prop_Breakable.gd" id="1_d744l"]
+[ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_80fan"]
+[ext_resource type="Script" uid="uid://02a1iudasv4d" path="res://Scripts/Components/Health/Health.gd" id="3_xn2cy"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_jn6oc"]
 
@@ -10,20 +11,22 @@
 [node name="Prop_Breakable" type="StaticBody2D" unique_id=282397828]
 scale = Vector2(2, 2)
 collision_mask = 0
-script = ExtResource("1")
+script = ExtResource("1_d744l")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2003658493]
 shape = SubResource("CircleShape2D_jn6oc")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1264157009]
 texture_filter = 5
+texture = ExtResource("2_80fan")
+region_enabled = true
 
 [node name="Health" type="Node" parent="." unique_id=1285876757]
-script = ExtResource("2")
+script = ExtResource("3_xn2cy")
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=686228224]
-collision_layer = 32768
-collision_mask = 128
+collision_layer = 16
+collision_mask = 0
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=1315611956]
