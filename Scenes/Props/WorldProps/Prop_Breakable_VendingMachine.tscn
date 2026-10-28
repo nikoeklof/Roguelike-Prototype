@@ -3,15 +3,15 @@
 [ext_resource type="Script" uid="uid://b6gmghoc4312y" path="res://Scripts/Props/Prop_Breakable.gd" id="1"]
 [ext_resource type="Script" uid="uid://02a1iudasv4d" path="res://Scripts/Components/Health/Health.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://d3ui8dglftgb2" path="res://Art/Spritesheets/blue_props.png" id="2_212es"]
-[ext_resource type="Script" path="res://Scripts/YSorter.gd" id="ys"]
-[ext_resource type="Script" path="res://Scripts/NavObstacleFromShape.gd" id="nav_obs"]
+[ext_resource type="Script" uid="uid://cmycaexajaybc" path="res://Scripts/NavObstacleFromShape.gd" id="nav_obs"]
+[ext_resource type="Script" uid="uid://bxgbx0p0doylv" path="res://Scripts/YSorter.gd" id="ys"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_212es"]
-radius = 7.0
-height = 14.0
+radius = 8.0
+height = 20.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1l2jr"]
-size = Vector2(16, 12)
+size = Vector2(16, 17)
 
 [node name="Prop_Breakable_VendingMachine" type="StaticBody2D" unique_id=445579244]
 texture_filter = 5
@@ -20,7 +20,7 @@ script = ExtResource("1")
 metadata/_custom_type_script = "uid://djjenvow2fxvr"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1874413848]
-position = Vector2(0, 6)
+position = Vector2(0, 2)
 shape = SubResource("CapsuleShape2D_212es")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=109025444]
@@ -39,11 +39,11 @@ collision_mask = 0
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=1923980454]
-position = Vector2(0, 6)
+position = Vector2(0, 3.5)
 shape = SubResource("RectangleShape2D_1l2jr")
 
-[node name="YSorter" type="Node" parent="."]
+[node name="YSorter" type="Node" parent="." unique_id=1009468173]
 script = ExtResource("ys")
 
-[node name="NavObstacle" type="NavigationObstacle2D" parent="."]
+[node name="NavObstacle" type="NavigationObstacle2D" parent="." unique_id=2007786808]
 script = ExtResource("nav_obs")

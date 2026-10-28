@@ -51,6 +51,10 @@ enum Awareness { IDLE, ALERT, LOST }
 @export var melee_burst_count: int = 999
 @export var melee_reposition_sec: float = 0.0
 
+# How often a guarding enemy refreshes its shield aim toward the player.
+@export_range(0.1, 3.0, 0.1) var shield_block_aim_interval: float = 0.5
+@export_range(30.0, 720.0, 15.0) var shield_turn_speed_deg_per_sec: float = 240.0
+
 # Reposition movement tuning
 @export_range(0.2, 1.5, 0.05) var reposition_speed_mult: float = 0.8
 @export_range(0.0, 1.0, 0.05) var reposition_backstep_mult: float = 0.15
@@ -112,6 +116,9 @@ var _reposition_timer: float = 0.0
 var _ranged_prefire_timer: float = -1.0
 # Aim direction locked at the moment the prefire window opens.
 var _ranged_prefire_aim: Vector2 = Vector2.ZERO
+var _shield_block_aim_timer: float = 0.0
+var _shield_last_target_position: Vector2 = Vector2.ZERO
+var _has_shield_last_target_position: bool = false
 var _recent_attacks: Dictionary = {
 	Combat.AttackKind.MELEE: 0,
 	Combat.AttackKind.RANGED: 0,
@@ -462,6 +469,8 @@ func _physics_process(delta: float) -> void:
 	# Tick beam/hitscan prefire telegraph
 	if _ranged_prefire_timer > 0.0:
 		_ranged_prefire_timer = maxf(_ranged_prefire_timer - delta, 0.0)
+	if _shield_block_aim_timer > 0.0:
+		_shield_block_aim_timer = maxf(_shield_block_aim_timer - delta, 0.0)
 
 	# Tick LOS memory
 	if _los_seen_timer > 0.0:
@@ -593,7 +602,7 @@ func _process_combat(delta: float) -> void:
 		_update_timer = 0.0
 		_make_decision()
 
-	_execute_decision()
+	_execute_decision(delta)
 
 	for module in _behavior_modules:
 		if module.has_method("physics_update"):
@@ -662,7 +671,7 @@ func _apply_aim_inaccuracy(dir: Vector2, max_degrees: float) -> Vector2:
 	return dir.rotated(offset_rad)
 
 
-func _execute_decision() -> void:
+func _execute_decision(delta: float) -> void:
 	if _current_decision == null or _control == null:
 		return
 
@@ -686,6 +695,9 @@ func _execute_decision() -> void:
 	# Cancel any pending beam/hitscan telegraph if we're no longer committing to a ranged attack
 	if state != "ranged_attack" or suppress_attacks:
 		_ranged_prefire_timer = -1.0
+	if state != "shield_block":
+		_shield_block_aim_timer = 0.0
+		_has_shield_last_target_position = false
 
 	match state:
 		"reposition":
@@ -792,6 +804,22 @@ func _execute_decision() -> void:
 
 		"shield_block":
 			_control.set_block_intent(true)
+			if _shield_block_aim_timer <= 0.0 and _target != null and is_instance_valid(_target):
+				var is_initial_block_aim: bool = not _has_shield_last_target_position
+				_shield_last_target_position = _target.global_position
+				_has_shield_last_target_position = true
+				_shield_block_aim_timer = shield_block_aim_interval
+				if is_initial_block_aim:
+					var initial_aim: Vector2 = _shield_last_target_position - _entity.global_position
+					if initial_aim.length_squared() > 0.001:
+						_control.set_aim_dir(initial_aim.normalized())
+			if _has_shield_last_target_position:
+				var aim_to_last_position: Vector2 = _shield_last_target_position - _entity.global_position
+				if aim_to_last_position.length_squared() > 0.001:
+					var current_aim: Vector2 = _control.aim_dir(Vector2.RIGHT)
+					var max_turn: float = deg_to_rad(shield_turn_speed_deg_per_sec) * delta
+					var smooth_angle: float = rotate_toward(current_aim.angle(), aim_to_last_position.angle(), max_turn)
+					_control.set_aim_dir(Vector2.RIGHT.rotated(smooth_angle))
 			# Advance toward the target with shield raised instead of standing still.
 			var move_dir: Vector2 = _get_nav_direction_to_target()
 			_control.set_move_intent(move_dir * 0.65)
@@ -809,7 +837,6 @@ func _execute_decision() -> void:
 
 		_:
 			_control.set_move_intent(Vector2.ZERO)
-
 
 @warning_ignore("unused_parameter")
 func _resolve_conflicts(decisions: Array[AIDecision], context: Dictionary) -> AIDecision:

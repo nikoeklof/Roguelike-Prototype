@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://6csafxiunnop"]
+
+[ext_resource type="PackedScene" uid="uid://b3m0qmk2lfvk4" path="res://Scenes/Props/WorldProps/prop_breakable_movable_tall_foodstall.tscn" id="1_sasla"]
+
+[node name="Prop_BreakableMovable_Solid" unique_id=623649801 instance=ExtResource("1_sasla")]
+rotation = 3.1415927

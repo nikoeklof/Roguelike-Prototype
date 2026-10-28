@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://wbnylfo1x7ld" path="res://Scripts/States/Locomotion/Walk.gd" id="4_o6t3v"]
 [ext_resource type="Script" uid="uid://rpmmcrxywk5o" path="res://Scripts/States/Combat/Hurt.gd" id="5_isfbc"]
 [ext_resource type="Script" uid="uid://bgry0xmkcjj3u" path="res://Scripts/States/Combat/BlockState.gd" id="6_lbga7"]
+[ext_resource type="Script" path="res://Scripts/States/Locomotion/RoomTransition.gd" id="7_transition"]
 
 [node name="StateHandler" type="Node" unique_id=1266186412]
 script = ExtResource("1_ug4wf")
@@ -25,3 +26,6 @@ script = ExtResource("5_isfbc")
 [node name="Block" type="Node" parent="." unique_id=1750324360]
 script = ExtResource("6_lbga7")
 metadata/_custom_type_script = "uid://bgry0xmkcjj3u"
+
+[node name="RoomTransition" type="Node" parent="."]
+script = ExtResource("7_transition")

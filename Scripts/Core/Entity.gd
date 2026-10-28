@@ -120,6 +120,16 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_damaged(_amount: float, _source: Node) -> void:
+	var control: ControlSource = find_component(&"ControlSource") as ControlSource
+	var current_state: State = null
+	if state_machine is StateHandler:
+		current_state = (state_machine as StateHandler).current_state
+	if control is PlayerControl and control.attack_is_down() and current_state != null and current_state.name == "Attack":
+		var hurt_flash: HurtFlash = get_node_or_null("HurtFlash") as HurtFlash
+		if hurt_flash != null:
+			hurt_flash.play(0.25)
+		return
+
 	if state_machine != null and state_machine.has_method("change_state"):
 		state_machine.call("change_state", "Hurt")
 

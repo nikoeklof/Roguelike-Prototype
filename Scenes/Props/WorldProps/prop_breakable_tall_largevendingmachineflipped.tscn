@@ -6,7 +6,7 @@
 size = Vector2(30, 12)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0t8i4"]
-size = Vector2(30, 12)
+size = Vector2(30, 17)
 
 [node name="Prop_Breakable_tall_largevendingmachine" unique_id=282397828 instance=ExtResource("1_nbysy")]
 
@@ -22,10 +22,10 @@ region_rect = Rect2(65, 16, 30, 24)
 max_hp = 150.0
 
 [node name="CollisionShape2D" parent="Hurtbox" parent_id_path=PackedInt32Array(686228224) index="0" unique_id=1315611956]
-position = Vector2(0, -6)
+position = Vector2(0, -3.5)
 shape = SubResource("RectangleShape2D_0t8i4")
 
 [node name="NavObstacle" parent="." index="5"]
-vertices = PackedVector2Array(-15, -12, -15, 0, 15, 0, 15, -12)
+vertices = PackedVector2Array(-15, -12, -15, 5, 15, 5, 15, -12)
 affect_navigation_mesh = true
 carve_navigation_mesh = true

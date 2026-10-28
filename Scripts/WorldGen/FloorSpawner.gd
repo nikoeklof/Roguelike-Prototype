@@ -28,6 +28,10 @@ signal player_room_changed(coord: Vector2i)
 @export var randomize_seed: bool = true
 @export var seed: int = 12345
 @export var print_seed_to_console: bool = true
+@export_group("Progression Debug")
+@export var progression_enabled: bool = false
+@export var reset_progression_on_ready: bool = false
+@export var floor_exit_scene: PackedScene
 
 var runtime_seed: int = 0
 
@@ -58,6 +62,11 @@ var runtime_seed: int = 0
 @export var apply_door_colliders: bool = true
 @export var door_scene: PackedScene
 
+# Room presentation and entry flow.
+@export var clamp_camera_to_active_room: bool = true
+@export var hide_unvisited_rooms: bool = true
+@export var show_room_edge_fog: bool = true
+
 const ROOM_SIZE: Vector2i = Vector2i(800, 800)
 const XL_ROOM_SIZE: Vector2i = Vector2i(1600, 1600)
 
@@ -66,6 +75,10 @@ var _plan: FloorGenerator.FloorPlan
 var _room_instances: Dictionary = {}
 var _used_layout_paths: Array[String] = []
 var _used_xl_layout_paths: Array[String] = []
+var _active_room_coord: Vector2i = Vector2i.ZERO
+var _active_room_instance: Node2D = null
+var _player_camera: Camera2D = null
+var _fog_overlay: RoomFogOverlay = null
 
 # If true, the FloorSpawner will find ItemSpawner nodes inside each room and
 # call spawn_with_run_seed(runtime_seed) deterministically.
@@ -81,6 +94,11 @@ var _used_xl_layout_paths: Array[String] = []
 
 func _ready() -> void:
 	add_to_group("floor_spawner")
+	if show_room_edge_fog:
+		_fog_overlay = RoomFogOverlay.new()
+		_fog_overlay.name = "RoomFogOverlay"
+		add_child(_fog_overlay)
+		_fog_overlay.visible = false
 
 	if room_scene == null and room_database == null:
 		push_error("FloorSpawner: set room_scene OR room_database.")
@@ -102,18 +120,34 @@ func _ready() -> void:
 		xl_layout_database.rebuild()
 		print(xl_layout_database.debug_summary())
 
-	# ---- seed selection ----
-	runtime_seed = seed
-	if randomize_seed:
-		var unix_time: int = int(Time.get_unix_time_from_system())
-		var frames: int = int(Engine.get_frames_drawn())
-		runtime_seed = unix_time ^ frames
-
-	if print_seed_to_console:
-		print("FLOOR SEED: ", runtime_seed)
-
-	# ---- generation ----
 	_gen = FloorGenerator.new()
+	if progression_enabled:
+		if reset_progression_on_ready or GameManager.current_floor < 1:
+			GameManager.current_floor = 1
+		if not GameManager.floor_advanced.is_connected(_on_floor_advanced):
+			GameManager.floor_advanced.connect(_on_floor_advanced)
+		_generate_progression_floor(GameManager.current_floor)
+		return
+
+	_generate_floor(seed if not randomize_seed else _make_random_seed())
+
+
+func _make_random_seed() -> int:
+	var unix_time: int = int(Time.get_unix_time_from_system())
+	var frames: int = int(Engine.get_frames_drawn())
+	return unix_time ^ frames
+
+
+func _generate_progression_floor(floor_number: int) -> void:
+	floor_depth = floor_number
+	runtime_seed = int(WorldSeed.derive("floor", str(floor_number)))
+	_generate_floor(runtime_seed)
+
+
+func _generate_floor(floor_seed: int) -> void:
+	runtime_seed = floor_seed
+	if print_seed_to_console:
+		print("FLOOR %d SEED: %d" % [floor_depth, runtime_seed])
 
 	_plan = _gen.generate(
 		runtime_seed,
@@ -133,12 +167,14 @@ func _ready() -> void:
 
 	_spawn(_plan)
 	_place_player_in_start_room(_plan)
-
-	# 🔹 Emit AFTER everything is ready
 	floor_plan_generated.emit(_plan)
-	print("Generated plan:", _plan)
-	print("Coords count:", _plan.coords.size() if _plan != null else -1)
+	print("Generated floor %d with %d rooms" % [floor_depth, _plan.coords.size()])
 	queue_redraw()
+
+
+func _on_floor_advanced(floor_number: int) -> void:
+	if progression_enabled:
+		_generate_progression_floor(floor_number)
 
 
 # --------------------------------------------------
@@ -152,10 +188,13 @@ func get_floor_plan() -> FloorGenerator.FloorPlan:
 # --------------------------------------------------
 
 func _spawn(plan: FloorGenerator.FloorPlan) -> void:
-	for child: Node in get_children():
-		child.queue_free()
+	for room: Node2D in _room_instances.values():
+		if is_instance_valid(room):
+			room.queue_free()
 
 	_room_instances.clear()
+	_active_room_instance = null
+	_active_room_coord = Vector2i.ZERO
 	_used_layout_paths.clear()
 	_used_xl_layout_paths.clear()
 
@@ -191,6 +230,7 @@ func _spawn(plan: FloorGenerator.FloorPlan) -> void:
 
 		add_child(inst)
 		inst.position = Vector2(coord.x * float(ROOM_SIZE.x), coord.y * float(ROOM_SIZE.y))
+		inst.visible = not hide_unvisited_rooms
 		inst.name = "%s_%d_%d" % [String(rn.kind), coord.x, coord.y]
 
 		if apply_door_colliders:
@@ -209,7 +249,7 @@ func _spawn(plan: FloorGenerator.FloorPlan) -> void:
 			_wire_item_spawners_for_room(inst, coord)
 
 		if spawn_room_enemies and rn.kind != &"START":
-			if _room_rolls_combat(coord, rn.kind):
+			if (progression_enabled and rn.kind == &"BOSS") or _room_rolls_combat(coord, rn.kind):
 				_setup_room_controller(inst, rn, is_xl, coord)
 
 		_add_room_tracker(inst, coord, is_xl)
@@ -398,6 +438,7 @@ func _place_player_in_start_room(plan: FloorGenerator.FloorPlan) -> void:
 
 	var start_room: Node2D = _room_instances[start_coord]
 	player_2d.global_position = _get_player_spawn_position_in_room(start_room)
+	_set_active_room(start_coord, start_room)
 
 	emit_signal("floor_spawned", start_room)
 	queue_redraw()
@@ -444,11 +485,30 @@ func _has_enemy_spawns(room: Node2D) -> bool:
 
 func _setup_room_controller(room: Node2D, rn: FloorGenerator.RoomNode, is_xl: bool, coord: Vector2i) -> void:
 	if not _has_enemy_spawns(room):
+		if progression_enabled and rn.kind == &"BOSS":
+			_spawn_floor_exit(room, is_xl)
 		return
 	var ctrl := RoomController.new()
 	room.add_child(ctrl)
 	var spawn_seed: int = _room_pick_seed(runtime_seed, coord, rn.exits_mask, rn.kind) ^ 0xBEEF
 	ctrl.setup(room, rn.exits_mask, rn.xl_exits_mask, is_xl, enemy_scenes, spawn_seed)
+	if progression_enabled and rn.kind == &"BOSS":
+		ctrl.encounter_cleared.connect(_on_boss_encounter_cleared.bind(room, is_xl))
+
+
+func _on_boss_encounter_cleared(room: Node2D, is_xl: bool) -> void:
+	_spawn_floor_exit(room, is_xl)
+
+
+func _spawn_floor_exit(room: Node2D, is_xl: bool) -> void:
+	if floor_exit_scene == null or room.has_node("FloorExit"):
+		return
+	var floor_exit: Node2D = floor_exit_scene.instantiate() as Node2D
+	if floor_exit == null:
+		push_error("FloorSpawner: failed to instantiate floor exit scene.")
+		return
+	room.add_child(floor_exit)
+	floor_exit.position = Vector2(800.0, 800.0) if is_xl else Vector2(400.0, 400.0)
 
 
 func _add_room_tracker(room: Node2D, coord: Vector2i, is_xl: bool) -> void:
@@ -470,7 +530,111 @@ func _add_room_tracker(room: Node2D, coord: Vector2i, is_xl: bool) -> void:
 
 	area.add_child(shape)
 	area.body_entered.connect(func(body: Node) -> void:
-		if body.is_in_group("player"):
-			player_room_changed.emit(coord)
+		_on_player_entered_room(body, coord, room, is_xl)
 	)
 	room.add_child(area)
+
+
+func _on_player_entered_room(body: Node, coord: Vector2i, room: Node2D, is_xl: bool) -> void:
+	if not body.is_in_group("player"):
+		return
+	if room != _active_room_instance:
+		var previous_room: Node2D = _active_room_instance
+		room.visible = true
+		_set_active_room(coord, room)
+		if previous_room != null and is_instance_valid(previous_room):
+			_start_room_entry_glide(body, room, is_xl)
+			_fade_out_room(previous_room)
+	player_room_changed.emit(coord)
+
+
+func _set_active_room(coord: Vector2i, room: Node2D) -> void:
+	_active_room_coord = coord
+	_active_room_instance = room
+	if hide_unvisited_rooms:
+		room.visible = true
+	if clamp_camera_to_active_room:
+		_update_camera_limits(room, coord)
+	if _fog_overlay != null:
+		var room_size: Vector2 = Vector2(XL_ROOM_SIZE) if _is_xl_room(coord) else Vector2(ROOM_SIZE)
+		_fog_overlay.set_room_rect(Rect2(_fog_overlay.to_local(room.global_position), room_size))
+		_fog_overlay.visible = show_room_edge_fog
+
+
+func _is_xl_room(coord: Vector2i) -> bool:
+	if _plan == null or not _plan.rooms.has(coord):
+		return false
+	return (_plan.rooms[coord] as FloorGenerator.RoomNode).kind == &"XL"
+
+
+func _update_camera_limits(room: Node2D, coord: Vector2i) -> void:
+	var player_node: Node = get_node_or_null(player_path) if not player_path.is_empty() else null
+	if player_node == null:
+		return
+	if _player_camera == null or not is_instance_valid(_player_camera):
+		var cameras: Array[Node] = player_node.find_children("PlayerCamera", "Camera2D", true, false)
+		if cameras.is_empty():
+			cameras = player_node.find_children("*", "Camera2D", true, false)
+		if cameras.is_empty():
+			return
+		_player_camera = cameras[0] as Camera2D
+	var room_size: Vector2 = Vector2(XL_ROOM_SIZE) if _is_xl_room(coord) else Vector2(ROOM_SIZE)
+	_player_camera.limit_left = floori(room.global_position.x)
+	_player_camera.limit_top = floori(room.global_position.y)
+	_player_camera.limit_right = ceili(room.global_position.x + room_size.x)
+	_player_camera.limit_bottom = ceili(room.global_position.y + room_size.y)
+
+
+func _start_room_entry_glide(player: Node, room: Node2D, is_xl: bool) -> void:
+	var body := player as CharacterBody2D
+	if body == null:
+		return
+	var state_handler := body.get_node_or_null("StateHandler") as StateHandler
+	if state_handler == null or not state_handler.states.has("RoomTransition"):
+		return
+	state_handler.change_state("RoomTransition", {
+		"target_position": _get_room_entry_target(room, body, is_xl)
+	})
+
+
+func _get_room_entry_target(room: Node2D, player: Node2D, is_xl: bool) -> Vector2:
+	var size: Vector2 = Vector2(XL_ROOM_SIZE) if is_xl else Vector2(ROOM_SIZE)
+	var local_position: Vector2 = room.to_local(player.global_position)
+	var distances := [local_position.x, size.x - local_position.x, local_position.y, size.y - local_position.y]
+	var side: int = 0
+	for i: int in range(1, distances.size()):
+		if distances[i] < distances[side]:
+			side = i
+	var inset: float = 112.0
+	var target_local: Vector2
+	match side:
+		0: # Entered through the west wall.
+			target_local = Vector2(inset, _nearest_door_lane(local_position.y, size.y))
+		1: # Entered through the east wall.
+			target_local = Vector2(size.x - inset, _nearest_door_lane(local_position.y, size.y))
+		2: # Entered through the north wall.
+			target_local = Vector2(_nearest_door_lane(local_position.x, size.x), inset)
+		_: # Entered through the south wall.
+			target_local = Vector2(_nearest_door_lane(local_position.x, size.x), size.y - inset)
+	return room.to_global(target_local)
+
+
+func _nearest_door_lane(value: float, dimension: float) -> float:
+	if dimension <= float(ROOM_SIZE.x):
+		return dimension * 0.5
+	var first_lane: float = dimension * 0.25
+	var second_lane: float = dimension * 0.75
+	return first_lane if absf(value - first_lane) <= absf(value - second_lane) else second_lane
+
+
+func _fade_out_room(room: Node2D) -> void:
+	if not hide_unvisited_rooms:
+		return
+	var tween := create_tween()
+	tween.tween_property(room, "modulate:a", 0.0, 0.2)
+	tween.tween_callback(func() -> void:
+		if not is_instance_valid(room):
+			return
+		room.visible = room == _active_room_instance
+		room.modulate = Color.WHITE
+		)

@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Survivors_test"
-run/main_scene="uid://c368frngd0f6p"
+run/main_scene="res://Scenes/Testing_scenes/RoomGen_Progression_Test.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 run/max_fps=500
 config/icon="res://icon.svg"

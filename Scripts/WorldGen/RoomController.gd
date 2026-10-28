@@ -81,9 +81,8 @@ func _start_encounter() -> void:
 	state = EncounterState.ACTIVE
 	encounter_started.emit()
 
-	# Block player input — natural momentum carries them into the room.
+	# Block actions while the room-entry glide centers the player on the doorway.
 	if _player_caps != null:
-		_player_caps.block(Capabilities.CAN_MOVE,   &"room_entry")
 		_player_caps.block(Capabilities.CAN_ATTACK, &"room_entry")
 		_player_caps.block(Capabilities.CAN_CAST,   &"room_entry")
 
@@ -96,7 +95,6 @@ func _start_encounter() -> void:
 	# 0.2s grace period before player can act.
 	await get_tree().create_timer(0.2).timeout
 	if _player_caps != null:
-		_player_caps.unblock(Capabilities.CAN_MOVE,   &"room_entry")
 		_player_caps.unblock(Capabilities.CAN_ATTACK, &"room_entry")
 		_player_caps.unblock(Capabilities.CAN_CAST,   &"room_entry")
 
